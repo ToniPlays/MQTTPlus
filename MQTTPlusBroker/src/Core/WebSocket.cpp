@@ -7,7 +7,7 @@ namespace MQTTPlus
 {
     WebSocket::WebSocket(uint32_t port, bool ssl) : m_Port(port), m_SSL(ssl)
     {
-        m_Loop = us_create_loop(0, OnWakeup, OnPre, OnPost, 0);
+        m_Loop = us_create_loop(nullptr, OnWakeup, OnPre, OnPost, 0);
         
         us_socket_context_options_t options = {};
         m_SocketContext = us_create_socket_context(ssl, m_Loop, sizeof(WebSocketEXT), options);

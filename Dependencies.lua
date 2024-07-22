@@ -2,6 +2,11 @@
 Dependencies = {
 	uSockets = {
 		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/uSockets/src",
+		LibraryDir = "%{wks.location}/MQTTPlusBroker/vendor/uSockets",
+		LinuxLibs = {
+			Common = { "%{wks.location}/MQTTPlusBroker/vendor/uSockets/uSockets.a" },	
+		},
+		MacosLibs = {}
 	},
 	gsl = {
 		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/gsl/include",
@@ -49,8 +54,8 @@ function References(reference)
     if(ref.MacosLibs ~= nil and os.target() == "macosx") then
         LinkLibs(ref.MacosLibs)
     end
-    if(ref.IosLibs ~= nil and os.target() == "ios") then
-        LinkLibs(ref.IosLibs)
+    if(ref.LinuxLibs ~= nil and os.target() == "linux") then
+        LinkLibs(ref.LinuxLibs)
     end
 end
 
