@@ -3,8 +3,12 @@ import platform;
 
 def IsWindows():
     return platform.system() == "Windows"
+    
 def IsMacos():
     return platform.system() == "Darwin"
+    
+def IsLinux():
+    return platform.system() == "Linux"
 
 def PlatformExecutable():
     if IsWindows():

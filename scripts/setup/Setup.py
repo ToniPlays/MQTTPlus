@@ -14,7 +14,9 @@ def main(argv):
     if Utils.IsWindows():
         print("MQTTPlus for Windows\n")
     elif Utils.IsMacos():
-           print("MQTTPlus for MacOS\n")
+        print("MQTTPlus for MacOS\n")
+    elif Utils.IsLinux():
+        print("MQTTPlus for Linux")
         
     #Init colorama
     if not SetupPackages.PackageInstalled('colorama'):
