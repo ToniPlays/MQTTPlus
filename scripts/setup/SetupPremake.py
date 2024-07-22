@@ -6,7 +6,7 @@ import Utils
 import FileUtils
 
 class PremakeConfiguration:
-    premakeVersion = "5.0.0-beta1"
+    premakeVersion = "5.0.0-beta2"
     premakePlatform = ""
     premakeZipUrls = f"https://github.com/premake/premake-core/releases/download/"
     premakeLicenseUrl = "https://raw.githubusercontent.com/premake/premake-core/master/LICENSE.txt"
@@ -36,7 +36,7 @@ class PremakeConfiguration:
         elif Utils.IsMacos():
             premakeApp = Path(f"{cls.premakeDirectory}/premake5");
         elif Utils.IsLinux():
-            premakeApp = Path(f"../{cls.premakeDirectory}/premake5");
+            premakeApp = Path(f"{cls.premakeDirectory}/premake5");
 
         return premakeApp.exists()
 
