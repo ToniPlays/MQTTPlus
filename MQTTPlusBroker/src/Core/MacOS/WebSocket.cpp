@@ -35,14 +35,14 @@ namespace MQTTPlus
         s.Socket = this;
         us_loop_run(m_Loop);
     }
-    void WebSocket::SetSocketTimeout(us_socket_t* socket, uint32_t timeout)
+    void WebSocket::SetSocketTimeout(void* socket, uint32_t timeout)
     {
-        us_socket_timeout(m_SSL, socket, timeout);
+        us_socket_timeout(m_SSL, (us_socket_t*)socket, timeout);
     }
 
-    void WebSocket::Write(us_socket_t* socket, std::vector<uint8_t> bytes)
+    void WebSocket::Write(void* socket, std::vector<uint8_t> bytes)
     {
-        us_socket_write(m_SSL, socket, (char*)bytes.data(), (uint32_t)bytes.size(), 0);
+        us_socket_write(m_SSL, (us_socket_t*)socket, (char*)bytes.data(), (uint32_t)bytes.size(), 0);
     }
 
     void WebSocket::OnWakeup(us_loop_t* loop)

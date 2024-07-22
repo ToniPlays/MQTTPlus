@@ -35,7 +35,7 @@ namespace MQTTPlus
         BrokerCreateSettings m_Settings = {};
         WebSocket m_WebSocket;
 
-        std::unordered_map<us_socket_t*, Ref<Client>> m_ConnectedClients;
+        std::unordered_map<void*, Ref<Client>> m_ConnectedClients;
         
         OnClientConnected m_OnClientConnected;
     };

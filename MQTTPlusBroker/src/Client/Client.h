@@ -12,7 +12,7 @@ namespace MQTTPlus
     {
         friend class Broker;
     public:
-        Client(Broker* broker, us_socket_t* socket) : m_Broker(broker), m_Socket(socket) {}
+        Client(Broker* broker, void* nativeSocket) : m_Broker(broker), m_NativeSocket(nativeSocket) {}
         ~Client() = default;
         
         const MQTT::Authentication& GetAuth() const { return m_Authentication; }
@@ -32,6 +32,6 @@ namespace MQTTPlus
         
         std::function<void(Ref<MQTT::Message>)> m_SendMessageCallback;
         Broker* m_Broker;
-        us_socket_t* m_Socket;
+        void* m_NativeSocket;
     };
 }

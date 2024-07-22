@@ -4,11 +4,12 @@
 #include <iostream>
 #include <functional>
 
+
 namespace MQTTPlus 
 {
-    using SocketConnected = std::function<void(us_socket_t*)>;
-    using SocketDisconnected = std::function<void(us_socket_t*, int)>;
-    using SocketDataReceive = std::function<void(us_socket_t*, char*, int)>;
+    using SocketConnected = std::function<void(void*)>;
+    using SocketDisconnected = std::function<void(void*, int)>;
+    using SocketDataReceive = std::function<void(void*, char*, int)>;
 
     class WebSocket
     {
@@ -17,9 +18,9 @@ namespace MQTTPlus
         WebSocket(uint32_t port, bool ssl = false);
         
         void Listen();
-        void SetSocketTimeout(us_socket_t* socket, uint32_t timeout);
+        void SetSocketTimeout(void* socket, uint32_t timeout);
         
-        void Write(us_socket_t* socket, std::vector<uint8_t> bytes);
+        void Write(void* socket, std::vector<uint8_t> bytes);
         
         void SetOnSocketConnected(SocketConnected&& callback)
         {
