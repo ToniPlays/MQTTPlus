@@ -1,0 +1,354 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		125FCADB5AD0AF0D9F6F811B /* MQTTPlusDashboard */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = MQTTPlusDashboard; path = MQTTPlusDashboard; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E8E08ACBFFF325FDF00F210B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		78F9B9F79F1FE9A90626E037 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXGroup section */
+		500120925CBDD004D1A83ED2 /* MQTTPlusDashboard */ = {
+			isa = PBXGroup;
+			children = (
+				A6C936B49B3FADE6EA134CF4 /* Products */,
+			);
+			name = MQTTPlusDashboard;
+			sourceTree = "<group>";
+		};
+		A6C936B49B3FADE6EA134CF4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				125FCADB5AD0AF0D9F6F811B /* MQTTPlusDashboard */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C49C3361AF885953F76E21A1 /* MQTTPlusDashboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D71BD32AEE2E6E5CDE4A696A /* Build configuration list for PBXNativeTarget "MQTTPlusDashboard" */;
+			buildPhases = (
+				58C80B6B6FDAA69D5FF6A1AB /* Resources */,
+				C27524C2D987BFF4C9A3BB02 /* Sources */,
+				E8E08ACBFFF325FDF00F210B /* Frameworks */,
+				78F9B9F79F1FE9A90626E037 /* Embed Libraries */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MQTTPlusDashboard;
+			productInstallPath = "$(HOME)/bin";
+			productName = MQTTPlusDashboard;
+			productReference = 125FCADB5AD0AF0D9F6F811B /* MQTTPlusDashboard */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "MQTTPlusDashboard" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 500120925CBDD004D1A83ED2 /* MQTTPlusDashboard */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C49C3361AF885953F76E21A1 /* MQTTPlusDashboard */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		58C80B6B6FDAA69D5FF6A1AB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C27524C2D987BFF4C9A3BB02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		26C5246E202B25E013C682AE /* Dist */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = (
+					YES,
+				);
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++2a";
+				CLANG_ENABLE_OBJC_WEAK = (
+					YES,
+				);
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				DEAD_CODE_STRIPPING = (
+					YES,
+				);
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					MQP_MACOS,
+					MQP_DIST,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = (
+					14.0,
+				);
+				OBJROOT = "../bin-int/Dist-macosx-universal/MQTTPlusDashboard";
+				ONLY_ACTIVE_ARCH = (
+					YES,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = (
+					com.mqttplus,
+				);
+				SYMROOT = "../bin/Dist-macosx-universal/MQTTPlusDashboard";
+				USER_HEADER_SEARCH_PATHS = (
+					src,
+				);
+			};
+			name = Dist;
+		};
+		386955615E8F8513C5967BA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = (
+					YES,
+				);
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++2a";
+				CLANG_ENABLE_OBJC_WEAK = (
+					YES,
+				);
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = (
+					YES,
+				);
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					MQP_MACOS,
+					MQP_DEBUG,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = (
+					14.0,
+				);
+				OBJROOT = "../bin-int/Debug-macosx-universal/MQTTPlusDashboard";
+				ONLY_ACTIVE_ARCH = (
+					YES,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = (
+					com.mqttplus,
+				);
+				SYMROOT = "../bin/Debug-macosx-universal/MQTTPlusDashboard";
+				USER_HEADER_SEARCH_PATHS = (
+					src,
+				);
+			};
+			name = Debug;
+		};
+		922BBA3DC30FB22FD627E87D /* Dist */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = (
+					YES,
+				);
+				CLANG_ENABLE_OBJC_WEAK = (
+					YES,
+				);
+				CONFIGURATION_BUILD_DIR = "../bin/Dist-macosx-universal/MQTTPlusDashboard";
+				DEAD_CODE_STRIPPING = (
+					YES,
+				);
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = (
+					14.0,
+				);
+				ONLY_ACTIVE_ARCH = (
+					YES,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = (
+					com.mqttplus,
+				);
+				PRODUCT_NAME = MQTTPlusDashboard;
+			};
+			name = Dist;
+		};
+		E3688DEA1561D89C8F41142A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = (
+					YES,
+				);
+				CLANG_ENABLE_OBJC_WEAK = (
+					YES,
+				);
+				CONFIGURATION_BUILD_DIR = "../bin/Release-macosx-universal/MQTTPlusDashboard";
+				DEAD_CODE_STRIPPING = (
+					YES,
+				);
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = (
+					14.0,
+				);
+				ONLY_ACTIVE_ARCH = (
+					YES,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = (
+					com.mqttplus,
+				);
+				PRODUCT_NAME = MQTTPlusDashboard;
+			};
+			name = Release;
+		};
+		EC7C0BDB34ECF00D798BC21B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = (
+					YES,
+				);
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++2a";
+				CLANG_ENABLE_OBJC_WEAK = (
+					YES,
+				);
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				DEAD_CODE_STRIPPING = (
+					YES,
+				);
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					MQP_MACOS,
+					MQP_DEBUG,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = (
+					14.0,
+				);
+				OBJROOT = "../bin-int/Release-macosx-universal/MQTTPlusDashboard";
+				ONLY_ACTIVE_ARCH = (
+					YES,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = (
+					com.mqttplus,
+				);
+				SYMROOT = "../bin/Release-macosx-universal/MQTTPlusDashboard";
+				USER_HEADER_SEARCH_PATHS = (
+					src,
+				);
+			};
+			name = Release;
+		};
+		F9CBF6F0472EED22BD4DED30 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = (
+					YES,
+				);
+				CLANG_ENABLE_OBJC_WEAK = (
+					YES,
+				);
+				CONFIGURATION_BUILD_DIR = "../bin/Debug-macosx-universal/MQTTPlusDashboard";
+				DEAD_CODE_STRIPPING = (
+					YES,
+				);
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = (
+					14.0,
+				);
+				ONLY_ACTIVE_ARCH = (
+					YES,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = (
+					com.mqttplus,
+				);
+				PRODUCT_NAME = MQTTPlusDashboard;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "MQTTPlusDashboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				386955615E8F8513C5967BA1 /* Debug */,
+				EC7C0BDB34ECF00D798BC21B /* Release */,
+				26C5246E202B25E013C682AE /* Dist */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D71BD32AEE2E6E5CDE4A696A /* Build configuration list for PBXNativeTarget "MQTTPlusDashboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F9CBF6F0472EED22BD4DED30 /* Debug */,
+				E3688DEA1561D89C8F41142A /* Release */,
+				922BBA3DC30FB22FD627E87D /* Dist */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+};
+rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
