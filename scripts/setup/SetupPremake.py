@@ -33,7 +33,7 @@ class PremakeConfiguration:
         premakeApp = Path("")
         if Utils.IsWindows():
             premakeApp = Path(f"{cls.premakeDirectory}/premake5.exe");
-        elif Utils.IsMacos():
+        elif Utils.IsMacos() or Utils.IsLinux():
             premakeApp = Path(f"{cls.premakeDirectory}/premake5");
 
         return premakeApp.exists()
