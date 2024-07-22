@@ -6,7 +6,7 @@ import Utils
 import FileUtils
 
 class PremakeConfiguration:
-    premakeVersion = "5.0.0-beta2"
+    premakeVersion = "5.0.0-beta1"
     premakePlatform = ""
     premakeZipUrls = f"https://github.com/premake/premake-core/releases/download/"
     premakeLicenseUrl = "https://raw.githubusercontent.com/premake/premake-core/master/LICENSE.txt"
@@ -20,10 +20,12 @@ class PremakeConfiguration:
             cls.premakePlatform = f"-windows.zip"
         elif Utils.IsMacos():
             cls.premakePlatform = f"-macosx.tar.gz"
+        elif Utils.IsLinux():
+            cls.premakePlatform = f"-linux.tar.gz"
                         
         if (not cls.CheckIfPremakeInstalled()):
             return False
-
+        
         return True
 
     @classmethod
@@ -58,3 +60,4 @@ class PremakeConfiguration:
         print(f"Premake License file has been downloaded to '{cls.premakeDirectory}'")
 
         return True
+    
