@@ -56,11 +56,10 @@ def main(argv):
     
     if Utils.IsWindows():
         subprocess.check_call(["vendor/premake/bin/premake5.exe", argv[0]])
-        
     elif Utils.IsMacos():
         subprocess.check_call(["vendor/premake/bin/premake5", "xcode4"])
     elif Utils.IsLinux():
-        subprocess.check_call(["vendor/premake/bin/premake5", "gmake"])
+        subprocess.check_call(["../vendor/premake/bin/premake5", "gmake"])
 
     print("\nSetup completed")
 
