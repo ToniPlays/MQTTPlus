@@ -1,6 +1,6 @@
 include "Config.lua"
 include "Dependencies.lua"
-include "scripts/setup/premakeUtils/XCOdeBuildSettings.lua"
+include "scripts/setup/PremakeUtils/XCodeBuildSettings.lua"
 
 workspace "MQTTPlus"
 

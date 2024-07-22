@@ -1,7 +1,8 @@
 #include "MQTTMessageDecoder.h"
 #include "MQTT.h"
 #include <memory>
-#include <format>
+
+#include "spdlog/fmt/fmt.h"
 
 namespace MQTTPlus {
     static int RemainingLength(gsl::span<uint8_t> bytes) noexcept {
@@ -57,7 +58,7 @@ namespace MQTTPlus {
                 return Ref<MQTT::PublishMessage>::Create(dataBuffer);
             }
             default:
-                std::cout << std::format("Not implemented {}\n", (uint32_t)type);
+                std::cout << fmt::format("Not implemented {}\n", (uint32_t)type);
                 return nullptr;
         }
     }

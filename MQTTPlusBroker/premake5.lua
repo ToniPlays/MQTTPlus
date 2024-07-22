@@ -20,3 +20,4 @@ project "MQTTPlusBroker"
 
 	References("uSockets")
 	References("gsl")
+	References("spdlog")

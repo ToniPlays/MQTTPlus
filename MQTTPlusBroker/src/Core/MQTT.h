@@ -2,10 +2,10 @@
 
 #include <iostream>
 #include <vector>
-#include <format>
 #include "Ref.h"
 #include "gsl.h"
 #include "Buffer/CachedBuffer.h"
+#include "spdlog/fmt/fmt.h"
 
 namespace MQTT {
     enum class MessageType {
@@ -98,7 +98,7 @@ namespace MQTT {
             return std::vector<uint8_t> { 0x10, 0x29, 0, 0 };
         }
         virtual std::string ToString() const override {
-            return std::format("ConnectMessage: ClientID {}, Flags {}, Alive for {}", m_Authentication.ClientID, m_Flags, m_KeepAliveFor);
+            return fmt::format("ConnectMessage: ClientID {}, Flags {}, Alive for {}", m_Authentication.ClientID, m_Flags, m_KeepAliveFor);
         }
         
     private:
@@ -121,7 +121,7 @@ namespace MQTT {
             return std::vector<uint8_t> { 0x20, 0x02, (uint8_t)(m_HasParent ? 0x01 : 0x00), m_Ack };
         }
         virtual std::string ToString() const override {
-            return std::format("ConnectMessage");
+            return fmt::format("ConnectMessage");
         }
         
     private:
@@ -139,7 +139,7 @@ namespace MQTT {
             return std::vector<uint8_t> { 0 };
         }
         virtual std::string ToString() const override {
-            return std::format("PublishMessage: {}", m_Topic);
+            return fmt::format("PublishMessage: {}", m_Topic);
         }
         
         private:

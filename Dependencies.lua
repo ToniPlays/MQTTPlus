@@ -5,6 +5,9 @@ Dependencies = {
 	},
 	gsl = {
 		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/gsl/include",
+	},
+	spdlog = {
+		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/spdlog/include",
 	}
 }
 

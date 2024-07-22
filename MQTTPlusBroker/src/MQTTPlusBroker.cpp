@@ -1,6 +1,7 @@
 #include "MQTTPlusBroker.h"
 #include "Core/Broker.h"
 #include <iostream>
+#include "spdlog/fmt/fmt.h"
 
 int main(int argc, char* argv[])
 {
@@ -13,7 +14,7 @@ int main(int argc, char* argv[])
     
     MQTTPlus::Broker broker(settings);
     broker.SetOnClientConnected([broker](Ref<MQTTPlus::Client> client) mutable {
-        std::cout << std::format("Client {} connected", client->GetAuth().ClientID) << std::endl;
+        std::cout << fmt::format("Client {} connected", client->GetAuth().ClientID) << std::endl;
         
         std::vector<Ref<MQTTPlus::Client>> clients = std::vector<Ref<MQTTPlus::Client>>();
         clients.push_back(client);

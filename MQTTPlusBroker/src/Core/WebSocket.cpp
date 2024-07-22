@@ -1,7 +1,7 @@
 #include "WebSocket.h"
 #include "MQTTPlusException.h"
 #include <loop.c>
-#include <format>
+#include "spdlog/fmt/fmt.h"
 
 namespace MQTTPlus 
 {
@@ -20,17 +20,17 @@ namespace MQTTPlus
         us_socket_context_on_data(ssl, m_SocketContext, OnDataReceive);
         us_socket_context_on_writable(ssl, m_SocketContext, OnWritable);
         
-        std::cout << std::format("Created websocket for port {}", m_Port) << std::endl;
+        std::cout << fmt::format("Created websocket for port {}", m_Port) << std::endl;
     }
 
     void WebSocket::Listen()
     {
         us_listen_socket_t* listenSocket = us_socket_context_listen(m_SSL ? 1 : 0, m_SocketContext, 0, m_Port, 0, 0);
         if(!listenSocket)
-            throw MQTTPlusException(std::format("Could not listen to port: {}", m_Port));
+            throw MQTTPlusException(fmt::format("Could not listen to port: {}", m_Port));
         
         
-        std::cout << std::format("Listening to port: {}", m_Port) << std::endl;
+        std::cout << fmt::format("Listening to port: {}", m_Port) << std::endl;
         WebSocketEXT& s = *(WebSocketEXT*)us_socket_context_ext(m_SSL, m_SocketContext);
         s.Socket = this;
         us_loop_run(m_Loop);

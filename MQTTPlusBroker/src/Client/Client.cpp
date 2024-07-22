@@ -1,8 +1,8 @@
 #include "Client.h"
 #include "Ref.h"
-#include <format>
 
 #include "Core/Broker.h"
+#include "spdlog/fmt/fmt.h"
 
 namespace MQTTPlus 
 {
@@ -28,7 +28,7 @@ namespace MQTTPlus
                 }
                     
                 default:
-                    std::cout << std::format("Message not implemented\n");
+                    std::cout << fmt::format("Message not implemented\n");
                     break;
             }
         });
