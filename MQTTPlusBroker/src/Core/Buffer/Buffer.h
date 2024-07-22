@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-struct Buffer 
+struct Buffer
 {
 	uint64_t Size = 0;
 	void* Data = nullptr;
@@ -51,13 +51,6 @@ struct Buffer
 	{
 		if(sizeof(T) + offset > Size) assert(false);
 		return *(T*)((uint8_t*)Data + offset);
-	}
-
-	template<>
-	std::string Read(uint64_t offset) const
-	{
-		uint64_t length = Read<uint64_t>(offset);
-		return std::string((char*)Data + offset + sizeof(uint64_t), length);
 	}
 
     void* Read(uint64_t offset = 0) const

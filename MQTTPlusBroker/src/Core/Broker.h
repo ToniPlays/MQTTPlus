@@ -32,10 +32,6 @@ namespace MQTTPlus
         
     private:
         
-        struct SocketExt {
-            Broker* Broker;
-        };
-        
         BrokerCreateSettings m_Settings = {};
         WebSocket m_WebSocket;
 

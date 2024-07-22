@@ -46,15 +46,6 @@ public:
 		return value;
 	}
 
-	template<>
-	std::string Read()
-	{
-		uint64_t length = Read<uint64_t>();
-		Buffer data = Read<Buffer>(length);
-
-		return std::string((char*)data.Data, length);
-	}
-
 	template<typename T>
 	T Read(uint64_t size)
 	{
@@ -65,45 +56,13 @@ public:
 		return std::vector<T>(start, start + size);
 	}
 
-	template<>
-	Buffer Read(uint64_t size)
-	{
-		if (m_DataBuffer.Size < m_CurrentBufferOffset + size) assert(false);
-
-		Buffer value((uint8_t*)m_DataBuffer.Data + m_CurrentBufferOffset, size);
-		m_CurrentBufferOffset += size;
-		return value;
-	}
-	
-
 	template<typename T>
 	uint64_t Write(T value)
-	{
-		m_DataBuffer.Write(&value, sizeof(T), m_CurrentBufferOffset);
-		m_CurrentBufferOffset += sizeof(T);
-		return sizeof(T);
-	}
-
-	template<>
-	uint64_t Write(Buffer value)
-	{
-		m_DataBuffer.Write(value.Data, value.Size, m_CurrentBufferOffset);
-		m_CurrentBufferOffset += value.Size;
-		return value.Size;
-	}
-
-	template<>
-	uint64_t Write(std::string value)
-	{
-		uint64_t length = value.length();
-		m_DataBuffer.Write(&length, sizeof(uint64_t), m_CurrentBufferOffset);
-		m_CurrentBufferOffset += sizeof(uint64_t);
-
-		m_DataBuffer.Write(value.c_str(), length * sizeof(char), m_CurrentBufferOffset);
-		m_CurrentBufferOffset += length * sizeof(char);
-
-		return sizeof(uint64_t) + (length * sizeof(char));
-	}
+    {
+        m_DataBuffer.Write(&value, sizeof(T), m_CurrentBufferOffset);
+        m_CurrentBufferOffset += sizeof(T);
+        return sizeof(T);
+    }
 
 	template<typename T>
 	uint64_t Write(T* data, uint64_t dataLength)

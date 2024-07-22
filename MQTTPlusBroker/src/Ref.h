@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <assert.h>
+#include <atomic>
 
 class RefCount
 {
