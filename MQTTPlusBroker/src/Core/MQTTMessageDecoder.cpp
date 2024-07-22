@@ -54,19 +54,11 @@ namespace MQTTPlus {
             case MQTT::MessageType::Connect:
                 return Ref<MQTT::ConnectMessage>::Create(dataBuffer);
             case MQTT::MessageType::Publish: {
-                std::string topic = GetMessageTopic(data);
-                std::cout << topic << std::endl;
-                return Ref<MQTT::PublishMessage>::Create(topic, std::vector<uint8_t>());
+                return Ref<MQTT::PublishMessage>::Create(dataBuffer);
             }
             default:
                 std::cout << std::format("Not implemented {}\n", (uint32_t)type);
                 return nullptr;
         }
-    }
-    std::string MQTTMessageDecoder::GetMessageTopic(const gsl::span<uint8_t>& data)
-    {
-        const auto topicLength = (data[2] << 8) + data[3];
-        const char* ptr = reinterpret_cast<const char*>(&data[4]);
-        return std::string(ptr, topicLength);
     }
 }

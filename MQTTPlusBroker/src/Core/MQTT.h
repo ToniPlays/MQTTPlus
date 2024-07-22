@@ -12,7 +12,7 @@ namespace MQTT {
         Reserved1 = 0,
         Connect = 1,    //Created
         ConnAck = 2,    //Created
-        Publish = 3,
+        Publish = 3,    
         PubAck = 4,
         PubRec = 5,
         PubRel = 6,
@@ -131,7 +131,8 @@ namespace MQTT {
     class PublishMessage : public Message
     {
     public:
-        PublishMessage(std::string topic, std::vector<uint8_t> payload) : m_Topic(topic), m_Payload(payload) {}
+        PublishMessage(CachedBuffer& buffer);
+        
         MessageType GetType() const override { return MessageType::ConnAck; }
         virtual std::vector<uint8_t> GetBytes() const override
         {

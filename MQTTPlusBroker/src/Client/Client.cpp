@@ -14,11 +14,19 @@ namespace MQTTPlus
             {
                 case MQTT::MessageType::Connect:
                 {
-                    auto result = m_Broker->OnMQTTClientConnected(this, message.As<MQTT::ConnectMessage>()->GetAuthentication());
+                    Ref<MQTT::ConnectMessage> msg = message.As<MQTT::ConnectMessage>();
+                    auto result = m_Broker->OnMQTTClientConnected(this, msg->GetAuthentication());
                     SendMessage(Ref<MQTT::ConnAckMessage>::Create(result));
                     
                     break;
                 }
+                case MQTT::MessageType::Publish:
+                {
+                    Ref<MQTT::PublishMessage> msg = message.As<MQTT::PublishMessage>();
+                    m_Broker->OnMQTTPublishReceived(this, msg);
+                    break;
+                }
+                    
                 default:
                     std::cout << std::format("Message not implemented\n");
                     break;

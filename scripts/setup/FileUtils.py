@@ -3,7 +3,6 @@ import sys
 import os
 import time
 
-from fake_useragent import UserAgent
 from zipfile import ZipFile
 import tarfile
 

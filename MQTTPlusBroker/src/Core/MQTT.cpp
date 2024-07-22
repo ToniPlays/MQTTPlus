@@ -34,4 +34,12 @@ namespace MQTT {
             std::cout << "Password: " << m_Authentication.Password << std::endl;
         }
     }
+
+    PublishMessage::PublishMessage(CachedBuffer& buffer)
+    {
+        uint8_t flags = buffer.Read<uint8_t>(); //Fixed header
+        uint8_t remainingLength = buffer.Read<uint8_t>(); //Fixed header
+        m_Topic = ReadString(buffer);
+        
+    }
 }

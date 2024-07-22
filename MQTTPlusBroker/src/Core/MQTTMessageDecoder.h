@@ -22,9 +22,6 @@ namespace MQTTPlus
         
         void DecodeMessage(char* data, int length, OnMessageDecoded&& callback);
         Ref<MQTT::Message> GetMessage(const gsl::span<uint8_t>& data);
-        
-    private:
-        std::string GetMessageTopic(const gsl::span<uint8_t>& data);
     private:
         std::vector<uint8_t> m_Buffer;
         decltype(m_Buffer)::iterator m_Begin;

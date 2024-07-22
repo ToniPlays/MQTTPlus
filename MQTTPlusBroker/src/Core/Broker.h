@@ -9,7 +9,9 @@
 
 namespace MQTTPlus 
 {
-using OnClientConnected = std::function<void(Ref<Client>)>;
+    using OnClientConnected = std::function<void(Ref<Client>)>;
+    using OnPublished = std::function<void(Ref<Client>&, Buffer)>;
+
     class Broker
     {
         friend class Client;
@@ -18,6 +20,7 @@ using OnClientConnected = std::function<void(Ref<Client>)>;
         ~Broker() = default;
         
         void Listen();
+        void OnPublish(const std::string& topic, OnPublished&& callback) {}
         
         void SetOnClientConnected(OnClientConnected&& callback) {
             m_OnClientConnected = callback;
@@ -25,6 +28,7 @@ using OnClientConnected = std::function<void(Ref<Client>)>;
         
     private:
         MQTT::ConnAckFlags OnMQTTClientConnected(Ref<Client> client, const MQTT::Authentication& auth);
+        void OnMQTTPublishReceived(Ref<Client> client, Ref<MQTT::PublishMessage> message);
         
     private:
         

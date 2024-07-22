@@ -32,9 +32,16 @@ namespace MQTTPlus
         
         m_WebSocket.Listen();
     }
+
     MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<Client> client, const MQTT::Authentication& auth)
     {
         m_WebSocket.SetSocketTimeout(client->m_Socket, client->m_KeepAliveFor);
+        client->m_Authentication = auth;
+        m_OnClientConnected(client);
         return MQTT::ConnAckFlags::Accepted;
+    }
+    void Broker::OnMQTTPublishReceived(Ref<Client> client, Ref<MQTT::PublishMessage> message)
+    {
+        std::cout << message->ToString() << std::endl;
     }
 }
