@@ -13,6 +13,9 @@ Dependencies = {
 	},
 	spdlog = {
 		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/spdlog/include",
+	},
+	websocketpp = {
+		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/websocketpp",
 	}
 }
 
