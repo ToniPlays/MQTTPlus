@@ -26,16 +26,10 @@ namespace MQTTPlus
 
     void WebSocketImpl::Listen()
     {
-        us_listen_socket_t* listenSocket = us_socket_context_listen(m_SSL ? 1 : 0, m_SocketContext, 0, m_Port, 0, 0);
-        if(!listenSocket)
-            throw MQTTPlusException(fmt::format("Could not listen to port: {}", m_Port));
-        
-        
-        std::cout << fmt::format("Listening to port: {}", m_Port) << std::endl;
-        WebSocketEXT& s = *(WebSocketEXT*)us_socket_context_ext(m_SSL, m_SocketContext);
-        s.Socket = this;
-        us_loop_run(m_Loop);
+        m_Thread = Ref<Thread>::Create(std::thread(&WebSocketImpl::ThreadFunc, this));
     }
+
+
     void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
     {
         us_socket_timeout(m_SSL, (us_socket_t*)socket, timeout);
@@ -49,6 +43,18 @@ namespace MQTTPlus
     void WebSocketImpl::Write(void* socket, const std::string& message)
     {
         us_socket_write(m_SSL, (us_socket_t*)socket, message.data(), message.length(), 0);
+    }
+
+    void WebSocketImpl::ThreadFunc(WebSocketImpl* socket) {
+        us_listen_socket_t* listenSocket = us_socket_context_listen(socket->m_SSL ? 1 : 0, socket->m_SocketContext, 0, socket->m_Port, 0, 0);
+        if(!listenSocket)
+            throw MQTTPlusException(fmt::format("Could not listen to port: {}", socket->m_Port));
+        
+        
+        std::cout << fmt::format("Listening to port: {}", socket->m_Port) << std::endl;
+        WebSocketEXT& s = *(WebSocketEXT*)us_socket_context_ext(socket->m_SSL, socket->m_SocketContext);
+        s.Socket = socket;
+        us_loop_run(socket->m_Loop);
     }
 
     void WebSocketImpl::OnWakeup(us_loop_t* loop)

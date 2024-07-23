@@ -6,6 +6,7 @@
 #include <functional>
 #include "Ref.h"
 #include "Core/WebSocket.h"
+#include "Core/Threading/Thread.h"
 
 
 namespace MQTTPlus 
@@ -37,6 +38,9 @@ namespace MQTTPlus
         }
         
     private:
+        
+        static void ThreadFunc(WebSocketImpl* socket);
+        
         static void OnWakeup(us_loop_t* loop);
         static void OnPre(us_loop_t* loop);
         static void OnPost(us_loop_t* loop);
@@ -53,6 +57,7 @@ namespace MQTTPlus
         uint32_t m_Port = 0;
         bool m_SSL = false;
         
+        Ref<Thread> m_Thread;
         us_loop_t* m_Loop = nullptr;
         us_socket_context_t* m_SocketContext = nullptr;
         us_socket_t* m_Socket = nullptr;

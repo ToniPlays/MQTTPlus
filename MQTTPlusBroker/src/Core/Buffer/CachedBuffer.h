@@ -43,7 +43,6 @@ public:
 		if (m_DataBuffer.Size < m_CurrentBufferOffset + sizeof(T))
 		{
 			std::cout << fmt::format("Tried reading from {} + {} but size is only {}\n", m_CurrentBufferOffset, sizeof(T), m_DataBuffer.Size);
-			assert(false);
 		}
 
 		T value = Buffer::Get<T>(m_DataBuffer.Data, m_CurrentBufferOffset);

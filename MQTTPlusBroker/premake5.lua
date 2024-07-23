@@ -17,7 +17,11 @@ project "MQTTPlusBroker"
     	{
         	"src"
     	}
+	defines {
+	
+	}
 
 	References("uSockets")
 	References("gsl")
 	References("spdlog")
+	References("websocketpp")

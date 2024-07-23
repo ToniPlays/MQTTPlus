@@ -10,3 +10,6 @@ vendor/**/**
 /vendor
 /MQTTPlusClient/.next
 /MQTTPlusClient/node_modules
+/MQTTPlusBroker/vendor
+/MQTTPlusClient/vendor
+/vendor
