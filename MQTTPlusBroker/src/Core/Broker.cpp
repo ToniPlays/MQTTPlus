@@ -51,7 +51,6 @@ namespace MQTTPlus
         });
         
         m_WebSocket->Listen();
-        std::cout << "Listening" << std::endl;
     }
     void Broker::ProcessMessages()
     {
