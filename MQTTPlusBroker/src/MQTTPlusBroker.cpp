@@ -1,5 +1,6 @@
 #include "MQTTPlusBroker.h"
 #include "Core/Broker.h"
+#include "Core/WebSocket.h"
 #include <chrono>
 #include <signal.h>
 #include <iostream>
@@ -15,6 +16,7 @@ static void on_close(int signal)
 
 int main(int argc, char* argv[])
 {
+    using namespace MQTTPlus;
     auto decoder = MQTTPlus::MQTTMessageDecoder(0);
     
     const auto settings = MQTTPlus::BrokerCreateSettings {
@@ -22,7 +24,8 @@ int main(int argc, char* argv[])
         .UseSSL = false,
     };
     
-    MQTTPlus::Broker broker(settings);
+    Broker broker(settings);
+    Ref<WebSocket> clientSocket = WebSocket::Create(8883, false);
     
     broker.SetOnClientConnected([&broker](Ref<MQTTPlus::Client> client) {
         std::cout << fmt::format("Client {} connected", client->GetAuth().ClientID) << std::endl;
@@ -32,7 +35,14 @@ int main(int argc, char* argv[])
         std::cout << "To data to /test" << std::endl;
     });
     
+    clientSocket->SetOnSocketConnected([clientSocket](void* socket) mutable {
+        clientSocket->Write(socket, "Hello from my server");
+    });
+    
     broker.Listen();
+    clientSocket->Listen();
+    
+    
     
     signal(SIGINT, on_close);
     using namespace std::chrono_literals;

@@ -1,12 +1,12 @@
 #ifdef MQP_MACOS
-#include "WebSocket.h"
+#include "WebSocketImpl.h"
 #include "Core/MQTTPlusException.h"
 #include <loop.c>
 #include "spdlog/fmt/fmt.h"
 
 namespace MQTTPlus 
 {
-    WebSocket::WebSocket(uint32_t port, bool ssl) : m_Port(port), m_SSL(ssl)
+    WebSocketImpl::WebSocketImpl(uint32_t port, bool ssl) : m_Port(port), m_SSL(ssl)
     {
         m_Loop = us_create_loop(nullptr, OnWakeup, OnPre, OnPost, 0);
         
@@ -24,7 +24,7 @@ namespace MQTTPlus
         std::cout << fmt::format("Created websocket for port {}", m_Port) << std::endl;
     }
 
-    void WebSocket::Listen()
+    void WebSocketImpl::Listen()
     {
         us_listen_socket_t* listenSocket = us_socket_context_listen(m_SSL ? 1 : 0, m_SocketContext, 0, m_Port, 0, 0);
         if(!listenSocket)
@@ -36,32 +36,37 @@ namespace MQTTPlus
         s.Socket = this;
         us_loop_run(m_Loop);
     }
-    void WebSocket::SetSocketTimeout(void* socket, uint32_t timeout)
+    void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
     {
         us_socket_timeout(m_SSL, (us_socket_t*)socket, timeout);
     }
 
-    void WebSocket::Write(void* socket, std::vector<uint8_t> bytes)
+    void WebSocketImpl::Write(void* socket, std::vector<uint8_t> bytes)
     {
         us_socket_write(m_SSL, (us_socket_t*)socket, (char*)bytes.data(), (uint32_t)bytes.size(), 0);
     }
 
-    void WebSocket::OnWakeup(us_loop_t* loop)
+    void WebSocketImpl::Write(void* socket, const std::string& message)
+    {
+        us_socket_write(m_SSL, (us_socket_t*)socket, message.data(), message.length(), 0);
+    }
+
+    void WebSocketImpl::OnWakeup(us_loop_t* loop)
     {
         
     }
 
-    void WebSocket::OnPre(us_loop_t* loop)
+    void WebSocketImpl::OnPre(us_loop_t* loop)
     {
         
     }
 
-    void WebSocket::OnPost(us_loop_t* loop)
+    void WebSocketImpl::OnPost(us_loop_t* loop)
     {
         
     }
 
-    us_socket_t* WebSocket::OnConnectionOpened(us_socket_t* socket, int isClient, char* ip, int ipLength)
+    us_socket_t* WebSocketImpl::OnConnectionOpened(us_socket_t* socket, int isClient, char* ip, int ipLength)
     {
         WebSocketEXT& ext = *(WebSocketEXT*)us_socket_context_ext(false, socket->context);
         if(ext.Socket->m_OnSocketConnected)
@@ -72,7 +77,7 @@ namespace MQTTPlus
         return socket;
     }
 
-    us_socket_t* WebSocket::OnConnectionClosed(us_socket_t* socket, int code, void* reason)
+    us_socket_t* WebSocketImpl::OnConnectionClosed(us_socket_t* socket, int code, void* reason)
     {
         
         WebSocketEXT& ext = *(WebSocketEXT*)us_socket_context_ext(false, socket->context);
@@ -81,7 +86,7 @@ namespace MQTTPlus
         return socket;
     }
 
-    us_socket_t* WebSocket::OnSocketTimeout(us_socket_t* socket)
+    us_socket_t* WebSocketImpl::OnSocketTimeout(us_socket_t* socket)
     {
         
         WebSocketEXT& ext = *(WebSocketEXT*)us_socket_context_ext(false, socket->context);
@@ -90,13 +95,13 @@ namespace MQTTPlus
         return socket;
     }
 
-    us_socket_t* WebSocket::OnEnd(us_socket_t* socket)
+    us_socket_t* WebSocketImpl::OnEnd(us_socket_t* socket)
     {
         std::cout << "On End\n";
         return socket;
     }
 
-    us_socket_t* WebSocket::OnDataReceive(us_socket_t* socket, char* data, int length)
+    us_socket_t* WebSocketImpl::OnDataReceive(us_socket_t* socket, char* data, int length)
     {
         WebSocketEXT& ext = *(WebSocketEXT*)us_socket_context_ext(false, socket->context);
         if(ext.Socket->m_OnSocketDataReceived)
@@ -104,7 +109,7 @@ namespace MQTTPlus
         return socket;
     }
 
-    us_socket_t* WebSocket::OnWritable(us_socket_t* socket)
+    us_socket_t* WebSocketImpl::OnWritable(us_socket_t* socket)
     {
         std::cout << "OnWriteable\n";
         return socket;

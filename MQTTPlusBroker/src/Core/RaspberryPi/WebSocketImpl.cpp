@@ -11,8 +11,8 @@
 
 namespace MQTTPlus
 {
-    WebSocket::WebSocket(uint32_t port, bool ssl) : m_Port(port), m_SSL(ssl)
-    {   
+    WebSocketImpl::WebSocketImpl(uint32_t port, bool ssl) : m_Port(port), m_SSL(ssl)
+    {
         m_SocketDesc = socket(AF_INET, SOCK_STREAM, 0);
         
         if(!m_SocketDesc)
@@ -29,18 +29,18 @@ namespace MQTTPlus
         std::cout << fmt::format("Created websocket for port {}", m_Port) << std::endl;
     }
     
-    WebSocket::~WebSocket() {
+    WebSocketImpl::~WebSocketImpl() {
         close(m_SocketDesc);
         if(m_ListenerThread)
             m_ListenerThread->Join();
     }
 
-    void WebSocket::Listen()
+    void WebSocketImpl::Listen()
     {
         m_ListenerThread = Ref<Thread>::Create(std::thread(&WebSocket::SocketListenThread, this));
     }
     
-    void WebSocket::SetSocketTimeout(void* socket, uint32_t timeout)
+    void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
     {
         int client = ((SocketClient*)socket)->GetClientID();
 
@@ -54,13 +54,19 @@ namespace MQTTPlus
             std::cout << fmt::format("setsockopt SND for {}: fail\n", client);
     }
 
-    void WebSocket::Write(void* socket, std::vector<uint8_t> bytes)
+    void WebSocketImpl::Write(void* socket, std::vector<uint8_t> bytes)
     {
         int client = ((SocketClient*)socket)->GetClientID();
         write(client, bytes.data(), bytes.size());
     }
+
+    void WebSocketImpl::Write(void* socket, const std::string& message)
+    {
+        int client = ((SocketClient*)socket)->GetClientID();
+        write(client, message.data(), message.length());
+    }
     
-    void WebSocket::SocketListenThread(WebSocket* socket)
+    void WebSocketImpl::SocketListenThread(WebSocket* socket)
     {
         std::cout << fmt::format("Listening on port {}", socket->m_Port) << std::endl;
         listen(socket->m_SocketDesc, 10);

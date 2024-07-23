@@ -1,38 +1,37 @@
 #pragma once
 #ifdef MQP_MACOS
+
 #include <libusockets.h>
 #include <iostream>
 #include <functional>
 #include "Ref.h"
+#include "Core/WebSocket.h"
 
 
 namespace MQTTPlus 
 {
-    using SocketConnected = std::function<void(void*)>;
-    using SocketDisconnected = std::function<void(void*, int)>;
-    using SocketDataReceive = std::function<void(void*, char*, int)>;
-
-    class WebSocket : public RefCount
+    class WebSocketImpl : public WebSocket
     {
     public:
-        WebSocket() = default;
-        WebSocket(uint32_t port, bool ssl = false);
+        WebSocketImpl() = default;
+        WebSocketImpl(uint32_t port, bool ssl = false);
         
-        void Listen();
-        void SetSocketTimeout(void* socket, uint32_t timeout);
+        void Listen() override;
+        void SetSocketTimeout(void* socket, uint32_t timeout) override;
         
-        void Write(void* socket, std::vector<uint8_t> bytes);
+        void Write(void* socket, std::vector<uint8_t> bytes) override;
+        void Write(void* socket, const std::string& message) override;
         
-        void SetOnSocketConnected(SocketConnected&& callback)
+        void SetOnSocketConnected(SocketConnected&& callback) override
         {
             m_OnSocketConnected = callback;
         }
-        void SetOnSocketDisconnected(SocketDisconnected&& callback)
+        void SetOnSocketDisconnected(SocketDisconnected&& callback) override
         {
             m_OnSocketDisconnected = callback;
         }
         
-        void SetOnSocketDataReceived(SocketDataReceive&& callback)
+        void SetOnSocketDataReceived(SocketDataReceive&& callback) override
         {
             m_OnSocketDataReceived = callback;
         }
@@ -64,7 +63,7 @@ namespace MQTTPlus
         
         struct WebSocketEXT
         {
-            WebSocket* Socket;
+            WebSocketImpl* Socket;
         };
     };
 }

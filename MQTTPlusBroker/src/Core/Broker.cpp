@@ -1,12 +1,13 @@
 #include "Broker.h"
 #include "MQTTPlusException.h"
 
+
 namespace MQTTPlus
 {
     Broker::Broker(const BrokerCreateSettings& settings) : m_Settings(settings) {
         try 
         {
-            m_WebSocket = Ref<WebSocket>::Create(settings.Port, settings.UseSSL);
+            m_WebSocket = WebSocket::Create(settings.Port, settings.UseSSL);
         } catch(MQTTPlusException e)
         {
             m_WebSocket = nullptr;
