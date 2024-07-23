@@ -6,11 +6,11 @@
 
 
 namespace MQTTPlus {
-	class WebSocket;
+	class WebSocketImpl;
 	
 	class SocketClient : public RefCount {
 	public:
-		SocketClient(WebSocket* socket, int socketId);
+		SocketClient(WebSocketImpl* socket, int socketId);
 		
 		int GetClientID() const { return m_SocketId; }
 		
@@ -20,7 +20,7 @@ namespace MQTTPlus {
 		static void EventFunc(SocketClient* client);
 		
 	private:
-		WebSocket* m_WebSocket = nullptr;
+		WebSocketImpl* m_WebSocket = nullptr;
 		int m_SocketId = 0;
 		
 		Ref<Thread> m_Thread;

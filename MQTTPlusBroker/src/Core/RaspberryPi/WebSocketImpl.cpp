@@ -1,6 +1,6 @@
 #ifdef MQP_LINUX
 
-#include "WebSocket.h"
+#include "WebSocketImpl.h"
 #include "Core/MQTTPlusException.h"
 #include "SocketClient.h"
 #include "spdlog/fmt/fmt.h"
@@ -18,6 +18,10 @@ namespace MQTTPlus
         if(!m_SocketDesc)
             throw MQTTPlusException("Failed to create socket");
 
+		const int enable = 1;
+		if(setsockopt(m_SocketDesc, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+			throw MQTTPlusException("Failed to set socketop");
+
         sockaddr_in addr = {};
         addr.sin_family = AF_INET;
         addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -25,6 +29,10 @@ namespace MQTTPlus
         
         if(bind(m_SocketDesc, (sockaddr*)&addr, sizeof(sockaddr_in)) != 0)
             throw MQTTPlusException("Failed to bind socket");
+        
+        m_OnSocketConnected = [](void* socket) {};
+        m_OnSocketDisconnected = [](void* socket, int code) {};
+        m_OnSocketDataReceived = [](void* socket, char* data, int length) {};
         
         std::cout << fmt::format("Created websocket for port {}", m_Port) << std::endl;
     }
@@ -37,7 +45,7 @@ namespace MQTTPlus
 
     void WebSocketImpl::Listen()
     {
-        m_ListenerThread = Ref<Thread>::Create(std::thread(&WebSocket::SocketListenThread, this));
+        m_ListenerThread = Ref<Thread>::Create(std::thread(&WebSocketImpl::SocketListenThread, this));
     }
     
     void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
@@ -66,7 +74,7 @@ namespace MQTTPlus
         write(client, message.data(), message.length());
     }
     
-    void WebSocketImpl::SocketListenThread(WebSocket* socket)
+    void WebSocketImpl::SocketListenThread(WebSocketImpl* socket)
     {
         std::cout << fmt::format("Listening on port {}", socket->m_Port) << std::endl;
         listen(socket->m_SocketDesc, 10);
@@ -75,6 +83,7 @@ namespace MQTTPlus
             int client = accept(socket->m_SocketDesc, NULL, NULL);
             
             Ref<SocketClient> socketClient = Ref<SocketClient>::Create(socket, client);
+            std::cout << fmt::format("Connection accepted on port {}", socket->m_Port) << std::endl;
             socketClient->IncRefCount();
             
             int pid = fork();

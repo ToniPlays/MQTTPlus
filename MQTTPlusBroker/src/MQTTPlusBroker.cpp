@@ -7,6 +7,8 @@
 #include <thread>
 #include "spdlog/fmt/fmt.h"
 
+#include "../vendor/cpp-httplib/httplib.h"
+
 static bool running = true;
 
 static void on_close(int signal)
@@ -20,12 +22,11 @@ int main(int argc, char* argv[])
     auto decoder = MQTTPlus::MQTTMessageDecoder(0);
     
     const auto settings = MQTTPlus::BrokerCreateSettings {
-        .Port = 8886,
+        .Port = 8883,
         .UseSSL = false,
     };
     
     Broker broker(settings);
-    Ref<WebSocket> clientSocket = WebSocket::Create(8883, false);
     
     broker.SetOnClientConnected([&broker](Ref<MQTTPlus::Client> client) {
         std::cout << fmt::format("Client {} connected", client->GetAuth().ClientID) << std::endl;
@@ -35,23 +36,17 @@ int main(int argc, char* argv[])
         std::cout << "To data to /test" << std::endl;
     });
     
-    clientSocket->SetOnSocketConnected([clientSocket](void* socket) mutable {
-        clientSocket->Write(socket, "Hello from my server");
-    });
     
     broker.Listen();
-    clientSocket->Listen();
-    
-    
-    
-    signal(SIGINT, on_close);
-    using namespace std::chrono_literals;
-    
-    while(running)
-    {
-        broker.ProcessMessages();
-        std::this_thread::sleep_for(250ms);
-    }
+	httplib::Server clientServer;
+	
+	clientServer.Post("/", [](const httplib::Request& reg, httplib::Response resp) {
+		std::cout << "Got post" << std::endl;
+		resp.set_content("some content", "text/plain");
+	});
+	
+	std::cout << fmt::format("Listening for clients in 8884") << std::endl;
+	clientServer.listen("0.0.0.0", 8884);
     
     return 0;
 }

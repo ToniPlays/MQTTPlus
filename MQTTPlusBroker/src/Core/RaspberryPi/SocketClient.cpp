@@ -6,11 +6,11 @@
 #include <chrono>
 
 #include "Core/Buffer/Buffer.h"
-#include "Core/WebSocket.h"
+#include "WebSocketImpl.h"
 
 namespace MQTTPlus 
 {
-	SocketClient::SocketClient(WebSocket* socket, int socketId) : m_WebSocket(socket), m_SocketId(socketId)
+	SocketClient::SocketClient(WebSocketImpl* socket, int socketId) : m_WebSocket(socket), m_SocketId(socketId)
 	{
 		
 	}

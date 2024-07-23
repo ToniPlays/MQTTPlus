@@ -9,11 +9,8 @@
 
 namespace MQTTPlus
 {
-    using SocketConnected = std::function<void(void*)>;
-    using SocketDisconnected = std::function<void(void*, int)>;
-    using SocketDataReceive = std::function<void(void*, char*, int)>;
 
-    class WebSocketImpl : public WEbSocket
+    class WebSocketImpl : public WebSocket
     {
             friend class SocketClient;
     public:
@@ -43,7 +40,7 @@ namespace MQTTPlus
         }
         
     private:
-        static void SocketListenThread(WebSocket* socket);
+        static void SocketListenThread(WebSocketImpl* socket);
         
     private:
         uint32_t m_Port = 0;
