@@ -1,3 +1,5 @@
+#ifdef MQP_LINUX
+
 #include "SocketClient.h"
 #include <sys/socket.h>
 #include <spdlog/fmt/fmt.h>
@@ -30,3 +32,4 @@ namespace MQTTPlus
 		}
 	}
 }
+#endif

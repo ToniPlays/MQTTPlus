@@ -1,4 +1,6 @@
 #pragma once
+#ifdef MQP_LINUX
+
 #include "Ref.h"
 #include "Core/Threading/Thread.h"
 
@@ -24,3 +26,4 @@ namespace MQTTPlus {
 		Ref<Thread> m_Thread;
 	};
 }
+#endif

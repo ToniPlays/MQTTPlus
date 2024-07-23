@@ -3,6 +3,7 @@
 #include <libusockets.h>
 #include <iostream>
 #include <functional>
+#include "Ref.h"
 
 
 namespace MQTTPlus 
@@ -11,7 +12,7 @@ namespace MQTTPlus
     using SocketDisconnected = std::function<void(void*, int)>;
     using SocketDataReceive = std::function<void(void*, char*, int)>;
 
-    class WebSocket
+    class WebSocket : public RefCount
     {
     public:
         WebSocket() = default;

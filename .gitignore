@@ -7,3 +7,4 @@
 **/*Makefile
 scripts/setup/__pycache__
 vendor/**/**
+/vendor

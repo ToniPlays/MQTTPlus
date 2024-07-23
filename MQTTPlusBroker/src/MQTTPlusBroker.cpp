@@ -3,6 +3,7 @@
 #include <chrono>
 #include <signal.h>
 #include <iostream>
+#include <thread>
 #include "spdlog/fmt/fmt.h"
 
 static bool running = true;
@@ -35,6 +36,7 @@ int main(int argc, char* argv[])
     
     signal(SIGINT, on_close);
     using namespace std::chrono_literals;
+    
     while(running)
     {
         broker.ProcessMessages();
