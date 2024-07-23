@@ -6,8 +6,7 @@
 /bin-int
 **/*Makefile
 scripts/setup/__pycache__
-vendor/**/**
-/vendor
+
 /MQTTPlusClient/.next
 /MQTTPlusClient/node_modules
 /MQTTPlusBroker/vendor
