@@ -4,7 +4,7 @@ Dependencies = {
 		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/uSockets/src",
 		LibraryDir = "%{wks.location}/MQTTPlusBroker/vendor/uSockets",
 		LinuxLibs = {
-			Common = { ":uSockets.a" },	
+			Common = {}	
 		},
 		MacosLibs = {}
 	},

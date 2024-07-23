@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MQTTMessageDecoder.h"
 #include <iostream>
 
 namespace MQTTPlus {

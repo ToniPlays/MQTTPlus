@@ -1,5 +1,6 @@
+#ifdef MQP_MACOS
 #include "WebSocket.h"
-#include "MQTTPlusException.h"
+#include "Core/MQTTPlusException.h"
 #include <loop.c>
 #include "spdlog/fmt/fmt.h"
 
@@ -109,3 +110,4 @@ namespace MQTTPlus
         return socket;
     }
 }
+#endif

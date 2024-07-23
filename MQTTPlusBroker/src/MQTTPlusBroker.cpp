@@ -1,7 +1,16 @@
 #include "MQTTPlusBroker.h"
 #include "Core/Broker.h"
+#include <chrono>
+#include <signal.h>
 #include <iostream>
 #include "spdlog/fmt/fmt.h"
+
+static bool running = true;
+
+static void on_close(int signal)
+{
+    running = false;
+}
 
 int main(int argc, char* argv[])
 {
@@ -13,19 +22,24 @@ int main(int argc, char* argv[])
     };
     
     MQTTPlus::Broker broker(settings);
-    broker.SetOnClientConnected([broker](Ref<MQTTPlus::Client> client) mutable {
+    
+    broker.SetOnClientConnected([&broker](Ref<MQTTPlus::Client> client) {
         std::cout << fmt::format("Client {} connected", client->GetAuth().ClientID) << std::endl;
-        
-        std::vector<Ref<MQTTPlus::Client>> clients = std::vector<Ref<MQTTPlus::Client>>();
-        clients.push_back(client);
     });
     
     broker.OnPublish("/test", [](Ref<MQTTPlus::Client> client, Buffer payload) {
         std::cout << "To data to /test" << std::endl;
     });
     
-    
     broker.Listen();
+    
+    signal(SIGINT, on_close);
+    using namespace std::chrono_literals;
+    while(running)
+    {
+        broker.ProcessMessages();
+        std::this_thread::sleep_for(250ms);
+    }
     
     return 0;
 }

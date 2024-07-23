@@ -3,3 +3,7 @@
 *.xcworkspace
 **/**.xcodeproj
 /bin
+/bin-int
+**/*Makefile
+scripts/setup/__pycache__
+vendor/**/**

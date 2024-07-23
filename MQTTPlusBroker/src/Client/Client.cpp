@@ -8,7 +8,9 @@ namespace MQTTPlus
 {
     void Client::ProcessData(char* data, int length)
     {
-        m_Decoder.DecodeMessage(data, length, [this](Ref<MQTT::Message> message) {
+        std::vector<char> buffer(data, data + length);
+        
+        m_Decoder.DecodeMessage(buffer, [this](Ref<MQTT::Message> message) {
             std::cout << message->ToString() << std::endl;
             switch(message->GetType())
             {

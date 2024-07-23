@@ -4,6 +4,7 @@
 #include "WebSocket.h"
 #include "Client/Client.h"
 
+#include <mutex>
 #include <iostream>
 #include <string.h>
 
@@ -20,10 +21,19 @@ namespace MQTTPlus
         ~Broker() = default;
         
         void Listen();
+        void ProcessMessages();
         void OnPublish(const std::string& topic, OnPublished&& callback) {}
         
         void SetOnClientConnected(OnClientConnected&& callback) {
             m_OnClientConnected = callback;
+        }
+        
+        void EventQueueAdd(std::function<void()>&& callback)
+        {
+                m_QueueMutex.lock();
+                m_EventQueue.push_back(callback);
+                std::cout << m_EventQueue.size() << std::endl;
+                m_QueueMutex.unlock();
         }
         
     private:
@@ -33,10 +43,13 @@ namespace MQTTPlus
     private:
         
         BrokerCreateSettings m_Settings = {};
-        WebSocket m_WebSocket;
-
-        std::unordered_map<void*, Ref<Client>> m_ConnectedClients;
+        Ref<WebSocket> m_WebSocket;
+        std::vector<std::function<void()>> m_EventQueue;
         
+        std::mutex m_QueueMutex;
+        std::mutex m_ClientMutex;
+
+        std::unordered_map<void*, Ref<Client>> m_ConnectedClients;        
         OnClientConnected m_OnClientConnected;
     };
 }

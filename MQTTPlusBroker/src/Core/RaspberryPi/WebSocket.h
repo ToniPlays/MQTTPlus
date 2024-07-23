@@ -1,8 +1,11 @@
 #pragma once
+#ifdef MQP_LINUX
 
-#include <libusockets.h>
+#include "Ref.h"
 #include <iostream>
 #include <functional>
+#include <sys/socket.h>
+#include "Core/Threading/Thread.h"
 
 namespace MQTTPlus
 {
@@ -10,11 +13,13 @@ namespace MQTTPlus
     using SocketDisconnected = std::function<void(void*, int)>;
     using SocketDataReceive = std::function<void(void*, char*, int)>;
 
-    class WebSocket
+    class WebSocket : public RefCount
     {
+            friend class SocketClient;
     public:
         WebSocket() = default;
         WebSocket(uint32_t port, bool ssl = false);
+        ~WebSocket();
         
         void Listen();
         void SetSocketTimeout(void* socket, uint32_t timeout);
@@ -36,8 +41,14 @@ namespace MQTTPlus
         }
         
     private:
+        static void SocketListenThread(WebSocket* socket);
+        
+    private:
         uint32_t m_Port = 0;
         bool m_SSL = false;
+        
+        int m_SocketDesc = 0;
+        Ref<Thread> m_ListenerThread;
         
         SocketConnected m_OnSocketConnected;
         SocketDisconnected m_OnSocketDisconnected;
@@ -46,3 +57,4 @@ namespace MQTTPlus
     };
 }
 
+#endif

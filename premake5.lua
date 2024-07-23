@@ -34,7 +34,7 @@ workspace "MQTTPlus"
 
 	filter "system:linux"
 	defines {
-	    "MQP_LINUX
+	    "MQP_LINUX"
 	}
         
     filter "configurations:Debug"
@@ -57,5 +57,4 @@ workspace "MQTTPlus"
     outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 include "MQTTPlusBroker"
-include "MQTTPlusDashboard"
 

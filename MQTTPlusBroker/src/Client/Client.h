@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Core/MQTTMessageDecoder.h"
+#include "Core/MQTT/MQTTMessageDecoder.h"
 #include "MQTTPlusBroker.h"
-
-#include <libusockets.h>
 
 namespace MQTTPlus 
 {
