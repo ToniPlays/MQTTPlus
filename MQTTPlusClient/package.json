@@ -1,0 +1,24 @@
+{
+  "name": "mqttplusclient",
+  "version": "1.0.0",
+  "main": "App.ts",
+  "scripts": {
+    "start": "next dev --port 1337",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "20.14.11",
+    "@types/react": "18.3.3",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-hot-toast": "^2.4.1",
+    "ws": "^8.18.0"
+  }
+}
