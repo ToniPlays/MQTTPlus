@@ -18,7 +18,8 @@ namespace MQTTPlus
             response["object"] = MQTTClient {
                 .ClientID = std::string("This is some field"),
                 .Status = MQTTClient::ConnStatus::Connected,
-                .ClientInfo = std::string("gffryinbcmaphy")
+                .ClientInfo = std::string("gffryinbcmaphy"),
+                .Subscriptions = std::vector<std::string> { "/oof", "/floof" },
             };
             
             return response.dump();

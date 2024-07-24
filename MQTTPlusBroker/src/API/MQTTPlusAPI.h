@@ -19,5 +19,6 @@ namespace MQTTPlus::API
         Field<std::string> ClientID;
         Field<ConnStatus> Status;
         Expandable<std::string, int> ClientInfo; //Id or object if expanded
+        Array<std::string> Subscriptions;
     };
 }

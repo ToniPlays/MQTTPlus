@@ -13,6 +13,7 @@ namespace MQTTPlus::API
             { "client_id", client.ClientID },
             { "status", client.Status },
             { "client_info", client.ClientInfo },
+            { "subscriptions", client.Subscriptions }
         };
     }
     

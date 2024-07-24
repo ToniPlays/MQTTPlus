@@ -56,6 +56,16 @@ namespace MQTTPlus::API {
     class Array : public BaseField
     {
     public:
+        Array() = default;
+        Array(std::vector<T> values) : m_Values(values) {}
+        
+        std::vector<T> Values() const { return m_Values; }
+        
+        Array<T>& operator= (std::vector<T> lh)
+        {
+            m_Values = lh;
+            return *this;
+        }
         
     private:
         std::vector<T> m_Values;
@@ -86,6 +96,9 @@ namespace MQTTPlus::API {
     template<typename T>
     static void to_json(json& j, const Array<T>& field)
     {
-        
+        auto arr = json::array();
+        for(uint32_t i = 0; i < field.Values().size(); i++)
+            arr.push_back(field.Values()[i]);
+        j += arr;
     }
 }
