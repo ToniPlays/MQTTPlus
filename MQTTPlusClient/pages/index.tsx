@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from '@mui/material'
 
 import { NextPage } from 'next'
-import toast from 'react-hot-toast'
-import { mqttPlusProvider, url } from '../client/mqttplus'
+import { mqttPlusProvider } from '../client/mqttplus'
 
 interface Props {
 
@@ -16,13 +15,12 @@ const Home: NextPage<Props> = props => {
 
   function TestPost(message: string)
   {
-    provider.post({
-      request: "/test",
-      message: 'My message'
+    provider.post({ 
+      endpoint: '/clients',
     })
   }
 
-  provider.receive("/test", (response, error) => {
+  provider.receive("/clients", (response, error) => {
     setMessage(response.message)
   })
   

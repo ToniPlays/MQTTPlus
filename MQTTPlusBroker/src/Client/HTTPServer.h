@@ -12,7 +12,7 @@ namespace MQTTPlus {
     using websocketpp::lib::placeholders::_2;
     using websocketpp::lib::bind;
     using PostMessageCallback = std::function<std::string(const std::string&)>;
-    using MessageResolverCallback = std::function<bool(const std::string&)>;
+    using MessageResolverCallback = std::function<bool(const char*, const std::string&)>;
 
     class HTTPServer
     {

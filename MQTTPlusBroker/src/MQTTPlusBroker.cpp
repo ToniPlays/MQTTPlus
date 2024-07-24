@@ -7,6 +7,8 @@
 #include <iostream>
 #include <thread>
 #include "spdlog/fmt/fmt.h"
+#include <nlohmann/json.hpp>
+#include "Client/Endpoints.h"
 
 static bool running = true;
 
@@ -39,15 +41,21 @@ int main(int argc, char* argv[])
     
     HTTPServer clientServer(8884);
     
-    clientServer.SetMessageResolver([](const std::string& message) {
-        return true;
+    clientServer.SetMessageResolver([](const char* endpoint, const std::string& message) {
+        try {
+            auto json = nlohmann::json::parse(message);
+            std::string requestEndpoint = json["endpoint"];
+            if(endpoint == requestEndpoint)
+                return true;
+            
+            return false;
+        } catch(std::exception& e)
+        {
+            return false;
+        }
     });
     
-    clientServer.Post("/", [](const std::string& message) mutable {
-        return message;
-    });
-    
-    
+    InitializeClientServerEndpoints(clientServer);
     
     clientServer.Listen();
     

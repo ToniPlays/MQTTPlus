@@ -25,3 +25,4 @@ project "MQTTPlusBroker"
 	References("gsl")
 	References("spdlog")
 	References("websocketpp")
+	References("nlohmann_json")

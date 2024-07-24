@@ -7,7 +7,7 @@ namespace MQTTPlus
     HTTPServer::HTTPServer(uint32_t port) : m_Port(port)
     {
         m_Server.set_reuse_addr(true);
-        m_Server.set_access_channels(websocketpp::log::alevel::all);
+        m_Server.set_access_channels(websocketpp::log::alevel::none);
         m_Server.set_error_channels(websocketpp::log::alevel::frame_payload);
         
         m_Server.init_asio();
@@ -45,15 +45,15 @@ namespace MQTTPlus
         std::string payload = msg->get_payload();
         for(auto& [key, func] : m_PostCallbacks)
         {
-            if(!m_ResolverCallback(key)) continue;
+            if(!m_ResolverCallback(key.c_str(), payload)) continue;
             
             try 
             {
+                std::cout << "Calling function for endpoint: " << key << std::endl;
                 std::string result = func(payload);
-                std::cout << result << std::endl;
+            
                 server->m_Server.send(hdl, result, msg->get_opcode());
-                
-                //Write back
+                return;
             } catch(std::exception& e)
             {
                 std::cout << "Message failure: " << e.what() << std::endl;

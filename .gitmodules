@@ -7,3 +7,6 @@
 [submodule "MQTTPlusBroker/vendor/websocketpp"]
 	path = MQTTPlusBroker/vendor/websocketpp
 	url = https://github.com/zaphoyd/websocketpp.git
+[submodule "MQTTPlusBroker/vendor/nlohmann-json"]
+	path = MQTTPlusBroker/vendor/nlohmann-json
+	url = https://github.com/nlohmann/json.git

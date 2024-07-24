@@ -16,6 +16,9 @@ Dependencies = {
 	},
 	websocketpp = {
 		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/websocketpp",
+	},
+	nlohmann_json = {
+		IncludeDir = "%{wks.location}/MQTTPlusBroker/vendor/nlohmann-json/include",
 	}
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import useWebSocket from "react-use-websocket"
 
 export const url = "http://localhost:8884"
@@ -12,7 +12,9 @@ export const mqttPlusProvider = <T = unknown> () => {
     useEffect(() => {
         if(socket.lastJsonMessage == null) return;
         const message = socket.lastJsonMessage
-        const type = message['request']
+        const type = message['endpoint']
+        console.log(message)
+
         if(receiveFuncs.has(type))
             receiveFuncs.get(type)(socket.lastJsonMessage, null)
 
