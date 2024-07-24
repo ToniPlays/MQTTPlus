@@ -14,6 +14,13 @@ namespace MQTTPlus
     using OnClientDisconnected = std::function<void(Ref<MQTTClient>, int)>;
     using OnPublished = std::function<void(Ref<MQTTClient>&, Buffer)>;
 
+    enum class BrokerStatus
+    {
+        Disabled,
+        Connected,
+        Crashed
+    };
+
     class Broker
     {
         friend class MQTTClient;
@@ -31,9 +38,14 @@ namespace MQTTPlus
         void SetOnClientDisconnected(OnClientDisconnected&& callback) {
             m_OnClientDisconnected = callback;
         }
+
+        BrokerStatus GetStatus() const;
+        Ref<WebSocket> GetWebSocket() const { return m_WebSocket; }
+        uint32_t GetConnectedClientCount() const { return m_ConnectedClients.size(); }
         
     private:
         MQTT::ConnAckFlags OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth);
+        void OnMQTTClientDisonnected(Ref<MQTTClient> client, int reason);
         void OnMQTTPublishReceived(Ref<MQTTClient> client, Ref<MQTT::PublishMessage> message);
         
     private:

@@ -17,8 +17,9 @@ project "MQTTPlusBroker"
     	{
         	"src"
     	}
+	filter "system:windows"
 	defines {
-	
+		"BOOST_USE_WINDOWS_H",
 	}
 
 	References("uSockets")

@@ -4,7 +4,8 @@
 
 namespace MQTTPlus
 {
-    Broker::Broker(const BrokerCreateSettings& settings) : m_Settings(settings) {
+    Broker::Broker(const BrokerCreateSettings& settings) : m_Settings(settings) 
+    {
         try 
         {
             m_WebSocket = WebSocket::Create(settings.Port, settings.UseSSL);
@@ -53,6 +54,13 @@ namespace MQTTPlus
         m_WebSocket->Listen();
     }
 
+    BrokerStatus Broker::GetStatus() const
+    {
+        if (!m_WebSocket) return BrokerStatus::Disabled;
+
+        return m_WebSocket->IsListening() ? BrokerStatus::Connected : BrokerStatus::Crashed;
+    }
+
     MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth)
     {
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
@@ -62,6 +70,12 @@ namespace MQTTPlus
         
         return MQTT::ConnAckFlags::Accepted;
     }
+
+    void Broker::OnMQTTClientDisonnected(Ref<MQTTClient> client, int reason)
+    {
+        m_OnClientDisconnected(client, reason);
+    }
+
     void Broker::OnMQTTPublishReceived(Ref<MQTTClient> client, Ref<MQTT::PublishMessage> message)
     {
         std::cout << message->ToString() << std::endl;

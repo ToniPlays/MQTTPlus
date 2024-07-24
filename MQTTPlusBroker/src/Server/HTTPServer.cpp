@@ -4,7 +4,7 @@
 
 namespace MQTTPlus
 {
-    HTTPServer::HTTPServer(uint32_t port) : m_Port(port)
+    HTTPServer::HTTPServer(uint32_t port, void* userData) : m_Port(port), m_UserData(userData)
     {
         m_Server.set_reuse_addr(true);
         m_Server.set_access_channels(websocketpp::log::alevel::all);
@@ -50,7 +50,7 @@ namespace MQTTPlus
             try 
             {
                 std::cout << "Calling function for endpoint: " << key << std::endl;
-                std::string result = func(payload);
+                std::string result = func(payload, server->m_UserData);
             
                 server->m_Server.send(hdl, result, msg->get_opcode());
                 return;

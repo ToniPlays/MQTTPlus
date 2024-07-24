@@ -12,3 +12,8 @@ scripts/setup/__pycache__
 /MQTTPlusBroker/vendor
 /MQTTPlusClient/vendor
 /vendor
+/.vs
+*.vcxproj
+*.filters
+*.user
+*.sln

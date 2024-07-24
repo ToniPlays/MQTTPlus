@@ -16,11 +16,11 @@ const Home: NextPage<Props> = props => {
   function TestPost(message: string)
   {
     provider.post({ 
-      endpoint: '/clients',
+      endpoint: '/mqtt',
     })
   }
 
-  provider.receive("/clients", (response, error) => {
+  provider.receive("/mqtt", (response, error) => {
     setMessage(JSON.stringify(response))
   })
   

@@ -11,7 +11,7 @@ namespace MQTTPlus {
 
     void FrontendService::Start(ServiceManager* manager) 
     {
-        
+        m_Server->SetUserData(manager);
         m_Server->SetMessageResolver([](const char* endpoint, const std::string& message) {
             try {
                 auto json = nlohmann::json::parse(message);
@@ -25,6 +25,7 @@ namespace MQTTPlus {
                 return false;
             }
         });
+
         InitializeApiEndpoints(*m_Server.get());
         m_Server->Listen();
     }

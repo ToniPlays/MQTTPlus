@@ -1,7 +1,0 @@
-
-namespace MQTTPlus {
-    interface Clients
-    {
-        
-    }
-}

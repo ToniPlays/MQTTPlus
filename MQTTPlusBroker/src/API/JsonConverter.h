@@ -1,20 +1,17 @@
 #pragma once
 
-#include "MQTTPlusApiFields.h"
+#include "MQTTPlusAPI.h"
 #include <nlohmann/json.hpp>
 
 namespace MQTTPlus::API
 {
-    using json = nlohmann::json;
+	using json = nlohmann::json;
 
-    static void to_json(json& j, const MQTTClient& client)
-    {
-        j = json {
-            { "client_id", client.ClientID },
-            { "status", client.Status },
-            { "client_info", client.ClientInfo },
-            { "subscriptions", client.Subscriptions }
-        };
-    }
-    
+	static void to_json(json& j, const MQTTServiceStatus& status)
+	{
+		j = json({ "port", status.Port, 
+				   "status", status.BrokerStatus,
+				   "connected_clients", status.ConnectedClients 
+				 });
+	}
 }

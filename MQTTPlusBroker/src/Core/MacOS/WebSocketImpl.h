@@ -17,6 +17,8 @@ namespace MQTTPlus
         WebSocketImpl() = default;
         WebSocketImpl(uint32_t port, bool ssl = false);
         ~WebSocketImpl();
+
+        uint32_t GetPort() const { return m_Port; };
         
         void Listen() override;
         void SetSocketTimeout(void* socket, uint32_t timeout) override;
@@ -37,6 +39,8 @@ namespace MQTTPlus
         {
             m_OnSocketDataReceived = callback;
         }
+
+        bool IsListening() const { return m_Thread != nullptr;  }
         
     private:
         
