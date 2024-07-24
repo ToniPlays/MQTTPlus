@@ -49,9 +49,8 @@ namespace MQTTPlus
             
             try 
             {
-                std::cout << "Calling function for endpoint: " << key << std::endl;
                 std::string result = func(payload, server->m_UserData);
-            
+                std::cout << result << std::endl;
                 server->m_Server.send(hdl, result, msg->get_opcode());
                 return;
             } catch(std::exception& e)

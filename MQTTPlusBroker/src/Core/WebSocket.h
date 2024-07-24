@@ -17,7 +17,7 @@ namespace MQTTPlus {
     {
     public:
 
-        virtual uint32_t GetPort() = 0;
+        virtual uint32_t GetPort() const = 0;
 
         virtual void Listen() = 0;
         virtual void SetSocketTimeout(void* socket, uint32_t timeout) = 0;

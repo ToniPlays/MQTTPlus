@@ -25,8 +25,11 @@ namespace MQTTPlus
 		{
 			char buffer[8192];
 			int read = recv(client->GetClientID(), buffer, 8192, 0);
-			if(read < 0)
-				continue;
+			if(read <= 0)
+			{
+				client->m_WebSocket->m_OnSocketDisconnected((void*)client, read);
+				break;
+			}
 
 			client->m_WebSocket->m_OnSocketDataReceived((void*)client, buffer, read);
 		}

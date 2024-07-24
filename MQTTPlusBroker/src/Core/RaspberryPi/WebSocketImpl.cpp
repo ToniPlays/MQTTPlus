@@ -71,6 +71,7 @@ namespace MQTTPlus
     void WebSocketImpl::Write(void* socket, const std::string& message)
     {
         int client = ((SocketClient*)socket)->GetClientID();
+        std::cout << message << std::endl;
         write(client, message.data(), message.length());
     }
     

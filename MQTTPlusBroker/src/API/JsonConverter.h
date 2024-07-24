@@ -9,9 +9,9 @@ namespace MQTTPlus::API
 
 	static void to_json(json& j, const MQTTServiceStatus& status)
 	{
-		j = json({ "port", status.Port, 
-				   "status", status.BrokerStatus,
-				   "connected_clients", status.ConnectedClients 
-				 });
+		j = json {{ "port", status.Port },
+				  { "status", status.BrokerStatus },
+				  { "connected_clients", status.ConnectedClients }
+		};
 	}
 }

@@ -17,15 +17,15 @@ namespace MQTTPlus
             auto json = nlohmann::json::parse(message);
             ServiceManager* manager = (ServiceManager*)userData;
             
-            auto mqtt = manager->GetService<MQTTClientService>();
-            auto& broker = mqtt->GetBroker();
+            Ref<MQTTClientService> mqtt = manager->GetService<MQTTClientService>();
+
+            const Broker& broker = mqtt->GetBroker();
             auto socket = broker.GetWebSocket();
             
-            MQTTServiceStatus status = {
-                .Port = (socket ? socket->GetPort() : -1),
-                .BrokerStatus = broker.GetStatus(),
-                .ConnectedClients = broker.GetConnectedClientCount(),
-            };
+            MQTTServiceStatus status = {};
+            status.Port = (socket ? socket->GetPort() : -1);
+            status.BrokerStatus = broker.GetStatus();
+            status.ConnectedClients =  broker.GetConnectedClientCount();
             
             nlohmann::json response;
             response["endpoint"] = "/mqtt";

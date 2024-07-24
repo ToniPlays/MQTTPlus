@@ -25,7 +25,7 @@ namespace MQTTPlus {
             for(auto& service : m_Services)
             {
                 if(dynamic_cast<T*>(service.Raw()))
-                    return service;
+                    return service.As<T>();
             }
             return nullptr;
         }

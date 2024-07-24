@@ -11,14 +11,15 @@ namespace MQTTPlus
         MQTTClientService(uint32_t port);
         ~MQTTClientService() = default;
         
-        const Broker& GetBroker() { return *m_Broker.get(); }
+        const Broker& GetBroker() { return *m_Broker; }
 
         void Start(ServiceManager* manager) override;
         void Stop() override;
+
         
         std::string GetName() const override { return "MQTTClientService"; };
         
     private:
-        std::unique_ptr<Broker> m_Broker;
+        Broker* m_Broker;
     };
 }

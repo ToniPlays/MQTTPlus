@@ -11,8 +11,8 @@ namespace MQTTPlus
             m_WebSocket = WebSocket::Create(settings.Port, settings.UseSSL);
         } catch(MQTTPlusException e)
         {
-            m_WebSocket = nullptr;
             std::cout << "Error: " << e.what() << std::endl;
+            m_WebSocket = nullptr;
         }
     }
 
@@ -28,14 +28,11 @@ namespace MQTTPlus
             });
             
             std::scoped_lock lock(m_ClientMutex);
-            m_ConnectedClients[client] = c;
-            
-            std::cout << fmt::format("Client Socket connected {}", (uint64_t)client) << std::endl;
-            
+            m_ConnectedClients[client] = c;            
         });
         
         m_WebSocket->SetOnSocketDisconnected([this](void* client, int reason) {
-            std::cout << fmt::format("Client Socket disconnected {}", (uint64_t)client) << std::endl;
+            
             std::scoped_lock lock(m_ClientMutex);
             
             auto it = m_ConnectedClients.find(client);
@@ -64,8 +61,8 @@ namespace MQTTPlus
     MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth)
     {
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
+
         client->m_Authentication = auth;
-        
         m_OnClientConnected(client);
         
         return MQTT::ConnAckFlags::Accepted;

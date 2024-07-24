@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import useWebSocket from "react-use-websocket"
 
-export const url = "http://localhost:8884"
+export const url = "http://80.95.140.80:8884"
 
 
 export const mqttPlusProvider = <T = unknown> () => {

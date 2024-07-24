@@ -41,7 +41,10 @@ namespace MQTTPlus
 
         BrokerStatus GetStatus() const;
         Ref<WebSocket> GetWebSocket() const { return m_WebSocket; }
-        uint32_t GetConnectedClientCount() const { return m_ConnectedClients.size(); }
+        uint32_t GetConnectedClientCount() const { 
+            std::cout << m_ConnectedClients.size() << std::endl;
+            return m_ConnectedClients.size(); 
+            }
         
     private:
         MQTT::ConnAckFlags OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth);

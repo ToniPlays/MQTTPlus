@@ -7,9 +7,10 @@ namespace MQTTPlus
 {
     Ref<WebSocket> WebSocket::Create(uint32_t port, bool ssl)
     {
-    #if 0   //TODO: Fix
+    #ifndef MQP_WINDOWS
         return Ref<WebSocketImpl>::Create(port, ssl);
-    #endif
+    #else
         return nullptr;
+    #endif
     }
 }
