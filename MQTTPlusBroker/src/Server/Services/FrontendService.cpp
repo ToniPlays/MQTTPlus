@@ -6,12 +6,12 @@ namespace MQTTPlus {
 
     FrontendService::FrontendService(uint32_t port)
     {
-        m_Server = std::make_unique<HTTPServer>(port);
+        m_Server = new HTTPServer(port);
     }
 
     void FrontendService::Start(ServiceManager* manager) 
     {
-        m_Server->SetUserData(manager);
+        m_Server->SetUserData((void*)manager);
         m_Server->SetMessageResolver([](const char* endpoint, const std::string& message) {
             try {
                 auto json = nlohmann::json::parse(message);
@@ -26,7 +26,7 @@ namespace MQTTPlus {
             }
         });
 
-        InitializeApiEndpoints(*m_Server.get());
+        InitializeApiEndpoints(*m_Server);
         m_Server->Listen();
     }
 

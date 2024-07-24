@@ -13,7 +13,7 @@ namespace MQTTPlus
         m_Server.init_asio();
         
         auto messageHandlerFunc = [this](Server* s, websocketpp::connection_hdl hdl, Server::message_ptr msg) {
-            MessageHandlerFunc(this, hdl, msg);
+            MessageHandlerFunc(hdl, msg);
         };
 
         
@@ -40,7 +40,7 @@ namespace MQTTPlus
         m_ResolverCallback = callback;
     }
 
-    void  HTTPServer::MessageHandlerFunc(HTTPServer* server, websocketpp::connection_hdl hdl, MessagePtr msg)
+    void HTTPServer::MessageHandlerFunc(websocketpp::connection_hdl hdl, MessagePtr msg)
     {
         std::string payload = msg->get_payload();
         for(auto& [key, func] : m_PostCallbacks)
@@ -49,9 +49,9 @@ namespace MQTTPlus
             
             try 
             {
-                std::string result = func(payload, server->m_UserData);
+                std::string result = func(payload, m_UserData);
                 std::cout << result << std::endl;
-                server->m_Server.send(hdl, result, msg->get_opcode());
+                m_Server.send(hdl, result, msg->get_opcode());
                 return;
             } catch(std::exception& e)
             {

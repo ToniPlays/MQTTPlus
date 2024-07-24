@@ -28,7 +28,7 @@ namespace MQTTPlus
             });
             
             std::scoped_lock lock(m_ClientMutex);
-            m_ConnectedClients[client] = c;            
+            m_ConnectedClients[client] = c;   
         });
         
         m_WebSocket->SetOnSocketDisconnected([this](void* client, int reason) {
@@ -38,6 +38,8 @@ namespace MQTTPlus
             auto it = m_ConnectedClients.find(client);
             if(it != m_ConnectedClients.end())
                 m_ConnectedClients.erase(it);
+
+            std::cout << "OOps we disconnect" << std::endl;
         });
         
         m_WebSocket->SetOnSocketDataReceived([this](void* client, char* data, int length) {

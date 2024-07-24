@@ -17,6 +17,6 @@ namespace MQTTPlus
 
             std::string GetName() const override { return "FrontendService"; }
         private:
-            std::unique_ptr<HTTPServer> m_Server;
+            HTTPServer* m_Server;
     };
 }

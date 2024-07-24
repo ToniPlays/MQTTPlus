@@ -7,6 +7,7 @@
 #include <mutex>
 #include <iostream>
 #include <string.h>
+#include <thread>
 
 namespace MQTTPlus 
 {
@@ -26,6 +27,7 @@ namespace MQTTPlus
         friend class MQTTClient;
     public:
         Broker(const BrokerCreateSettings& settings);
+        Broker() = delete;
         ~Broker() = default;
         
         void Listen();
@@ -41,10 +43,12 @@ namespace MQTTPlus
 
         BrokerStatus GetStatus() const;
         Ref<WebSocket> GetWebSocket() const { return m_WebSocket; }
-        uint32_t GetConnectedClientCount() const { 
-            std::cout << m_ConnectedClients.size() << std::endl;
-            return m_ConnectedClients.size(); 
-            }
+        uint32_t GetConnectedClientCount() const {
+            auto id = std::hash<std::thread::id>{}(std::this_thread::get_id());
+            std::cout << fmt::format("Thread: {}, broker {}", (uint64_t)id, (uint64_t)this) << std::endl;
+            uint32_t size = m_ConnectedClients.size();
+            return size; 
+        }
         
     private:
         MQTT::ConnAckFlags OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth);

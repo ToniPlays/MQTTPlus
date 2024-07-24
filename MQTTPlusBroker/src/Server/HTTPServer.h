@@ -23,11 +23,13 @@ namespace MQTTPlus {
         void Listen();
         void Post(const char* type, const PostMessageCallback&& callback);
 
-        void SetUserData(void* userData) { m_UserData = userData; }
+        void SetUserData(void* userData) { 
+            m_UserData = userData; 
+        }
         void SetMessageResolver(const MessageResolverCallback&& callback);
         
     private:
-        void MessageHandlerFunc(HTTPServer* server, websocketpp::connection_hdl hdl, MessagePtr msg);
+        void MessageHandlerFunc(websocketpp::connection_hdl hdl, MessagePtr msg);
         
     private:
         uint32_t m_Port = 0;
