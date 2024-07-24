@@ -11,6 +11,8 @@ namespace MQTTPlus {
     using websocketpp::lib::placeholders::_1;
     using websocketpp::lib::placeholders::_2;
     using websocketpp::lib::bind;
+    using PostMessageCallback = std::function<std::string(const std::string&)>;
+    using MessageResolverCallback = std::function<bool(const std::string&)>;
 
     class HTTPServer
     {
@@ -18,12 +20,18 @@ namespace MQTTPlus {
         HTTPServer(uint32_t port);
         
         void Listen();
+        void Post(const char* type, const PostMessageCallback&& callback);
+
+        void SetMessageResolver(const MessageResolverCallback&& callback);
         
     private:
-        static void MessageHandlerFunc(Server* server, websocketpp::connection_hdl hdl, MessagePtr msg);
+        void MessageHandlerFunc(HTTPServer* server, websocketpp::connection_hdl hdl, MessagePtr msg);
         
     private:
         uint32_t m_Port = 0;
         Server m_Server;
+        
+        MessageResolverCallback m_ResolverCallback;
+        std::unordered_map<std::string, PostMessageCallback> m_PostCallbacks;
     };
 }

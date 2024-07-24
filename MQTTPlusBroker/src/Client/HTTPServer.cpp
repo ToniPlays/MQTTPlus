@@ -11,8 +11,14 @@ namespace MQTTPlus
         m_Server.set_error_channels(websocketpp::log::alevel::frame_payload);
         
         m_Server.init_asio();
-        m_Server.set_message_handler(bind(&MessageHandlerFunc, &m_Server, _1, _2));
-    
+        
+        auto messageHandlerFunc = [this](Server* s, websocketpp::connection_hdl hdl, Server::message_ptr msg) {
+            MessageHandlerFunc(this, hdl, msg);
+        };
+
+        
+        m_Server.set_message_handler(bind(messageHandlerFunc, &m_Server, _1, _2));
+
     }
 
     void HTTPServer::Listen()
@@ -23,8 +29,35 @@ namespace MQTTPlus
         m_Server.run();
     }
 
-    void  HTTPServer::MessageHandlerFunc(Server* server, websocketpp::connection_hdl hdl, MessagePtr msg)
+    void HTTPServer::Post(const char* type, const PostMessageCallback&& callback)
     {
-        
+        m_PostCallbacks[type] = callback;
+        std::cout << fmt::format("Register POST \"{}\"", type) << std::endl;
+    }
+
+    void HTTPServer::SetMessageResolver(const MessageResolverCallback&& callback)
+    {
+        m_ResolverCallback = callback;
+    }
+
+    void  HTTPServer::MessageHandlerFunc(HTTPServer* server, websocketpp::connection_hdl hdl, MessagePtr msg)
+    {
+        std::string payload = msg->get_payload();
+        for(auto& [key, func] : m_PostCallbacks)
+        {
+            if(!m_ResolverCallback(key)) continue;
+            
+            try 
+            {
+                std::string result = func(payload);
+                std::cout << result << std::endl;
+                server->m_Server.send(hdl, result, msg->get_opcode());
+                
+                //Write back
+            } catch(std::exception& e)
+            {
+                std::cout << "Message failure: " << e.what() << std::endl;
+            }
+        }
     }
 }

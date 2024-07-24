@@ -38,6 +38,17 @@ int main(int argc, char* argv[])
     broker.Listen();
     
     HTTPServer clientServer(8884);
+    
+    clientServer.SetMessageResolver([](const std::string& message) {
+        return true;
+    });
+    
+    clientServer.Post("/", [](const std::string& message) mutable {
+        return message;
+    });
+    
+    
+    
     clientServer.Listen();
     
     while(true)
