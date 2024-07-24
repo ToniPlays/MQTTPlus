@@ -1,7 +1,7 @@
 #include "MQTTClient.h"
 #include "Ref.h"
 
-#include "Core/Broker.h"
+#include "Broker.h"
 #include "spdlog/fmt/fmt.h"
 
 namespace MQTTPlus 

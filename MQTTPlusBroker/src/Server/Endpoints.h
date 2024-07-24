@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Client/HTTPServer.h"
+#include "HTTPServer.h"
 #include "API/MQTTPlusAPI.h"
 #include "API/JsonConverter.h"
 #include <nlohmann/json.hpp>
 
 namespace MQTTPlus
 {
-    static void InitializeClientServerEndpoints(HTTPServer& server)
+    static void InitializeApiEndpoints(HTTPServer& server)
     {
         using namespace MQTTPlus::API;
         server.Post("/clients", [](const std::string& message) {

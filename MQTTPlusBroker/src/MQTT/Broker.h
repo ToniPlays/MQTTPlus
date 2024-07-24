@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BrokerCreateSettings.h"
-#include "WebSocket.h"
+#include "Core/WebSocket.h"
 #include "MQTTClient.h"
 
 #include <mutex>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/MQTT/MQTTMessageDecoder.h"
+#include "MQTTMessageDecoder.h"
 #include "MQTTPlusBroker.h"
 
 namespace MQTTPlus 

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 #include "Ref.h"
-#include "gsl.h"
 
 #include "Core/Buffer/CachedBuffer.h"
 #include "spdlog/fmt/fmt.h"

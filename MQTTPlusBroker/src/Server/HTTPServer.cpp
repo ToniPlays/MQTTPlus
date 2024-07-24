@@ -2,12 +2,12 @@
 
 #include <spdlog/fmt/fmt.h>
 
-namespace MQTTPlus 
+namespace MQTTPlus
 {
     HTTPServer::HTTPServer(uint32_t port) : m_Port(port)
     {
         m_Server.set_reuse_addr(true);
-        m_Server.set_access_channels(websocketpp::log::alevel::none);
+        m_Server.set_access_channels(websocketpp::log::alevel::all);
         m_Server.set_error_channels(websocketpp::log::alevel::frame_payload);
         
         m_Server.init_asio();

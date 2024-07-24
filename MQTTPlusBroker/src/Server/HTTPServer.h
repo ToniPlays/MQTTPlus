@@ -17,6 +17,7 @@ namespace MQTTPlus {
     class HTTPServer
     {
     public:
+        HTTPServer() = default;
         HTTPServer(uint32_t port);
         
         void Listen();

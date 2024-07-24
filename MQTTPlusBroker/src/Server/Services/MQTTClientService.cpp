@@ -2,13 +2,17 @@
 
 namespace MQTTPlus
 {
-    void MQTTClientService::Start(ServiceManager* manager) {
+    MQTTClientService::MQTTClientService(uint32_t port)
+    {
         BrokerCreateSettings settings = {
             .Port = 8883,
             .UseSSL = false,
         };
         
         m_Broker = std::make_unique<Broker>(settings);
+    }
+
+    void MQTTClientService::Start(ServiceManager* manager) {
         
         m_Broker->SetOnClientConnected([](Ref<MQTTClient> client) {
             std::cout << "Connected" << std::endl;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+#include <memory.h>
 
 struct Buffer
 {

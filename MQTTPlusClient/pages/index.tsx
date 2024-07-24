@@ -21,7 +21,7 @@ const Home: NextPage<Props> = props => {
   }
 
   provider.receive("/clients", (response, error) => {
-    setMessage(response.message)
+    setMessage(JSON.stringify(response))
   })
   
 
