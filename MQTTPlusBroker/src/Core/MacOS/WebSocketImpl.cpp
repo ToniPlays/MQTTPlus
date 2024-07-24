@@ -24,6 +24,11 @@ namespace MQTTPlus
         std::cout << fmt::format("Created websocket for port {}", m_Port) << std::endl;
     }
 
+    WebSocketImpl::~WebSocketImpl() {
+        if(m_Thread)
+            m_Thread->Join();
+    }
+
     void WebSocketImpl::Listen()
     {
         m_Thread = Ref<Thread>::Create(std::thread(&WebSocketImpl::ThreadFunc, this));
@@ -42,7 +47,7 @@ namespace MQTTPlus
 
     void WebSocketImpl::Write(void* socket, const std::string& message)
     {
-        us_socket_write(m_SSL, (us_socket_t*)socket, message.data(), message.length(), 0);
+        us_socket_write(m_SSL, (us_socket_t*)socket, message.data(), (uint32_t)message.length(), 0);
     }
 
     void WebSocketImpl::ThreadFunc(WebSocketImpl* socket) {
@@ -53,6 +58,7 @@ namespace MQTTPlus
         
         std::cout << fmt::format("Listening to port: {}", socket->m_Port) << std::endl;
         WebSocketEXT& s = *(WebSocketEXT*)us_socket_context_ext(socket->m_SSL, socket->m_SocketContext);
+        
         s.Socket = socket;
         us_loop_run(socket->m_Loop);
     }
@@ -74,6 +80,7 @@ namespace MQTTPlus
 
     us_socket_t* WebSocketImpl::OnConnectionOpened(us_socket_t* socket, int isClient, char* ip, int ipLength)
     {
+        std::cout << "Connection" << std::endl;
         WebSocketEXT& ext = *(WebSocketEXT*)us_socket_context_ext(false, socket->context);
         if(ext.Socket->m_OnSocketConnected)
             ext.Socket->m_OnSocketConnected(socket);

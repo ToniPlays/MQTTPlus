@@ -6,12 +6,12 @@
 namespace MQTTPlus 
 {
     class Broker;
-    class Client : public RefCount
+    class MQTTClient : public RefCount
     {
         friend class Broker;
     public:
-        Client(Broker* broker, void* nativeSocket) : m_Broker(broker), m_NativeSocket(nativeSocket) {}
-        ~Client() = default;
+        MQTTClient(Broker* broker, void* nativeSocket) : m_Broker(broker), m_NativeSocket(nativeSocket) {}
+        ~MQTTClient() = default;
         
         const MQTT::Authentication& GetAuth() const { return m_Authentication; }
         

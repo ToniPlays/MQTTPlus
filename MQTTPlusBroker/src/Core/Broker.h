@@ -2,7 +2,7 @@
 
 #include "BrokerCreateSettings.h"
 #include "WebSocket.h"
-#include "Client.h"
+#include "MQTTClient.h"
 
 #include <mutex>
 #include <iostream>
@@ -10,12 +10,13 @@
 
 namespace MQTTPlus 
 {
-    using OnClientConnected = std::function<void(Ref<Client>)>;
-    using OnPublished = std::function<void(Ref<Client>&, Buffer)>;
+    using OnClientConnected = std::function<void(Ref<MQTTClient>)>;
+    using OnClientDisconnected = std::function<void(Ref<MQTTClient>, int)>;
+    using OnPublished = std::function<void(Ref<MQTTClient>&, Buffer)>;
 
     class Broker
     {
-        friend class Client;
+        friend class MQTTClient;
     public:
         Broker(const BrokerCreateSettings& settings);
         ~Broker() = default;
@@ -27,29 +28,22 @@ namespace MQTTPlus
         void SetOnClientConnected(OnClientConnected&& callback) {
             m_OnClientConnected = callback;
         }
-        
-        void EventQueueAdd(std::function<void()>&& callback)
-        {
-                m_QueueMutex.lock();
-                m_EventQueue.push_back(callback);
-                std::cout << m_EventQueue.size() << std::endl;
-                m_QueueMutex.unlock();
+        void SetOnClientDisconnected(OnClientDisconnected&& callback) {
+            m_OnClientDisconnected = callback;
         }
         
     private:
-        MQTT::ConnAckFlags OnMQTTClientConnected(Ref<Client> client, const MQTT::Authentication& auth);
-        void OnMQTTPublishReceived(Ref<Client> client, Ref<MQTT::PublishMessage> message);
+        MQTT::ConnAckFlags OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth);
+        void OnMQTTPublishReceived(Ref<MQTTClient> client, Ref<MQTT::PublishMessage> message);
         
     private:
         
         BrokerCreateSettings m_Settings = {};
         Ref<WebSocket> m_WebSocket;
-        std::vector<std::function<void()>> m_EventQueue;
-        
-        std::mutex m_QueueMutex;
         std::mutex m_ClientMutex;
 
-        std::unordered_map<void*, Ref<Client>> m_ConnectedClients;        
+        std::unordered_map<void*, Ref<MQTTClient>> m_ConnectedClients;        
         OnClientConnected m_OnClientConnected;
+        OnClientDisconnected m_OnClientDisconnected;
     };
 }

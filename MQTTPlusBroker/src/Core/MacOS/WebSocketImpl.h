@@ -16,6 +16,7 @@ namespace MQTTPlus
     public:
         WebSocketImpl() = default;
         WebSocketImpl(uint32_t port, bool ssl = false);
+        ~WebSocketImpl();
         
         void Listen() override;
         void SetSocketTimeout(void* socket, uint32_t timeout) override;

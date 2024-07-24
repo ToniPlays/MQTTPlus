@@ -34,8 +34,8 @@ namespace MQTT {
 
     PublishMessage::PublishMessage(CachedBuffer& buffer)
     {
-        uint8_t flags = buffer.Read<uint8_t>(); //Fixed header
-        uint8_t remainingLength = buffer.Read<uint8_t>(); //Fixed header
+        buffer.Read<uint8_t>(); //Fixed header
+        buffer.Read<uint8_t>(); //Fixed header
         m_Topic = ReadString(buffer);
         
     }

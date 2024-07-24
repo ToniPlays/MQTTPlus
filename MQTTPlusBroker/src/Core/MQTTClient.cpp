@@ -1,4 +1,4 @@
-#include "Client.h"
+#include "MQTTClient.h"
 #include "Ref.h"
 
 #include "Core/Broker.h"
@@ -6,7 +6,7 @@
 
 namespace MQTTPlus 
 {
-    void Client::ProcessData(char* data, int length)
+    void MQTTClient::ProcessData(char* data, int length)
     {
         std::vector<char> buffer(data, data + length);
         
@@ -36,7 +36,7 @@ namespace MQTTPlus
         });
     }
 
-    void Client::SendMessage(Ref<MQTT::Message> message)
+    void MQTTClient::SendMessage(Ref<MQTT::Message> message)
     {
         m_SendMessageCallback(message);
     }
