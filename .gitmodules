@@ -1,6 +1,3 @@
-[submodule "MQTTPlusBroker/vendor/uSockets"]
-	path = MQTTPlusBroker/vendor/uSockets
-	url = http://github.com/alexhultman/uSockets
 [submodule "MQTTPlusBroker/vendor/spdlog"]
 	path = MQTTPlusBroker/vendor/spdlog
 	url = https://github.com/gabime/spdlog
