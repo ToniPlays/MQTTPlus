@@ -7,3 +7,6 @@
 [submodule "MQTTPlusBroker/vendor/nlohmann-json"]
 	path = MQTTPlusBroker/vendor/nlohmann-json
 	url = https://github.com/nlohmann/json.git
+[submodule "MQTTPlusBroker/vendor/uSockets"]
+	path = MQTTPlusBroker/vendor/uSockets
+	url = https://github.com/uNetworking/uSockets.git

@@ -17,6 +17,7 @@ project "MQTTPlusBroker"
 	{
       	"src",
 		"%{wks.location}/MQTTPlusBroker/vendor/uSockets/src",
+        "/opt/homebrew/Cellar/boost/1.85.0/include"
    	}
 	filter "system:windows"
 	defines {

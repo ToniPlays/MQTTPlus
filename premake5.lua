@@ -34,7 +34,7 @@ workspace "MQTTPlus"
 
 	filter "system:linux"
 	defines {
-	    "MQP_MACOS"
+	    "MQP_LINUX"
 	}
         
     filter "configurations:Debug"
