@@ -1,5 +1,4 @@
 #pragma once
-#ifdef MQP_MACOS
 
 #include <libusockets.h>
 #include <iostream>
@@ -77,4 +76,3 @@ namespace MQTTPlus
         };
     };
 }
-#endif

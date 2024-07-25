@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <cstdint>
 
 namespace MQTTPlus {
     struct BrokerCreateSettings

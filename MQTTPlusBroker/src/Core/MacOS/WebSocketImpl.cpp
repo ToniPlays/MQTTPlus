@@ -1,5 +1,3 @@
-#ifdef MQP_MACOS
-
 #include "WebSocketImpl.h"
 #include "Core/MQTTPlusException.h"
 #include <loop.c>
@@ -129,4 +127,3 @@ namespace MQTTPlus
         return socket;
     }
 }
-#endif

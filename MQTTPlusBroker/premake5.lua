@@ -13,14 +13,17 @@ project "MQTTPlusBroker"
 		"src/**.cpp",
 	}
 
-    	includedirs
-    	{
-        	"src"
-    	}
+    includedirs
+	{
+      	"src",
+		"%{wks.location}/MQTTPlusBroker/vendor/uSockets/src",
+   	}
 	filter "system:windows"
 	defines {
 		"BOOST_USE_WINDOWS_H",
 	}
+	filter "system:linux"
+	links { ":uSockets.a" }
 
 	References("uSockets")
 	References("gsl")
