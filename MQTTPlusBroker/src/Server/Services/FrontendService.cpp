@@ -27,7 +27,7 @@ namespace MQTTPlus {
         });
 
         InitializeApiEndpoints(*m_Server);
-        m_Server->Listen();
+        m_Thread = Ref<Thread>::Create(std::thread([this](){ m_Server->Listen(); }));
     }
 
     void FrontendService::Stop() 

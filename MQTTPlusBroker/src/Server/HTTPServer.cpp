@@ -1,13 +1,13 @@
 #include "HTTPServer.h"
 
-#include <spdlog/fmt/fmt.h>
+#include "Core/Logger.h"
 
 namespace MQTTPlus
 {
     HTTPServer::HTTPServer(uint32_t port, void* userData) : m_Port(port), m_UserData(userData)
     {
         m_Server.set_reuse_addr(true);
-        m_Server.set_access_channels(websocketpp::log::alevel::all);
+        m_Server.set_access_channels(websocketpp::log::alevel::none);
         m_Server.set_error_channels(websocketpp::log::alevel::frame_payload);
         
         m_Server.init_asio();
@@ -18,12 +18,11 @@ namespace MQTTPlus
 
         
         m_Server.set_message_handler(bind(messageHandlerFunc, &m_Server, _1, _2));
-
     }
 
     void HTTPServer::Listen()
     {
-        std::cout << fmt::format("HTTP listening at {}", m_Port) << std::endl;
+        MQP_WARN("HTTP Server on port {}", m_Port);
         m_Server.listen(m_Port);
         m_Server.start_accept();
         m_Server.run();
@@ -32,7 +31,7 @@ namespace MQTTPlus
     void HTTPServer::Post(const char* type, const PostMessageCallback&& callback)
     {
         m_PostCallbacks[type] = callback;
-        std::cout << fmt::format("Register POST \"{}\"", type) << std::endl;
+        MQP_TRACE("Register POST \"{}\"", type);
     }
 
     void HTTPServer::SetMessageResolver(const MessageResolverCallback&& callback)
@@ -50,12 +49,11 @@ namespace MQTTPlus
             try 
             {
                 std::string result = func(payload, m_UserData);
-                std::cout << result << std::endl;
                 m_Server.send(hdl, result, msg->get_opcode());
                 return;
             } catch(std::exception& e)
             {
-                std::cout << "Message failure: " << e.what() << std::endl;
+                MQP_ERROR("Message endpoint not found {}", payload);
             }
         }
     }

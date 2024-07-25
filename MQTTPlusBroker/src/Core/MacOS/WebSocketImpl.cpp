@@ -1,3 +1,5 @@
+#ifdef MQP_MACOS
+
 #include "WebSocketImpl.h"
 #include "Core/MQTTPlusException.h"
 #include <loop.c>
@@ -20,10 +22,11 @@ namespace MQTTPlus
         us_socket_context_on_data(ssl, m_SocketContext, OnDataReceive);
         us_socket_context_on_writable(ssl, m_SocketContext, OnWritable);
         
-        std::cout << fmt::format("Created websocket for port {}", m_Port) << std::endl;
+        MQP_WARN("Created WebSocket for port {} (uSockets)", m_Port);
     }
 
     WebSocketImpl::~WebSocketImpl() {
+        MPQ_WARN("Closing WebSocket {}", m_Port);
         if(m_Thread)
             m_Thread->Join();
     }
@@ -32,7 +35,6 @@ namespace MQTTPlus
     {
         m_Thread = Ref<Thread>::Create(std::thread(&WebSocketImpl::ThreadFunc, this));
     }
-
 
     void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
     {
@@ -55,7 +57,7 @@ namespace MQTTPlus
             throw MQTTPlusException(fmt::format("Could not listen to port: {}", socket->m_Port));
         
         
-        std::cout << fmt::format("Listening to port: {}", socket->m_Port) << std::endl;
+        MQP_INFO("Listening on port {}", socket->m_Port);
         WebSocketEXT& s = *(WebSocketEXT*)us_socket_context_ext(socket->m_SSL, socket->m_SocketContext);
         
         s.Socket = socket;
@@ -127,3 +129,4 @@ namespace MQTTPlus
         return socket;
     }
 }
+#endif

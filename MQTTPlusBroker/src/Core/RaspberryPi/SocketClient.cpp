@@ -1,6 +1,7 @@
 #ifdef MQP_LINUX
 
 #include "SocketClient.h"
+#include "Core/Logger.h"
 #include <sys/socket.h>
 #include <spdlog/fmt/fmt.h>
 #include <chrono>
@@ -10,29 +11,33 @@
 
 namespace MQTTPlus 
 {
-	SocketClient::SocketClient(WebSocketImpl* socket, int socketId) : m_WebSocket(socket), m_SocketId(socketId)
+	SocketClient::SocketClient(WebSocketImpl* socket, int socketId) : m_SocketId(socketId), m_WebSocket(socket)
 	{
 		
 	}
 	
-	void SocketClient::Start() {
-		m_Thread = Ref<Thread>::Create(std::thread(&SocketClient::EventFunc, this));
-	}
-	
-	void SocketClient::EventFunc(SocketClient* client)
-	{		
-		while(true)
-		{
-			char buffer[8192];
-			int read = recv(client->GetClientID(), buffer, 8192, 0);
-			if(read <= 0)
-			{
-				client->m_WebSocket->m_OnSocketDisconnected((void*)client, read);
-				break;
-			}
+	bool SocketClient::Read()
+	{	
+		fd_set rfds = {};
+		timeval tv = {
+			.tv_sec = 0,
+			.tv_usec = 1000,
+		};
 
-			client->m_WebSocket->m_OnSocketDataReceived((void*)client, buffer, read);
+		int result = select(1, &rfds, NULL, NULL, &tv);
+		if(result == - 1)
+			return true;
+
+		char buffer[8192];
+		int read = recv(GetClientID(), buffer, 8192, 0);
+
+		if(read <= 0)
+		{
+			return false;
 		}
+		
+		m_WebSocket->m_OnSocketDataReceived((void*)this, buffer, read);
+		return true;
 	}
 }
 #endif

@@ -1,4 +1,5 @@
 #include "MQTTClientService.h"
+#include "Core/Logger.h"
 
 namespace MQTTPlus
 {
@@ -10,20 +11,22 @@ namespace MQTTPlus
         };
         
         m_Broker = new Broker(settings);
-        std::cout << fmt::format("MQTT broker created") << std::endl;
+        
+        MQP_INFO("Broker at {}", (uint64_t)m_Broker);
     }
 
     void MQTTClientService::Start(ServiceManager* manager) {
         
         m_Broker->SetOnClientConnected([this](Ref<MQTTClient> client) {
-            std::cout << "Total clients: " << m_Broker->GetConnectedClientCount() << std::endl;
+           
         });
         
         m_Broker->SetOnClientDisconnected([this](Ref<MQTTClient> client, int code) {
-            std::cout << "Remaining clients: " << m_Broker->GetConnectedClientCount() << std::endl;
         });
         
-        m_Broker->Listen();
+        m_Thread = Ref<Thread>::Create(std::thread([this]() {
+            m_Broker->Listen();
+        }));
     }
 
     void MQTTClientService::Stop() {

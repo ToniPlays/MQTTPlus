@@ -3,6 +3,7 @@
 #include "BrokerCreateSettings.h"
 #include "Core/WebSocket.h"
 #include "MQTTClient.h"
+#include "Core/Logger.h"
 
 #include <mutex>
 #include <iostream>
@@ -43,11 +44,9 @@ namespace MQTTPlus
 
         BrokerStatus GetStatus() const;
         Ref<WebSocket> GetWebSocket() const { return m_WebSocket; }
-        uint32_t GetConnectedClientCount() const {
-            auto id = std::hash<std::thread::id>{}(std::this_thread::get_id());
-            std::cout << fmt::format("Thread: {}, broker {}", (uint64_t)id, (uint64_t)this) << std::endl;
-            uint32_t size = m_ConnectedClients.size();
-            return size; 
+
+        uint32_t GetConnectedClientCount() {
+            return m_ConnectedClients.size(); 
         }
         
     private:
@@ -61,7 +60,7 @@ namespace MQTTPlus
         Ref<WebSocket> m_WebSocket;
         std::mutex m_ClientMutex;
 
-        std::unordered_map<void*, Ref<MQTTClient>> m_ConnectedClients;        
+        inline static std::unordered_map<void*, Ref<MQTTClient>> m_ConnectedClients;        
         OnClientConnected m_OnClientConnected;
         OnClientDisconnected m_OnClientDisconnected;
     };

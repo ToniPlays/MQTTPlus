@@ -19,7 +19,6 @@ namespace MQTT {
             m_Authentication.WillMessage = ReadString(buffer);
         }
                 
-        std::cout << ToString() << std::endl;
         
         if(m_Flags & (uint8_t)ConnectFlags::UserName)
         {

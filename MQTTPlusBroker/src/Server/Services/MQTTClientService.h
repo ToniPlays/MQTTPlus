@@ -2,6 +2,7 @@
 
 #include "Service.h"
 #include "MQTT/Broker.h"
+#include "Core/Threading/Thread.h"
 #include <iostream>
 
 namespace MQTTPlus
@@ -11,7 +12,7 @@ namespace MQTTPlus
         MQTTClientService(uint32_t port);
         ~MQTTClientService() = default;
         
-        const Broker& GetBroker() { return *m_Broker; }
+        Broker& GetBroker() { return *m_Broker; }
 
         void Start(ServiceManager* manager) override;
         void Stop() override;
@@ -21,5 +22,6 @@ namespace MQTTPlus
         
     private:
         Broker* m_Broker;
+        Ref<Thread> m_Thread;
     };
 }

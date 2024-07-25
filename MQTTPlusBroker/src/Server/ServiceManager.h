@@ -14,9 +14,11 @@ namespace MQTTPlus {
         void Stop();
         
         template<typename T, typename... Args>
-        void AddService(Args&&... args)
+        Ref<T> AddService(Args&&... args)
         {
-            m_Services.push_back(Ref<T>::Create(args...));
+            Ref<T> service = Ref<T>::Create(args...);
+            m_Services.push_back(service);
+            return service;
         }
         
         template<typename T>

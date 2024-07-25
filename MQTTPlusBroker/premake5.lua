@@ -24,7 +24,9 @@ project "MQTTPlusBroker"
 		"BOOST_USE_WINDOWS_H",
 	}
 	filter "system:linux"
-	links { ":uSockets.a" }
+	includedirs {
+		"",
+	}
 
 	References("uSockets")
 	References("gsl")

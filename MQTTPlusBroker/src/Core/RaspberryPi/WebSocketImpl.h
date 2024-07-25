@@ -6,6 +6,9 @@
 #include <functional>
 #include <sys/socket.h>
 #include "Core/Threading/Thread.h"
+#include "SocketClient.h"
+
+#include <unordered_map>
 
 namespace MQTTPlus
 {
@@ -50,8 +53,11 @@ namespace MQTTPlus
         uint32_t m_Port = 0;
         bool m_SSL = false;
         
+        std::atomic_bool m_Running = false;
         int m_SocketDesc = 0;
         Ref<Thread> m_ListenerThread;
+        std::mutex m_ClientMutex;
+        std::unordered_map<uint32_t, Ref<SocketClient>> m_ConnectedClients;
         
         SocketConnected m_OnSocketConnected;
         SocketDisconnected m_OnSocketDisconnected;

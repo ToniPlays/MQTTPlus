@@ -1,4 +1,5 @@
 #include "ServiceManager.h"
+#include "Core/Logger.h"
 #include <spdlog/fmt/fmt.h>
 
 namespace MQTTPlus 
@@ -8,13 +9,15 @@ namespace MQTTPlus
         m_Running = true;
         for(auto& service : m_Services)
         {
-            std::cout << fmt::format("Starting service: {}", service->GetName()) << std::endl;
+            MQP_INFO("Starting service: {}", service->GetName());
             service->Start(this);
         }
+        MQP_INFO("All services started");
     }
     void ServiceManager::Stop()
     {
-        m_Running.wait(true);
         m_Running = false;
+        m_Running.notify_all();
+        m_Services.clear();
     }
 }

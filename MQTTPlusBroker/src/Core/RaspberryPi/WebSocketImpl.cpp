@@ -2,8 +2,10 @@
 
 #include "WebSocketImpl.h"
 #include "Core/MQTTPlusException.h"
+#include "Core/Logger.h"
 #include "SocketClient.h"
 #include "spdlog/fmt/fmt.h"
+#include "Core/Timer.h"
 #include <chrono>
 
 #include <netinet/in.h>
@@ -13,7 +15,7 @@ namespace MQTTPlus
 {
     WebSocketImpl::WebSocketImpl(uint32_t port, bool ssl) : m_Port(port), m_SSL(ssl)
     {
-        m_SocketDesc = socket(AF_INET, SOCK_STREAM, 0);
+        m_SocketDesc = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
         
         if(!m_SocketDesc)
             throw MQTTPlusException("Failed to create socket");
@@ -34,10 +36,12 @@ namespace MQTTPlus
         m_OnSocketDisconnected = [](void* socket, int code) {};
         m_OnSocketDataReceived = [](void* socket, char* data, int length) {};
         
-        std::cout << fmt::format("Created websocket for port {}", m_Port) << std::endl;
+        MQP_WARN("Created WebSocket for port {} (Linux native)", m_Port);
     }
     
-    WebSocketImpl::~WebSocketImpl() {
+    WebSocketImpl::~WebSocketImpl() 
+    {
+        m_Running = false;
         close(m_SocketDesc);
         if(m_ListenerThread)
             m_ListenerThread->Join();
@@ -45,6 +49,7 @@ namespace MQTTPlus
 
     void WebSocketImpl::Listen()
     {
+        m_Running = true;
         m_ListenerThread = Ref<Thread>::Create(std::thread(&WebSocketImpl::SocketListenThread, this));
     }
     
@@ -57,9 +62,10 @@ namespace MQTTPlus
         val.tv_usec = 0;
                 
         if(setsockopt (client, SOL_SOCKET, SO_RCVTIMEO, (char*)&val, sizeof(timeval)))
-            std::cout << fmt::format("setsockopt RCV for {}: fail\n", client);
+            MQP_FATAL("setsockopt RCV for {}: fail\n", client);
         if(setsockopt (client, SOL_SOCKET, SO_SNDTIMEO, (char*)&val, sizeof(timeval)))
-            std::cout << fmt::format("setsockopt SND for {}: fail\n", client);
+            MQP_FATAL("setsockopt SND for {}: fail\n", client);
+   
     }
 
     void WebSocketImpl::Write(void* socket, std::vector<uint8_t> bytes)
@@ -77,34 +83,63 @@ namespace MQTTPlus
     
     void WebSocketImpl::SocketListenThread(WebSocketImpl* socket)
     {
-        std::cout << fmt::format("Listening on port {}", socket->m_Port) << std::endl;
+        MQP_INFO("Listening on port {}", socket->m_Port);
         listen(socket->m_SocketDesc, 10);
-        while(true)
-        {            
+
+        float timeout = 100;
+
+        while(socket->m_Running)
+        {   
+            Timer timer;
+
             int client = accept(socket->m_SocketDesc, NULL, NULL);
-            
-            Ref<SocketClient> socketClient = Ref<SocketClient>::Create(socket, client);
-            std::cout << fmt::format("Connection accepted on port {}", socket->m_Port) << std::endl;
-            socketClient->IncRefCount();
-            
-            int pid = fork();
-            
-            if(pid == 0)
-            {
-                socket->SetSocketTimeout((void*)socketClient.Raw(), 30);
-                socket->m_OnSocketConnected((void*)socketClient.Raw());
-                socketClient->Start();
-            }
-            else if(pid == -1)
-            {
+            if(client != -1)
+            {                
+                Ref<SocketClient> socketClient = Ref<SocketClient>::Create(socket, client);
+                MQP_WARN("New connection on port: {}", socket->m_Port);
+                
+                
+                int pid = fork();
+                
+                if(pid == 0)
+                {
+                    socket->SetSocketTimeout((void*)socketClient.Raw(), 30);
+                    socket->m_OnSocketConnected((void*)socketClient.Raw());
+                    socket->m_ConnectedClients[client] = socketClient;
+                }
+                else if(pid == -1)
+                {
+                    
+                }
+                else 
+                {
+                    close(client);
+                }
                 
             }
-            else 
-            {
-                close(client);
+            socket->m_ClientMutex.lock();
+            auto clients = socket->m_ConnectedClients;
+            socket->m_ClientMutex.unlock();
+
+            for(auto& [id, client] : clients) {
+                if(!client->Read())
+                {
+                    socket->m_OnSocketDisconnected((void*)client.Raw(), -1);
+                    socket->m_ClientMutex.lock();
+                    auto it = socket->m_ConnectedClients.find(id);
+                    if(it != socket->m_ConnectedClients.end())
+                        socket->m_ConnectedClients.erase(it);
+                    socket->m_ClientMutex.unlock();
+                }
             }
+
+            
+            int sleepFor = timeout - timer.ElapsedMillis();
+            if(sleepFor > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepFor));
+            
         }
-        std::cout << fmt::format("Listening ended") << std::endl;
+        MQP_ERROR("Stopped listening on port {}", socket->m_Port);
     }
 }
 

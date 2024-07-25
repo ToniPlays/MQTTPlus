@@ -2,6 +2,7 @@
 
 #include "Service.h"
 #include "Server/HTTPServer.h"
+#include "Core/Threading/Thread.h"
 
 #include <iostream>
 
@@ -18,5 +19,6 @@ namespace MQTTPlus
             std::string GetName() const override { return "FrontendService"; }
         private:
             HTTPServer* m_Server;
+            Ref<Thread> m_Thread;
     };
 }

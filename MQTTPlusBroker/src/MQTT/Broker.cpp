@@ -1,6 +1,6 @@
 #include "Broker.h"
 #include "Core/MQTTPlusException.h"
-
+#include "Core/Logger.h"
 
 namespace MQTTPlus
 {
@@ -11,7 +11,7 @@ namespace MQTTPlus
             m_WebSocket = WebSocket::Create(settings.Port, settings.UseSSL);
         } catch(MQTTPlusException e)
         {
-            std::cout << "Error: " << e.what() << std::endl;
+            MQP_ERROR("Failed to create WebSocket for Broker");
             m_WebSocket = nullptr;
         }
     }
@@ -27,24 +27,26 @@ namespace MQTTPlus
                 socket->Write(client, message->GetBytes());
             });
             
-            std::scoped_lock lock(m_ClientMutex);
-            m_ConnectedClients[client] = c;   
+            m_ClientMutex.lock();
+            m_ConnectedClients[client] = c;
+            m_ClientMutex.unlock();
+            MQP_INFO("New Socket connected {}", client);
         });
         
         m_WebSocket->SetOnSocketDisconnected([this](void* client, int reason) {
             
-            std::scoped_lock lock(m_ClientMutex);
+            m_ClientMutex.lock();
             
             auto it = m_ConnectedClients.find(client);
             if(it != m_ConnectedClients.end())
+            {
                 m_ConnectedClients.erase(it);
-
-            std::cout << "OOps we disconnect" << std::endl;
+                MQP_WARN("Socket disconnected {} {}", client, reason);
+            }
+            m_ClientMutex.unlock();
         });
         
         m_WebSocket->SetOnSocketDataReceived([this](void* client, char* data, int length) {
-            std::scoped_lock lock(m_ClientMutex);
-            
             if(m_ConnectedClients[client])
                 m_ConnectedClients[client]->ProcessData(data, length);
             
@@ -63,10 +65,7 @@ namespace MQTTPlus
     MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth)
     {
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
-
         client->m_Authentication = auth;
-        m_OnClientConnected(client);
-        
         return MQTT::ConnAckFlags::Accepted;
     }
 

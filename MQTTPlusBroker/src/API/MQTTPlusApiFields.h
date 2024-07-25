@@ -85,7 +85,6 @@ namespace MQTTPlus::API {
             try {
                 Type val = std::get<Type>(value);
                 to_json(j, val);
-                std::cout << "Found value" << std::endl;
                 return;
             } catch(std::bad_variant_access& e)
             {

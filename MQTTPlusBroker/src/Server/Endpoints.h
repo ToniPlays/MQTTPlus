@@ -13,13 +13,13 @@ namespace MQTTPlus
     static void InitializeApiEndpoints(HTTPServer& server)
     {
         using namespace MQTTPlus::API;
-        server.Post("/mqtt", [](const std::string& message, void* userData) {
+        server.Post("/mqtt", [](const std::string& message, void* userData) mutable {
             auto json = nlohmann::json::parse(message);
             ServiceManager* manager = (ServiceManager*)userData;
             
             Ref<MQTTClientService> mqtt = manager->GetService<MQTTClientService>();
 
-            const Broker& broker = mqtt->GetBroker();
+            Broker& broker = mqtt->GetBroker();
             auto socket = broker.GetWebSocket();
             
             MQTTServiceStatus status = {};

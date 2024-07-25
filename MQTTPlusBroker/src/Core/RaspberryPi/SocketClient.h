@@ -14,16 +14,11 @@ namespace MQTTPlus {
 		
 		int GetClientID() const { return m_SocketId; }
 		
-		void Start();
+		bool Read();
 		
 	private:
-		static void EventFunc(SocketClient* client);
-		
-	private:
-		WebSocketImpl* m_WebSocket = nullptr;
 		int m_SocketId = 0;
-		
-		Ref<Thread> m_Thread;
+		WebSocketImpl* m_WebSocket;
 	};
 }
 #endif
