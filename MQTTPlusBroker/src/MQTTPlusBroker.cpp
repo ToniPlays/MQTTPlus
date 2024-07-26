@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
     using namespace std::chrono_literals;
     while(true)
     {
-        mqtt->Check();
-        std::this_thread::sleep_for(2s);
+        //mqtt->Check();
+        //std::this_thread::sleep_for(2s);
     }
     
     
