@@ -11,11 +11,11 @@ namespace MQTTPlus
         };
         
         m_Broker = new Broker(settings);
-
-        MQP_INFO("Broker at {}", (uint64_t)m_Broker);
     }
 
     void MQTTClientService::Start() {
+        
+        m_StartupTime = std::chrono::system_clock::now();
         
         m_Broker->SetOnClientConnected([this](Ref<MQTTClient> client) {
            
@@ -31,9 +31,5 @@ namespace MQTTPlus
 
     void MQTTClientService::Stop() {
         
-    }
-    void MQTTClientService::Check()
-    {
-        MQP_INFO("Client count: {}", m_Broker->GetConnectedClientCount());
     }
 }

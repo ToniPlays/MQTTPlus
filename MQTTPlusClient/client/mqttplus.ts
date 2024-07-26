@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useState } from "react"
 import useWebSocket from "react-use-websocket"
+import MQTTPlusAPI from "./mqttplus-api"
 
-export const url = "http://80.95.140.80:8884"
 
+export const url = "http://localhost:8884"
 
-export const mqttPlusProvider = <T = unknown> () => {
+/*This API is asynchronous, meaning a post message will not return anything,
+unless provicer.receive(on, callbac) is set
+This will allow for realtime data to be sent via websockets without any request
+*/
 
+export const MQTTPlusProvider = () => {
+
+    const api = new MQTTPlusAPI()
     const socket = useWebSocket(url)
     const [receiveFuncs, setReceiveFuncs] = useState(new Map<string, (data: any, error: any | null) => void>())
 
@@ -13,7 +20,7 @@ export const mqttPlusProvider = <T = unknown> () => {
         if(socket.lastJsonMessage == null) return;
         const message = socket.lastJsonMessage
         const type = message['endpoint']
-        console.log(message)
+        console.log("Got message: " + JSON.stringify(message))
 
         if(receiveFuncs.has(type))
             receiveFuncs.get(type)(socket.lastJsonMessage, null)
@@ -21,6 +28,7 @@ export const mqttPlusProvider = <T = unknown> () => {
     }, [socket.lastJsonMessage])
 
     const postFunc = useCallback((message: any) => {
+        console.log(JSON.stringify(message))
         socket.sendMessage(JSON.stringify(message))
     }, [])
 
@@ -36,6 +44,7 @@ export const mqttPlusProvider = <T = unknown> () => {
     return {
         status: socket.readyState,
         post: postFunc,
-        receive: receiveFunc
+        receive: receiveFunc,
+        api
     }
 }

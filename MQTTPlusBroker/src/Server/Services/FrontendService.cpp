@@ -11,6 +11,8 @@ namespace MQTTPlus {
 
     void FrontendService::Start() 
     {
+        m_StartupTime = std::chrono::system_clock::now();
+        
         m_Server->SetUserData((void*)nullptr);
         m_Server->SetMessageResolver([](const char* endpoint, const std::string& message) {
             try {

@@ -15,10 +15,14 @@ namespace MQTTPlus
 
             void Start() override;
             void Stop() override;
-
+        
+            const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() const override { return m_StartupTime; };
+            
             std::string GetName() const override { return "FrontendService"; }
         private:
             HTTPServer* m_Server;
             Ref<Thread> m_Thread;
+        
+            std::chrono::time_point<std::chrono::system_clock> m_StartupTime;
     };
 }

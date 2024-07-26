@@ -2,6 +2,7 @@
 
 #include "WebSocketImpl.h"
 #include "Core/MQTTPlusException.h"
+#include "Core/Logger.h"
 #include <loop.c>
 #include "spdlog/fmt/fmt.h"
 
@@ -26,7 +27,7 @@ namespace MQTTPlus
     }
 
     WebSocketImpl::~WebSocketImpl() {
-        MPQ_WARN("Closing WebSocket {}", m_Port);
+        MQP_WARN("Closing WebSocket {}", m_Port);
         if(m_Thread)
             m_Thread->Join();
     }

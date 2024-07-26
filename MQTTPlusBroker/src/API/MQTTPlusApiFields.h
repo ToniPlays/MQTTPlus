@@ -37,7 +37,7 @@ namespace MQTTPlus::API {
     class Expandable : public BaseField
     {
     public:
-        Expandable();
+        Expandable() = default;
         template <typename T>
         Expandable(T&& value) : m_Value(std::forward<T>(value)) {}
         
@@ -84,6 +84,10 @@ namespace MQTTPlus::API {
             using Type = std::decay_t<decltype(arg)>;
             try {
                 Type val = std::get<Type>(value);
+                if constexpr (std::is_same<Type, std::nullptr_t>::value)
+                {
+                    return;
+                }
                 to_json(j, val);
                 return;
             } catch(std::bad_variant_access& e)
@@ -100,4 +104,17 @@ namespace MQTTPlus::API {
             arr.push_back(field.Values()[i]);
         j += arr;
     }
+
+    template<typename T>
+    static bool ArrayContains(const json& j, const T& value)
+    {
+        if(!j.is_array()) return false;
+        
+        for(const auto& item : j)
+        {
+            if(item == value) return true;
+        }
+        return false;
+    }
+
 }

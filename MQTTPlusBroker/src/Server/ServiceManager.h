@@ -32,6 +32,11 @@ namespace MQTTPlus {
             return nullptr;
         }
         
+        static uint32_t GetRunningServiceCount() {
+            return (uint32_t)s_Services.size();
+        }
+        static std::vector<Ref<Service>> GetServices() { return s_Services; }
+        
     private:
         inline static std::vector<Ref<Service>> s_Services;
         inline static std::atomic_bool s_Running = false;

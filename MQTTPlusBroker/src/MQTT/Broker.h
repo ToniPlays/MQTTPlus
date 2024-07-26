@@ -46,7 +46,7 @@ namespace MQTTPlus
         Ref<WebSocket> GetWebSocket() const { return m_WebSocket; }
 
         uint32_t GetConnectedClientCount() {
-            return m_ConnectedClients.size(); 
+            return (uint32_t)m_ConnectedClients.size();
         }
         
     private:

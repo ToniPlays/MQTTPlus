@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { Button } from '@mui/material'
 
 import { NextPage } from 'next'
-import { mqttPlusProvider } from '../client/mqttplus'
+import { MQTTPlusProvider } from '../client/mqttplus'
+import { MQTTPlus } from '../client/types/Server'
 
 interface Props {
 
@@ -10,21 +11,20 @@ interface Props {
 
 const Home: NextPage<Props> = props => {
 
-  const provider = mqttPlusProvider()
+  const provider = MQTTPlusProvider()
+  const api = provider.api
   const [message, setMessage] = useState("")
 
   function TestPost(message: string)
   {
-    provider.post({ 
-      endpoint: '/mqtt',
-    })
+    
+    provider.post(api.server.status({ expands: [MQTTPlus.Server.ExpandOpts.Services] }));
   }
 
-  provider.receive("/mqtt", (response, error) => {
+  provider.receive(api.server.endpoint, (response, error) => {
     setMessage(JSON.stringify(response))
   })
   
-
   return (
       <>
         <p>Socket: {provider.status}</p>

@@ -53,7 +53,7 @@ namespace MQTTPlus
                 return;
             } catch(std::exception& e)
             {
-                MQP_ERROR("Message endpoint not found {}", payload);
+                MQP_ERROR("Message failed for {}", payload);
             }
         }
     }

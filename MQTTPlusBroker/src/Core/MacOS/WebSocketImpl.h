@@ -39,7 +39,7 @@ namespace MQTTPlus
             m_OnSocketDataReceived = callback;
         }
 
-        bool IsListening() const { return m_Thread != nullptr;  }
+        bool IsListening() const override { return m_Thread; }
         
     private:
         
