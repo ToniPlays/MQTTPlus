@@ -33,7 +33,7 @@ namespace MQTTPlus
             MQP_INFO("New Socket connected {}", client);
         });
         
-        m_WebSocket->SetOnSocketDisconnected([this](void* client, int reason) {
+        m_WebSocket->SetOnSocketDisconnected([this](void* client, int reason) mutable {
             
             m_ClientMutex.lock();
             

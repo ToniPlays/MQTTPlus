@@ -10,21 +10,21 @@ namespace MQTTPlus {
         ServiceManager() = default;
         ~ServiceManager() = default;
         
-        void Start();
-        void Stop();
+        static void Start();
+        static void Stop();
         
         template<typename T, typename... Args>
-        Ref<T> AddService(Args&&... args)
+        static Ref<T> AddService(Args&&... args)
         {
             Ref<T> service = Ref<T>::Create(args...);
-            m_Services.push_back(service);
+            s_Services.push_back(service);
             return service;
         }
         
         template<typename T>
-        Ref<T> GetService()
+        static Ref<T> GetService()
         {
-            for(auto& service : m_Services)
+            for(auto& service : s_Services)
             {
                 if(dynamic_cast<T*>(service.Raw()))
                     return service.As<T>();
@@ -33,7 +33,7 @@ namespace MQTTPlus {
         }
         
     private:
-        std::vector<Ref<Service>> m_Services;
-        std::atomic_bool m_Running = false;
+        inline static std::vector<Ref<Service>> s_Services;
+        inline static std::atomic_bool s_Running = false;
     };
 }

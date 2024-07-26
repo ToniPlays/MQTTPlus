@@ -7,11 +7,9 @@
 #include <chrono>
 #include "spdlog/fmt/fmt.h"
 
-static MQTTPlus::ServiceManager serviceManager;
-
 static void on_close(int signal)
 {
-    serviceManager.Stop();
+    MQTTPlus::ServiceManager::Stop();
 }
 
 int main(int argc, char* argv[])
@@ -23,10 +21,10 @@ int main(int argc, char* argv[])
     signal(SIGABRT, on_close);
     
     
-    auto mqtt = serviceManager.AddService<MQTTClientService>(8883);
-    serviceManager.AddService<FrontendService>(8884);
+    auto mqtt = ServiceManager::AddService<MQTTClientService>(8883);
+    ServiceManager::AddService<FrontendService>(8884);
     
-    serviceManager.Start();
+    ServiceManager::Start();
     
     using namespace std::chrono_literals;
     while(true)

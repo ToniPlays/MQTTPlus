@@ -15,9 +15,8 @@ namespace MQTTPlus
         using namespace MQTTPlus::API;
         server.Post("/mqtt", [](const std::string& message, void* userData) mutable {
             auto json = nlohmann::json::parse(message);
-            ServiceManager* manager = (ServiceManager*)userData;
             
-            Ref<MQTTClientService> mqtt = manager->GetService<MQTTClientService>();
+            Ref<MQTTClientService> mqtt = ServiceManager::GetService<MQTTClientService>();
 
             Broker& broker = mqtt->GetBroker();
             auto socket = broker.GetWebSocket();

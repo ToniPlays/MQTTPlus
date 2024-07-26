@@ -14,7 +14,7 @@ namespace MQTTPlus
         
         Broker& GetBroker() { return *m_Broker; }
 
-        void Start(ServiceManager* manager) override;
+        void Start() override;
         void Stop() override;
 
         

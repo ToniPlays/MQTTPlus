@@ -11,11 +11,11 @@ namespace MQTTPlus
         };
         
         m_Broker = new Broker(settings);
-        
+
         MQP_INFO("Broker at {}", (uint64_t)m_Broker);
     }
 
-    void MQTTClientService::Start(ServiceManager* manager) {
+    void MQTTClientService::Start() {
         
         m_Broker->SetOnClientConnected([this](Ref<MQTTClient> client) {
            

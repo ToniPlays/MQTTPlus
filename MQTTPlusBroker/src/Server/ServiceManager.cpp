@@ -6,18 +6,18 @@ namespace MQTTPlus
 {
     void ServiceManager::Start()
     {
-        m_Running = true;
-        for(auto& service : m_Services)
+        s_Running = true;
+        for(auto& service : s_Services)
         {
             MQP_INFO("Starting service: {}", service->GetName());
-            service->Start(this);
+            service->Start();
         }
         MQP_INFO("All services started");
     }
     void ServiceManager::Stop()
     {
-        m_Running = false;
-        m_Running.notify_all();
-        m_Services.clear();
+        s_Running = false;
+        s_Running.notify_all();
+        s_Services.clear();
     }
 }

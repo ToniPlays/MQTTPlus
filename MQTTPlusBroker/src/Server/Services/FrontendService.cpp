@@ -9,9 +9,9 @@ namespace MQTTPlus {
         m_Server = new HTTPServer(port);
     }
 
-    void FrontendService::Start(ServiceManager* manager) 
+    void FrontendService::Start() 
     {
-        m_Server->SetUserData((void*)manager);
+        m_Server->SetUserData((void*)nullptr);
         m_Server->SetMessageResolver([](const char* endpoint, const std::string& message) {
             try {
                 auto json = nlohmann::json::parse(message);

@@ -13,7 +13,7 @@ namespace MQTTPlus
             FrontendService(uint32_t port);
             ~FrontendService() = default;
 
-            void Start(ServiceManager* manager) override;
+            void Start() override;
             void Stop() override;
 
             std::string GetName() const override { return "FrontendService"; }

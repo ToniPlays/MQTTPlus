@@ -4,6 +4,7 @@
 #include "Core/MQTTPlusException.h"
 #include "Core/Logger.h"
 #include "SocketClient.h"
+#include "Server/ServiceManager.h"
 #include "spdlog/fmt/fmt.h"
 #include "Core/Timer.h"
 #include <chrono>
