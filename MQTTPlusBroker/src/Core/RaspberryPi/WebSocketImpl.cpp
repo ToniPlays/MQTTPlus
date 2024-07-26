@@ -96,14 +96,12 @@ namespace MQTTPlus
             int client = accept(socket->m_SocketDesc, NULL, NULL);
             if(client != -1)
             {                
-                Ref<SocketClient> socketClient = Ref<SocketClient>::Create(socket, client);
-                MQP_WARN("New connection on port: {}", socket->m_Port);
-                
-                
-                int pid = fork();
-                
+                int pid = 0;
                 if(pid == 0)
                 {
+                    Ref<SocketClient> socketClient = Ref<SocketClient>::Create(socket, client);
+                    MQP_WARN("New connection on port: {}", socket->m_Port);
+
                     socket->SetSocketTimeout((void*)socketClient.Raw(), 30);
                     socket->m_OnSocketConnected((void*)socketClient.Raw());
                     socket->m_ConnectedClients[client] = socketClient;

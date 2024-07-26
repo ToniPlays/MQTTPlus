@@ -29,8 +29,9 @@ namespace MQTTPlus
             
             m_ClientMutex.lock();
             m_ConnectedClients[client] = c;
+            MQP_INFO("Adding client: {} {}", client, m_ConnectedClients.size());
             m_ClientMutex.unlock();
-            MQP_INFO("New Socket connected {}", client);
+            MQP_WARN("New Socket connected {}", client);
         });
         
         m_WebSocket->SetOnSocketDisconnected([this](void* client, int reason) mutable {

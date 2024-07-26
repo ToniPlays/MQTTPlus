@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     using namespace std::chrono_literals;
     while(true)
     {
-        MQP_INFO("Current client count {}", mqtt->GetBroker().GetConnectedClientCount());
+        mqtt->Check();
         std::this_thread::sleep_for(2s);
     }
     

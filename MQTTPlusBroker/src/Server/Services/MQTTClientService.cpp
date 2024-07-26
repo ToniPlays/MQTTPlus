@@ -32,4 +32,8 @@ namespace MQTTPlus
     void MQTTClientService::Stop() {
         
     }
+    void MQTTClientService::Check()
+    {
+        MQP_INFO("Client count: {}", m_Broker->GetConnectedClientCount());
+    }
 }

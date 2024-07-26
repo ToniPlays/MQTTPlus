@@ -17,6 +17,7 @@ namespace MQTTPlus
         void Start() override;
         void Stop() override;
 
+        void Check();
         
         std::string GetName() const override { return "MQTTClientService"; };
         

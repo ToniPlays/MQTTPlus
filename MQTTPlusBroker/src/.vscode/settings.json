@@ -57,5 +57,6 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "iomanip": "cpp"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": false
 }

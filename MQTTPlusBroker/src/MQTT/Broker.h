@@ -60,7 +60,7 @@ namespace MQTTPlus
         Ref<WebSocket> m_WebSocket;
         std::mutex m_ClientMutex;
 
-        inline static std::unordered_map<void*, Ref<MQTTClient>> m_ConnectedClients;        
+        std::unordered_map<void*, Ref<MQTTClient>> m_ConnectedClients;        
         OnClientConnected m_OnClientConnected;
         OnClientDisconnected m_OnClientDisconnected;
     };
