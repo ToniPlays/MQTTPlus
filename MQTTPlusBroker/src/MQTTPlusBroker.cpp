@@ -1,8 +1,9 @@
 #include "MQTTPlusBroker.h"
 #include "Core/Logger.h"
-#include "Server/Services/MQTTClientService.h"
-#include "Server/Services/FrontendService.h"
-#include "Server/ServiceManager.h"
+#include "MQTT/MQTTClientService.h"
+#include "Server/FrontendService.h"
+#include "Database/DatabaseService.h"
+#include "Core/ServiceManager.h"
 #include <signal.h>
 #include <chrono>
 #include "spdlog/fmt/fmt.h"
@@ -20,8 +21,8 @@ int main(int argc, char* argv[])
     MQP_INFO("MQTTPlus v0.1a");
     signal(SIGABRT, on_close);
     
-    
-    auto mqtt = ServiceManager::AddService<MQTTClientService>(8883);
+    ServiceManager::AddService<DatabaseService>();
+    ServiceManager::AddService<MQTTClientService>(8883);
     ServiceManager::AddService<FrontendService>(8884);
     
     ServiceManager::Start();

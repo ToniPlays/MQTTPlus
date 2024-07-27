@@ -2,7 +2,6 @@
 
 #include "MQTTPlusAPI.h"
 #include <chrono>
-#include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
@@ -13,7 +12,7 @@ namespace MQTTPlus::API
     static void to_json(json& j, const ServiceInfo& info)
     {
         j = json {{ "running", info.Running },
-            { "time_started", std::format("{:%FT%TZ}", info.StartupTime.Value()) }
+            //{ "time_started", fmt::format("{:%FT%TZ}", info.StartupTime.Value()) }
         };
     }
 

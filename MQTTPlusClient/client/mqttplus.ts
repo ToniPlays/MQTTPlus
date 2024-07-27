@@ -3,7 +3,7 @@ import useWebSocket from "react-use-websocket"
 import MQTTPlusAPI from "./mqttplus-api"
 
 
-export const url = "http://localhost:8884"
+export const url = "http://80.95.140.80:8884"
 
 /*This API is asynchronous, meaning a post message will not return anything,
 unless provicer.receive(on, callbac) is set
