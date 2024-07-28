@@ -7,7 +7,6 @@ import { MQTTPlusProvider } from "../../client/mqttplus";
 import {
   CheckCircleIcon,
   CpuChipIcon,
-  DocumentMinusIcon,
   EyeIcon,
   ServerIcon,
   TrashIcon,
@@ -18,6 +17,7 @@ import en from "javascript-time-ago/locale/en";
 import TimeAgo from "javascript-time-ago";
 import { MQTTPlus as Serv } from "../../client/types/Server";
 import { MQTTPlus as Events } from "../../client/types/Events";
+import { Capitalize, FormatBytes, FormatPercentage } from "../../components/Utility";
 
 TimeAgo.addDefaultLocale(en);
 
@@ -86,22 +86,6 @@ export default function Server() {
   function GetServiceText() {
     return `${serverStatus?.running_service_count ?? 0} / ${serverStatus?.service_count ?? 0}`;
   }
-  function FormatPercentage(value: number | undefined | null) {
-    if (!value) return 0;
-    return (value * 100.0).toFixed(2);
-  }
-  function FormatBytes(bytes: number | undefined | null) {
-    if (!bytes) return "0 Bytes";
-    const KB = 1000;
-    const MB = KB * KB;
-    const GB = MB * KB;
-    
-
-    if (bytes > GB) return `${(bytes / GB).toPrecision(4)} GB`;
-    if (bytes > MB) return `${(bytes / MB).toPrecision(4)} MB`;
-    if (bytes > KB) return `${(bytes / MB).toPrecision(4)} KB`;
-    return `${bytes} Bytes`;
-  }
 
   const memoryUsed = systemUsage?.memory_total - systemUsage?.memory_available
 
@@ -120,7 +104,7 @@ export default function Server() {
         </CardDataStats>
         <CardDataStats
           title={"Running"}
-          total={serverStatus ? since.formattedDate : "---"}
+          total={serverStatus ? Capitalize(since.formattedDate) : "---"}
           rate={serverStatus ? since.date.toLocaleString() : ""}
         >
           <TrashIcon width={36} height={36} />

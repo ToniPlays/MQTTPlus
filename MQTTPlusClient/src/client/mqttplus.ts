@@ -15,8 +15,9 @@ export const MQTTPlusProvider = () => {
     const api = new MQTTPlusAPI()
     const socket = useWebSocket(url, {
         shouldReconnect: (e) => true,
-        reconnectAttempts: 10,
+        reconnectAttempts: 30,
         reconnectInterval: 5000,
+        share: true,
     })
 
     const [receiveFuncs, setReceiveFuncs] = useState(new Map<string, (data: any, error: any | null) => void>())

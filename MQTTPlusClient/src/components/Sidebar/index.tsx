@@ -47,7 +47,20 @@ const menuGroups = [
         label: "Home",
         route: "#",
       },
+      {
+        label: "Devices",
+        route: "/devices"
+      }
     ],
+  },
+  {
+    name: "NETWORK",
+    menuItems: [
+      {
+        label: "Networks",
+        route: "#"
+      },
+    ]
   },
   {
     name: "OTHER",
