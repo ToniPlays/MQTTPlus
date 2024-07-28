@@ -1,19 +1,18 @@
 
+export const KB = 1000;
+export const MB = KB * KB;
+export const GB = MB * KB;
 
 export function FormatPercentage(value: number | undefined | null) {
     if (!value) return 0;
-    return (value * 100.0).toFixed(2);
+    return (value * 100.0).toFixed();
 }
 export function FormatBytes(bytes: number | undefined | null) {
     if (!bytes) return "0 Bytes";
-    const KB = 1000;
-    const MB = KB * KB;
-    const GB = MB * KB;
     
-
-    if (bytes > GB) return `${(bytes / GB).toPrecision(4)} GB`;
-    if (bytes > MB) return `${(bytes / MB).toPrecision(4)} MB`;
-    if (bytes > KB) return `${(bytes / MB).toPrecision(4)} KB`;
+    if (bytes > GB) return `${(bytes / GB).toFixed(2)} GB`;
+    if (bytes > MB) return `${(bytes / MB).toFixed(2)} MB`;
+    if (bytes > KB) return `${(bytes / MB).toFixed(2)} KB`;
     return `${bytes} Bytes`;
 }
 export function Capitalize(value: string)

@@ -1,2 +1,2 @@
 cd ..
-cloc MQTTPlusBroker/src MQTTPlusClient/pages MQTTPlusClient/components MQTTPlusClient/client
+cloc MQTTPlusBroker/src MQTTPlusClient/src
