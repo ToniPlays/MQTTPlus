@@ -2,9 +2,19 @@
 
 #include "Service.h"
 #include <vector>
+#include <chrono>
 #include <atomic>
 
 namespace MQTTPlus {
+
+    struct SystemStatus {
+        std::chrono::time_point<std::chrono::system_clock> UpdatedAt;
+        float UsageCPU;
+        float MemoryUsage;
+        float DiskTotalSpace;
+        float DiskSpaceUsed;
+    };
+
     class ServiceManager {
     public:
         ServiceManager() = default;
@@ -12,6 +22,8 @@ namespace MQTTPlus {
         
         static void Start();
         static void Stop();
+        
+        static void WaitUntilStopped() { s_Running.wait(true); }
         
         template<typename T, typename... Args>
         static Ref<T> AddService(Args&&... args)
@@ -33,12 +45,21 @@ namespace MQTTPlus {
         }
         
         static uint32_t GetRunningServiceCount() {
-            return (uint32_t)s_Services.size();
+            uint32_t count = 0;
+            for(auto& service : s_Services)
+                count += service->IsRunning();
+            return count;
         }
+        
+        static const SystemStatus& GetSystemStatus();
+        
         static std::vector<Ref<Service>> GetServices() { return s_Services; }
+        static const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() { return s_StartupTime; }
         
     private:
         inline static std::vector<Ref<Service>> s_Services;
+        inline static std::chrono::time_point<std::chrono::system_clock> s_StartupTime;
         inline static std::atomic_bool s_Running = false;
+        inline static SystemStatus s_Status;
     };
 }

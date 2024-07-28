@@ -1,5 +1,6 @@
 #pragma once
 
+#include "HTTPClient.h"
 #include <iostream>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -11,11 +12,12 @@ namespace MQTTPlus {
     using websocketpp::lib::placeholders::_1;
     using websocketpp::lib::placeholders::_2;
     using websocketpp::lib::bind;
-    using PostMessageCallback = std::function<std::string(const std::string&, void*)>;
+    using PostMessageCallback = std::function<void(const std::string&, HTTPClient&)>;
     using MessageResolverCallback = std::function<bool(const char*, const std::string&)>;
 
     class HTTPServer
     {
+        friend class HTTPClient;
     public:
         HTTPServer() = default;
         HTTPServer(uint32_t port, void* userData = nullptr);
@@ -38,5 +40,7 @@ namespace MQTTPlus {
         
         MessageResolverCallback m_ResolverCallback;
         std::unordered_map<std::string, PostMessageCallback> m_PostCallbacks;
+        
+        std::unordered_map<Server::connection_ptr, Ref<HTTPClient>> m_ConnectedClients;
     };
 }

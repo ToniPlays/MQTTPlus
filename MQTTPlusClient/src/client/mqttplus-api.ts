@@ -1,7 +1,11 @@
 
-import { MQTTPlus } from './types/Server'
+import './types/Server'
+import './types/Events'
+import { MQTTPlus as Server } from './types/Server'
+import { MQTTPlus as Events} from './types/Events'
 
 export default class MQTTPlusAPI {
-    server = new MQTTPlus.Server()
+    server = new Server.Server()
+    events = new Events.Events()
 }
 

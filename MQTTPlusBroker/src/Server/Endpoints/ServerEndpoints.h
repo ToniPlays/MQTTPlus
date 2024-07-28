@@ -3,6 +3,7 @@
 #include "Core/ServiceManager.h"
 #include "API/MQTTPlusAPI.h"
 #include <nlohmann/json.hpp>
+#include "API/JsonConverter.h"
 
 namespace MQTTPlus
 {
@@ -11,31 +12,34 @@ namespace MQTTPlus
         using namespace nlohmann;
         using namespace API;
         
-        server.Post("/server", [](const std::string& message, void*) mutable {
+        server.Post("/server", [](const std::string& message, HTTPClient& client) mutable {
             
             json msg = json::parse(message);
             
-            uint32_t count = ServiceManager::GetRunningServiceCount();
+            uint32_t count = ServiceManager::GetServices().size();
             std::vector<API::Service> services;
             services.reserve(count);
+            
+            bool expandsServiceInfo = ArrayContains(msg["opts"]["expands"], "services.info");
             
             for(auto& service : ServiceManager::GetServices())
             {
                 auto& s = services.emplace_back();
                 s.Name = service->GetName();
                 
-                if(ArrayContains(msg["opts"]["expands"], "services.info"))
+                if(expandsServiceInfo)
                 {
                     s.Info = ServiceInfo {
-                        .Running = true,
+                        .Running = service->IsRunning(),
                         .StartupTime = service->GetStartupTime(),
                     };
                 }
             }
             
-            
             ServerStatus status = {
-                .ServiceCount = count,
+                .StartupTime = ServiceManager::GetStartupTime(),
+                .ServiceCount = ServiceManager::GetServices().size(),
+                .RunningServices = ServiceManager::GetRunningServiceCount(),
                 .Services = services,
             };
             
@@ -43,7 +47,7 @@ namespace MQTTPlus
             j["endpoint"] = "/server";
             j["data"] = status;
             
-            return j.dump();
+            client.Send(j.dump());
         });
     }
 }

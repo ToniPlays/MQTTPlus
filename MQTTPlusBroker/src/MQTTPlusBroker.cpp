@@ -26,13 +26,8 @@ int main(int argc, char* argv[])
     ServiceManager::AddService<FrontendService>(8884);
     
     ServiceManager::Start();
-    
-    using namespace std::chrono_literals;
-    while(true)
-    {
-        //mqtt->Check();
-        //std::this_thread::sleep_for(2s);
-    }
+    ServiceManager::WaitUntilStopped();
+    ServiceManager::Stop();
     
     
     return 0;

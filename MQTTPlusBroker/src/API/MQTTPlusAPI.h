@@ -10,7 +10,7 @@ namespace MQTTPlus::API
 {
     struct ServiceInfo 
     {
-        Field<bool> Running = true;
+        Field<bool> Running;
         Field<std::chrono::time_point<std::chrono::system_clock>> StartupTime;
     };
 
@@ -21,7 +21,9 @@ namespace MQTTPlus::API
     };
 
     struct ServerStatus {
+        Field<std::chrono::time_point<std::chrono::system_clock>> StartupTime;
         Field<uint32_t> ServiceCount;
+        Field<uint32_t> RunningServices;
         Array<Service> Services;
     };
 }

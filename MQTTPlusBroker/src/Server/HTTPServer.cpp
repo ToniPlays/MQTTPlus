@@ -6,18 +6,32 @@ namespace MQTTPlus
 {
     HTTPServer::HTTPServer(uint32_t port, void* userData) : m_Port(port), m_UserData(userData)
     {
+        using namespace websocketpp;
         m_Server.set_reuse_addr(true);
-        m_Server.set_access_channels(websocketpp::log::alevel::none);
-        m_Server.set_error_channels(websocketpp::log::alevel::frame_payload);
+        m_Server.set_access_channels(log::alevel::none);
+        m_Server.set_error_channels(log::alevel::frame_payload);
         
         m_Server.init_asio();
         
-        auto messageHandlerFunc = [this](Server* s, websocketpp::connection_hdl hdl, Server::message_ptr msg) {
+        auto messageHandlerFunc = [this](Server* s, connection_hdl hdl, Server::message_ptr msg) {
             MessageHandlerFunc(hdl, msg);
         };
-
+        open_handler openHandler = [this](connection_hdl hdl) {
+            MQP_INFO("Socket connected");
+            Server::connection_ptr con = m_Server.get_con_from_hdl(hdl);
+            m_ConnectedClients[con] = Ref<HTTPClient>::Create(this, con);
+        };
+        
+        close_handler closeHandler = [this](connection_hdl hdl) {
+            auto it = m_ConnectedClients.find(m_Server.get_con_from_hdl(hdl));
+            if(it != m_ConnectedClients.end())
+                m_ConnectedClients.erase(it);
+            MQP_INFO("Socket closed");
+        };
         
         m_Server.set_message_handler(bind(messageHandlerFunc, &m_Server, _1, _2));
+        m_Server.set_open_handler(openHandler);
+        m_Server.set_close_handler(closeHandler);
     }
 
     void HTTPServer::Listen()
@@ -48,13 +62,15 @@ namespace MQTTPlus
             
             try 
             {
-                std::string result = func(payload, m_UserData);
-                m_Server.send(hdl, result, msg->get_opcode());
+                auto conn = m_Server.get_con_from_hdl(hdl);
+                func(payload, *m_ConnectedClients[conn]);
+                
                 return;
             } catch(std::exception& e)
             {
                 MQP_ERROR("Message failed for {}", payload);
             }
         }
+        MQP_ERROR("Endpoint not found for message {}", payload);
     }
 }

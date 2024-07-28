@@ -1,7 +1,5 @@
 
 export module MQTTPlus {
-    
-
      export class Server {
          public readonly endpoint = "/server"
 
@@ -21,6 +19,5 @@ export module MQTTPlus {
         export interface ServerOpts {
             expands?: Array<ExpandOpts>
         }
-
     }
 }
