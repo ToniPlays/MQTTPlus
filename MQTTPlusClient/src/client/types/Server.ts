@@ -13,7 +13,8 @@ export module MQTTPlus {
 
     export module Server {
         export enum ExpandOpts {
-            Services = 'services.info'
+            Services = 'services.info',
+            Status = 'status',
         }
 
         export interface ServerOpts {

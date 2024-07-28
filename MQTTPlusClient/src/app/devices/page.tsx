@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import DefaultLayout from "../../components/DefaultLayout";
 import { MQTTPlusProvider } from "../../client/mqttplus";
 import Table from "../../components/Tables/Table";
@@ -17,18 +17,20 @@ export default function Server() {
   const provider = MQTTPlusProvider()
   const api = provider.api
 
-  const data: Device[] = [
-    {
-      uid: "2312365654",
-      name: "Test device",
-      status: "Connected",
-    },
-    {
-      uid: "32547440",
-      name: "Test device 2",
-      status: "Disconnected",
-    },
-  ];
+  const [devices, setDevices] = useState<Device[]>([])
+
+
+  useEffect(() => {
+    provider.post(api.devices.list())
+    
+    
+    provider.receive(api.devices.endpoint, (data, error) => {
+      
+    })
+
+  }, [provider.status])
+
+  
 
   function GetStatusColor(status: string)
   {
@@ -42,8 +44,8 @@ export default function Server() {
   return (
     <DefaultLayout>
       <Breadcrumb pageName="Devices" />
-      <Table label="My devices" columns={["Device", "Status", "Last seen"]}>
-      {data.map(device => {
+      <Table label="My devices" columns={["Device", "Network", "Status", "Last seen"]}>
+      {devices.map(device => {
         return (
             <div
             className={`flex justify-between`}

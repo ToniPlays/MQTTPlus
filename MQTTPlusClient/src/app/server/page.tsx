@@ -17,7 +17,12 @@ import en from "javascript-time-ago/locale/en";
 import TimeAgo from "javascript-time-ago";
 import { MQTTPlus as Serv } from "../../client/types/Server";
 import { MQTTPlus as Events } from "../../client/types/Events";
-import { Capitalize, FormatBytes, FormatPercentage } from "../../components/Utility";
+import {
+  Capitalize,
+  FormatBytes,
+  FormatPercentage,
+} from "../../components/Utility";
+import Breadcrumb from "../../components/Breadcrumb";
 
 TimeAgo.addDefaultLocale(en);
 
@@ -40,15 +45,19 @@ export default function Server() {
 
     provider.post(
       api.server.status({
-        expands: [Serv.Server.ExpandOpts.Services],
+        expands: [
+          Serv.Server.ExpandOpts.Services,
+          Serv.Server.ExpandOpts.Status,
+        ],
       }),
     );
+
     provider.post(
       api.events.listen({
         listen: [
           {
             type: Events.Events.EventType.ServerStatus,
-            interval: 1.0,
+            interval: 5.0,
           },
         ],
       }),
@@ -59,9 +68,11 @@ export default function Server() {
     provider.receive(api.server.endpoint, (data, error) => {
       if (!error) {
         setServerStatus(data.data);
+        setSystemUsage(data.data.status);
         since.date = new Date(serverStatus?.startup_time);
       }
     });
+
     provider.receive(api.events.endpoint, (data, error) => {
       const type = data["data"]["type"];
       if (type == Events.Events.EventType.ServerStatus)
@@ -87,10 +98,11 @@ export default function Server() {
     return `${serverStatus?.running_service_count ?? 0} / ${serverStatus?.service_count ?? 0}`;
   }
 
-  const memoryUsed = systemUsage?.memory_total - systemUsage?.memory_available
+  const memoryUsed = systemUsage?.memory_total - systemUsage?.memory_available;
 
   return (
     <DefaultLayout>
+      <Breadcrumb pageName="Server" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
         <CardDataStats title={"Status"} total={GetStatus()}>
           <CheckCircleIcon
@@ -128,7 +140,7 @@ export default function Server() {
         <CardDataStats
           title={"Disk"}
           total={`${FormatBytes(systemUsage?.disk_space_used)} / ${FormatBytes(systemUsage?.disk_space_total)}`}
-          rate={`${(systemUsage?.disk_space_used / systemUsage?.disk_space_total * 100).toFixed(2)}%`}
+          rate={`${((systemUsage?.disk_space_used / systemUsage?.disk_space_total) * 100).toFixed(2)}%`}
         >
           <ServerIcon width={36} height={36} />
         </CardDataStats>
