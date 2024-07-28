@@ -88,19 +88,22 @@ export default function Server() {
   }
   function FormatPercentage(value: number | undefined | null) {
     if (!value) return 0;
-    return (value * 100.0).toPrecision(4);
+    return (value * 100.0).toFixed(2);
   }
-  function FormatDisk(bytes: number | undefined | null) {
+  function FormatBytes(bytes: number | undefined | null) {
     if (!bytes) return "0 Bytes";
-    const GB = 1024 * 1024 * 1024;
-    const MB = 1024 * 1024;
-    const KB = 1024;
+    const KB = 1000;
+    const MB = KB * KB;
+    const GB = MB * KB;
+    
 
     if (bytes > GB) return `${(bytes / GB).toPrecision(4)} GB`;
     if (bytes > MB) return `${(bytes / MB).toPrecision(4)} MB`;
     if (bytes > KB) return `${(bytes / MB).toPrecision(4)} KB`;
     return `${bytes} Bytes`;
   }
+
+  const memoryUsed = systemUsage?.memory_total - systemUsage?.memory_available
 
   return (
     <DefaultLayout>
@@ -132,14 +135,15 @@ export default function Server() {
 
         <CardDataStats
           title={"Memory"}
-          total={`${FormatPercentage(systemUsage?.memory_usage)}%`}
+          total={`${FormatPercentage(memoryUsed / systemUsage?.memory_total)}%`}
+          rate={`${FormatBytes(memoryUsed)} / ${FormatBytes(systemUsage?.memory_total)}`}
         >
           <ServerIcon width={36} height={36} />
         </CardDataStats>
 
         <CardDataStats
           title={"Disk"}
-          total={`${FormatDisk(systemUsage?.disk_space_used)} / ${FormatDisk(systemUsage?.disk_space_total)}`}
+          total={`${FormatBytes(systemUsage?.disk_space_used)} / ${FormatBytes(systemUsage?.disk_space_total)}`}
           rate={`${(systemUsage?.disk_space_used / systemUsage?.disk_space_total * 100).toFixed(2)}%`}
         >
           <ServerIcon width={36} height={36} />
