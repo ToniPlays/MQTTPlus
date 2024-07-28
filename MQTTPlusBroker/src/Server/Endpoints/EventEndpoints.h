@@ -35,7 +35,6 @@ namespace MQTTPlus
             {
                 const std::string& type = obj["type"];
                 float interval = obj["interval"];
-                std::cout << type << " " << interval << std::endl;
                 auto func = timedEvents[type];
                 client.SetTimedFunction(interval, [&client, func]() { func(client); });
             }

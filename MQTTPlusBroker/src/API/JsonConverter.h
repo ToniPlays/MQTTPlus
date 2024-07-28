@@ -4,7 +4,12 @@
 #include "Core/ServiceManager.h"
 #include <chrono>
 #include <iostream>
+#ifdef MQP_MACOS
 #include <format>
+#endif
+#include <iomanip>
+#include <sstream>
+#include <spdlog/fmt/fmt.h>
 #include <nlohmann/json.hpp>
 
 namespace MQTTPlus::API
@@ -13,7 +18,14 @@ namespace MQTTPlus::API
 
     static std::string FormatTime(const auto& value)
     {
+        #ifdef MQP_MACOS
         return std::format("{:%FT%TZ}", value);
+        #elif MQP_LINUX
+        auto itt = std::chrono::system_clock::to_time_t(value);
+        std::ostringstream ss;
+        ss << std::put_time(gmtime(&itt), "%FT%TZ");
+        return ss.str();
+        #endif
     }
 
 
@@ -46,7 +58,8 @@ namespace MQTTPlus {
     static void to_json(json& j, const SystemStatus& status)
     {
         j = json {{ "cpu_load", status.UsageCPU },
-                  { "memory_usage", status.MemoryUsage },
+                  { "memory_total", status.TotalMemory },
+                  { "memory_available", status.AvailableMemory },
                   { "disk_space_total", status.DiskTotalSpace },
                   { "disk_space_used", status.DiskSpaceUsed }
         };

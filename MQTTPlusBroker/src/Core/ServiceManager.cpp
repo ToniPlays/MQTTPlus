@@ -10,6 +10,8 @@ namespace MQTTPlus
 {
     void ServiceManager::Start()
     {
+        s_Status.TotalMemory = GetAvailableSystemMemory();
+
         s_StartupTime = std::chrono::system_clock::now();
         s_Running = true;
         for(auto& service : s_Services)
@@ -33,7 +35,8 @@ namespace MQTTPlus
             auto diskUsage = GetSystemDiskUsage();
             s_Status.UpdatedAt = std::chrono::system_clock::now();
             s_Status.UsageCPU = GetCPULoad();
-            s_Status.MemoryUsage = GetSystemMemoryUsagePercentage();
+            s_Status.AvailableMemory = GetSystemMemoryAvailable();
+            
             s_Status.DiskTotalSpace = diskUsage[0];
             s_Status.DiskSpaceUsed = diskUsage[1];
             timer.Reset();

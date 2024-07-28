@@ -7,7 +7,6 @@ namespace MQTTPlus
 {
     void HTTPClient::SetTimedFunction(float timeout, const std::function<void ()>& callback)
     {
-        MQP_INFO("Adding new callback with interval of {}", timeout);
         m_Timer.AddCallback(timeout, callback);
     }
     void HTTPClient::Send(const std::string& message)

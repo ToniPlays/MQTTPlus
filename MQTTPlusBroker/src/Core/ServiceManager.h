@@ -10,9 +10,10 @@ namespace MQTTPlus {
     struct SystemStatus {
         std::chrono::time_point<std::chrono::system_clock> UpdatedAt;
         float UsageCPU;
-        float MemoryUsage;
-        float DiskTotalSpace;
-        float DiskSpaceUsed;
+        uint64_t TotalMemory;
+        uint64_t AvailableMemory;
+        uint64_t DiskTotalSpace;
+        uint64_t DiskSpaceUsed;
     };
 
     class ServiceManager {

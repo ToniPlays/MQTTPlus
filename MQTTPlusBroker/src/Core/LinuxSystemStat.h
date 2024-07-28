@@ -2,182 +2,67 @@
 
 #ifdef MQP_LINUX
 
+#include <sys/vfs.h>
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <sys/statvfs.h>
+#include <unistd.h>
+#include <sys/sysinfo.h>
 
 namespace MQTTPlus
 {
-
-    struct CPUStats
+    static float CalculateCPULoad(unsigned long long idleTicks, unsigned long long totalTicks);
+    // Returns 1.0f for "CPU fully pinned", 0.0f for "CPU idle", or somewhere in between
+    // You'll need to call this at regular intervals, since it measures the load between
+    // the previous call and the current one.
+    static float GetCPULoad()
     {
-        int User;
-        int Nice;
-        int System;
-        int Idle;
-        int Iowait;
-        int Irq;
-        int Softirq;
-        int Steal;
-        int Guest;
-        int GuestNice;
+        float f_load = 1.f / (1 << SI_LOAD_SHIFT);
+        float nproc = 1.0f / get_nprocs();
+        struct sysinfo info;
+        sysinfo(&info);
+        return info.loads[0] * f_load * nproc;
+    }
 
-        int GetTotalIdle()
-        const {
-            return Idle + Iowait;
-        }
-
-        int GetTotalActive()
-        const {
-            return User + Nice + System + Irq + Softirq + Steal + Guest + GuestNice;
-        }
-
-    };
-
-    struct MemoryStats
+    static float CalculateCPULoad(unsigned long long idleTicks, unsigned long long totalTicks)
     {
-        int TotalMemory;
-        int AvailableMemory;
-        int TotalSwap;
-        int DreeSwap;
+        static unsigned long long _previousTotalTicks = 0;
+        static unsigned long long _previousIdleTicks = 0;
+        
+        unsigned long long totalTicksSinceLastTime = totalTicks-_previousTotalTicks;
+        unsigned long long idleTicksSinceLastTime  = idleTicks-_previousIdleTicks;
+        float ret = 1.0f-((totalTicksSinceLastTime > 0) ? ((float)idleTicksSinceLastTime)/totalTicksSinceLastTime : 0);
+        _previousTotalTicks = totalTicks;
+        _previousIdleTicks  = idleTicks;
+        return ret;
+    }
 
-        float GetMemoryUsage() {
-            return static_cast<float>(TotalMemory - AvailableMemory) / TotalMemory;
-        }
-
-        float GetSwapUsage() {
-            return = static_cast<float>(TotalSwap - FreeSwap) / TotalSwap;
-        }
-
-    };
-
-    inline CPUStats ReadCpuData()
+    // Returns a number between 0.0f and 1.0f, with 0.0f meaning all RAM is available, and 1.0f meaning all RAM is currently in use
+    uint64_t GetSystemMemoryAvailable()
     {
-        CPUStats result;
-        std::ifstream proc_stat("/proc/stat");
+        struct sysinfo info;
+        sysinfo(&info);
 
-        if (proc_stat.good())
-        {
-            std::string line;
-            getline(proc_stat, line);
+        return info.freeram;
+    }
 
-            unsigned int *stats_p = (unsigned int *)&result;
-            std::stringstream iss(line);
-            std::string cpu;
-            iss >> cpu;
-            while (iss >> *stats_p)
-            {
-                stats_p++;
-            };
-        }
-
-        proc_stat.close();
-
+    uint64_t GetAvailableSystemMemory() {
+        struct sysinfo info;
+        sysinfo(&info);
+        return info.totalram;
+    }
+    
+    static std::vector<uint64_t> GetSystemDiskUsage() {
+        std::vector<uint64_t> result(2);
+        struct statfs stStg;
+        statfs(".", &stStg);
+        uint64_t total_sz = stStg.f_bsize * stStg.f_blocks;
+        uint64_t free_sz = stStg.f_bsize * stStg.f_bfree;
+        
+        result[0] = total_sz;
+        result[1] = total_sz - free_sz;
+        
         return result;
     }
-
-    inline int GetVal(const std::string &target, const std::string &content) {
-        int result = -1;
-        std::size_t start = content.find(target);
-        if (start != std::string::npos) {
-            int begin = start + target.length();
-            std::size_t end = content.find("kB", start);
-            std::string substr = content.substr(begin, end - begin);
-            result = std::stoi(substr);
-        }
-        return result;
-    }
-
-    inline Memory_stats ReadMemoryData()
-    {
-        Memory_stats result;
-        std::ifstream proc_meminfo("/proc/meminfo");
-
-        if (proc_meminfo.good())
-        {
-            std::string content((std::istreambuf_iterator<char>(proc_meminfo)),
-                    std::istreambuf_iterator<char>());
-
-            result.total_memory = get_val("MemTotal:", content);
-            result.total_swap = get_val("SwapTotal:", content);
-            result.free_swap = get_val("SwapFree:", content);
-            result.available_memory = get_val("MemAvailable:", content);
-
-        }
-
-        proc_meminfo.close();
-
-        return result;
-    }
-
-    inline float GetCpuUsage(const CPU_stats &first, const CPU_stats &second) {
-        const float active_time    = static_cast<float>(second.get_total_active() - first.get_total_active());
-        const float idle_time    = static_cast<float>(second.get_total_idle() - first.get_total_idle());
-        const float total_time    = active_time + idle_time;
-        return active_time / total_time;
-    }
-
-    inline float GetDiskUsage(const std::string & disk) {
-        struct statvfs diskData;
-
-        statvfs(disk.c_str(), &diskData);
-
-        auto total = diskData.f_blocks;
-        auto free = diskData.f_bfree;
-        auto diff = total - free;
-
-        float result = static_cast<float>(diff) / total;
-
-        return result;
-    }
-
-    inline int FindThermalzoneIndex() {
-        int result = 0;
-        bool stop = false;
-        // 20 must stop anyway
-        for (int i = 0; !stop && i < 20; ++i) {
-            std::ifstream thermal_file("/sys/class/thermal/thermal_zone" + std::to_string(i) + "/type");
-
-            if (thermal_file.good())
-            {
-                std::string line;
-                getline(thermal_file, line);
-
-                if (line.compare("x86_pkg_temp") == 0) {
-                    result = i;
-                    stop = true;
-                }
-
-            } else {
-                stop = true;
-            }
-
-            thermal_file.close();
-        }
-        return result;
-    }
-
-    inline int GetThermalzoneTemperature(int thermal_index) {
-        int result = -1;
-        std::ifstream thermal_file("/sys/class/thermal/thermal_zone" + std::to_string(thermal_index) + "/temp");
-
-        if (thermal_file.good())
-        {
-            std::string line;
-            getline(thermal_file, line);
-
-            std::stringstream iss(line);
-            iss >> result;
-        } else {
-            throw std::invalid_argument(std::to_string(thermal_index) + " doesn't refer to a valid thermal zone.");
-        }
-
-        thermal_file.close();
-
-        return result;
-    }
-
 }
 
 #endif
+
