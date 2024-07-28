@@ -19,8 +19,8 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body suppressHydrationWarning={true}>
-        <div className="dark:bg-boxdark-2 dark:text-bodydark">
+      <body suppressHydrationWarning={true} className="dark:text-bodydark">
+        <div className="dark:bg-boxdark-2 dark:text-bodydark" style={{ minHeight: '100vh'}}>
           {children}
         </div>
       </body>
