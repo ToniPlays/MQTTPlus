@@ -17,3 +17,5 @@ scripts/setup/__pycache__
 *.filters
 *.user
 *.sln
+MQTTPlusBroker/config.cfg
+/MQTTPlusBroker/.vscode

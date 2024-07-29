@@ -64,9 +64,12 @@ namespace MQTTPlus
 
     MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth)
     {
+        
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
+        if(client->GetAuth().ClientID.empty())
+            m_OnClientConnected(client);
+
         client->m_Authentication = auth;
-        m_OnClientConnected(client);
         return MQTT::ConnAckFlags::Accepted;
     }
 

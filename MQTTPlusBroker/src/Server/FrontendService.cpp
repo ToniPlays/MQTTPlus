@@ -68,7 +68,7 @@ namespace MQTTPlus {
         std::unordered_map<std::string, ListenCallback> listeners = { 
             { MQTTClientEvent::GetStaticName(), [client](Event& e) { ProcessMQTTChangeEvent(client, e); } }
             };
-        MQP_WARN("Adding listener {}", type);
+
         m_Listeners[client.Raw()].AddListener(type, listeners[type]);
     }
 
@@ -88,7 +88,7 @@ namespace MQTTPlus {
                 { "is_connected", ev.IsConnected() }
             } }
         });
-        MQP_WARN(j.dump());
+        
         client->Send(j.dump());
     }
 }

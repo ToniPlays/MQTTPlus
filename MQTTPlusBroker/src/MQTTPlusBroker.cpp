@@ -4,6 +4,7 @@
 #include "Server/FrontendService.h"
 #include "Database/DatabaseService.h"
 #include "Core/ServiceManager.h"
+#include "Core/CommandLineArgs.h"
 #include <signal.h>
 #include <chrono>
 #include "spdlog/fmt/fmt.h"
@@ -19,11 +20,13 @@ int main(int argc, char* argv[])
 
     Logger::Init();
     MQP_INFO("MQTTPlus v0.1a");
+    CommandLineArgs::Init(argc, argv);
+
     signal(SIGABRT, on_close);
     
     ServiceManager::AddService<DatabaseService>();
-    ServiceManager::AddService<MQTTClientService>(8883);
-    ServiceManager::AddService<FrontendService>(8884);
+    ServiceManager::AddService<MQTTClientService>(CommandLineArgs::Get<int>("port_mqtt"));
+    ServiceManager::AddService<FrontendService>(CommandLineArgs::Get<int>("port_http"));
     
     ServiceManager::Start();
     ServiceManager::Stop();

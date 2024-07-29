@@ -24,8 +24,8 @@ project "MQTTPlusBroker"
 		"BOOST_USE_WINDOWS_H",
 	}
 	filter "system:linux"
-	includedirs {
-		"",
+	links {
+		"mariadbcpp",
 	}
 
 	References("uSockets")
