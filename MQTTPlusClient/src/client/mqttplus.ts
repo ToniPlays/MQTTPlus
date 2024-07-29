@@ -33,7 +33,6 @@ export const MQTTPlusProvider = () => {
     }, [socket.lastJsonMessage])
 
     const postFunc = useCallback((message: any) => {
-        console.log(JSON.stringify(message))
         socket.sendMessage(JSON.stringify(message))
     }, [])
 

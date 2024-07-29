@@ -74,9 +74,9 @@ export default function Server() {
     });
 
     provider.receive(api.events.endpoint, (data, error) => {
-      const type = data["data"]["type"];
+      const type = data.data.type;
       if (type == Events.Events.EventType.ServerStatus)
-        setSystemUsage(data["data"]["event_data"]);
+        setSystemUsage(data.data.event_type);
     });
   }
 

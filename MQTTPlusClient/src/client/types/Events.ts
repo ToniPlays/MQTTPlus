@@ -13,7 +13,8 @@ export module MQTTPlus {
 
    export module Events {
        export enum EventType {
-           ServerStatus = 'server.status'
+           ServerStatus = 'server.status',
+           MQTTClientConnectionStatusChanged = 'mqtt.client_connection_status_changed',
        }
 
        export interface ListenEventOpts {

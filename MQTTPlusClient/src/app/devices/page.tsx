@@ -5,6 +5,9 @@ import DefaultLayout from "../../components/DefaultLayout";
 import { MQTTPlusProvider } from "../../client/mqttplus";
 import Table from "../../components/Tables/Table";
 import Breadcrumb from "../../components/Breadcrumb";
+import { ReadyState } from "react-use-websocket";
+import { MQTTPlus as Events } from "../../client/types/Events";
+import toast from "react-hot-toast";
 
 
 interface Device {
@@ -20,17 +23,37 @@ export default function Server() {
   const [devices, setDevices] = useState<Device[]>([])
 
 
-  useEffect(() => {
+  useEffect(() => 
+  {
+    if(provider.status != ReadyState.OPEN) return;
+    
     provider.post(api.devices.list())
-    
-    
     provider.receive(api.devices.endpoint, (data, error) => {
       
     })
 
-  }, [provider.status])
+    provider.post(api.events.listen({
+      listen: [{
+        type: Events.Events.EventType.MQTTClientConnectionStatusChanged,
+      }]
+    }))
 
-  
+    provider.receive(api.events.endpoint, (data, error) => {
+      
+      const type = data.data.type
+      const eventData = data.data.event_data
+      
+      switch(type)
+      {
+        case Events.Events.EventType.MQTTClientConnectionStatusChanged:
+          if(eventData.is_connected)
+            toast.success(`MQTT ${eventData.client_id} connected`)
+          else toast.error(`MQTT ${eventData.client_id} disconnected`)
+          break 
+      }
+    })
+
+  }, [provider.status])
 
   function GetStatusColor(status: string)
   {
