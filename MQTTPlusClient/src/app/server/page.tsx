@@ -66,17 +66,19 @@ export default function Server() {
 
   function SetEndpoints() {
     provider.receive(api.server.endpoint, (data, error) => {
+      
       if (!error) {
-        setServerStatus(data.data);
-        setSystemUsage(data.data.status);
+        setServerStatus(data.data)
+        setSystemUsage(data.data.status)
         since.date = new Date(serverStatus?.startup_time);
       }
     });
 
     provider.receive(api.events.endpoint, (data, error) => {
-      const type = data.data.type;
+      console.log(data.data)
+      const type = data.data.type
       if (type == Events.Events.EventType.ServerStatus)
-        setSystemUsage(data.data.event_type);
+        setSystemUsage(data.data.event_data);
     });
   }
 
