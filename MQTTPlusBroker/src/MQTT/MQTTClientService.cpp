@@ -1,4 +1,6 @@
 #include "MQTTClientService.h"
+#include "Core/ServiceManager.h"
+#include "Events.h"
 #include "Core/Logger.h"
 
 namespace MQTTPlus
@@ -18,10 +20,13 @@ namespace MQTTPlus
         m_StartupTime = std::chrono::system_clock::now();
         
         m_Broker->SetOnClientConnected([this](Ref<MQTTClient> client) {
-           
+            MQTTClientEvent e(client, true);
+            ServiceManager::OnEvent(e);
         });
         
         m_Broker->SetOnClientDisconnected([this](Ref<MQTTClient> client, int code) {
+            MQTTClientEvent e(client, false);
+            ServiceManager::OnEvent(e);
         });
         
         m_Thread = Ref<Thread>::Create(std::thread([this]() {
@@ -30,6 +35,10 @@ namespace MQTTPlus
     }
 
     void MQTTClientService::Stop() {
+        
+    }
+    void MQTTClientService::OnEvent(Event& e)
+    {
         
     }
 }

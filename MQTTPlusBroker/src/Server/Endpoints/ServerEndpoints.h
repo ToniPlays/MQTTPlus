@@ -12,7 +12,7 @@ namespace MQTTPlus
         using namespace nlohmann;
         using namespace API;
         
-        server.Post("/server", [](const std::string& message, HTTPClient& client) mutable {
+        server.Post("/server", [](const std::string& message, Ref<HTTPClient> client) mutable {
             
             json msg = json::parse(message);
             
@@ -41,13 +41,17 @@ namespace MQTTPlus
                 .ServiceCount = ServiceManager::GetServices().size(),
                 .RunningServices = ServiceManager::GetRunningServiceCount(),
                 .Services = services,
+                .Status = nullptr,
             };
+
+            if(ArrayContains(msg["opts"]["expands"], "status"))
+                status.Status = ServiceManager::GetSystemStatus();
             
             json j = {};
             j["endpoint"] = "/server";
             j["data"] = status;
             
-            client.Send(j.dump());
+            client->Send(j.dump());
         });
     }
 }

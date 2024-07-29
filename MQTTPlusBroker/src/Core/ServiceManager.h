@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Service.h"
+#include "Event.h"
 #include <vector>
 #include <chrono>
 #include <atomic>
+#include <queue>
 
 namespace MQTTPlus {
 
@@ -23,8 +25,7 @@ namespace MQTTPlus {
         
         static void Start();
         static void Stop();
-        
-        static void WaitUntilStopped() { s_Running.wait(true); }
+        static void OnEvent(Event& e);
         
         template<typename T, typename... Args>
         static Ref<T> AddService(Args&&... args)
@@ -61,6 +62,7 @@ namespace MQTTPlus {
         inline static std::vector<Ref<Service>> s_Services;
         inline static std::chrono::time_point<std::chrono::system_clock> s_StartupTime;
         inline static std::atomic_bool s_Running = false;
+        inline static std::queue<Event> s_EventQueue;
         inline static SystemStatus s_Status;
     };
 }

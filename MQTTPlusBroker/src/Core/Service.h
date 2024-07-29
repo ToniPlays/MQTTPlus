@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Ref.h"
+#include "Event.h"
 #include <chrono>
 
 namespace MQTTPlus {
@@ -10,6 +11,7 @@ namespace MQTTPlus {
     public:
         virtual void Start() = 0;
         virtual void Stop() = 0;
+        virtual void OnEvent(Event& e) = 0;
         
         virtual bool IsRunning() const = 0;
         

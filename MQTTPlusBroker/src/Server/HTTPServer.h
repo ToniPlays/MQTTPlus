@@ -12,7 +12,8 @@ namespace MQTTPlus {
     using websocketpp::lib::placeholders::_1;
     using websocketpp::lib::placeholders::_2;
     using websocketpp::lib::bind;
-    using PostMessageCallback = std::function<void(const std::string&, HTTPClient&)>;
+    using ClientChangeCallback = std::function<void(Ref<HTTPClient>, bool)>;
+    using PostMessageCallback = std::function<void(const std::string&, Ref<HTTPClient>)>;
     using MessageResolverCallback = std::function<bool(const char*, const std::string&)>;
 
     class HTTPServer
@@ -28,6 +29,10 @@ namespace MQTTPlus {
         void SetUserData(void* userData) { 
             m_UserData = userData; 
         }
+        void SetOnClientChanged(const ClientChangeCallback callback)
+        {
+            m_ChangeCallback = callback;
+        }
         void SetMessageResolver(const MessageResolverCallback&& callback);
         
     private:
@@ -38,6 +43,7 @@ namespace MQTTPlus {
         Server m_Server;
         void* m_UserData = nullptr;
         
+        ClientChangeCallback m_ChangeCallback;
         MessageResolverCallback m_ResolverCallback;
         std::unordered_map<std::string, PostMessageCallback> m_PostCallbacks;
         

@@ -39,9 +39,11 @@ namespace MQTTPlus
             auto it = m_ConnectedClients.find(client);
             if(it != m_ConnectedClients.end())
             {
+                m_OnClientDisconnected(m_ConnectedClients[client], reason);
                 m_ConnectedClients.erase(it);
             }
             m_ClientMutex.unlock();
+            
         });
         
         m_WebSocket->SetOnSocketDataReceived([this](void* client, char* data, int length) {
@@ -64,6 +66,7 @@ namespace MQTTPlus
     {
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
         client->m_Authentication = auth;
+        m_OnClientConnected(client);
         return MQTT::ConnAckFlags::Accepted;
     }
 

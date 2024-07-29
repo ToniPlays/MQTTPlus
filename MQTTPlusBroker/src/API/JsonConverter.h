@@ -12,6 +12,21 @@
 #include <spdlog/fmt/fmt.h>
 #include <nlohmann/json.hpp>
 
+
+namespace MQTTPlus {
+    using namespace nlohmann;
+    //Put non API elements here
+    static void to_json(json& j, const SystemStatus& status)
+    {
+        j = json {{ "cpu_load", status.UsageCPU },
+                  { "memory_total", status.TotalMemory },
+                  { "memory_available", status.AvailableMemory },
+                  { "disk_space_total", status.DiskTotalSpace },
+                  { "disk_space_used", status.DiskSpaceUsed }
+        };
+    }
+}
+
 namespace MQTTPlus::API
 {
 	using json = nlohmann::json;
@@ -48,20 +63,9 @@ namespace MQTTPlus::API
                   { "service_count", status.ServiceCount },
                   { "running_service_count", status.RunningServices },
 				  { "services", status.Services.Values() },
+                  { "status", status.Status }
 		};
 	}
 }
 
-namespace MQTTPlus {
-    using namespace nlohmann;
-    //Put non API elements here
-    static void to_json(json& j, const SystemStatus& status)
-    {
-        j = json {{ "cpu_load", status.UsageCPU },
-                  { "memory_total", status.TotalMemory },
-                  { "memory_available", status.AvailableMemory },
-                  { "disk_space_total", status.DiskTotalSpace },
-                  { "disk_space_used", status.DiskSpaceUsed }
-        };
-    }
-}
+
