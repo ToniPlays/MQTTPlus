@@ -23,6 +23,7 @@ import {
   FormatPercentage,
 } from "../../components/Utility";
 import Breadcrumb from "../../components/Breadcrumb";
+import toast from "react-hot-toast";
 
 TimeAgo.addDefaultLocale(en);
 
@@ -59,6 +60,9 @@ export default function Server() {
             type: Events.Events.EventType.ServerStatus,
             interval: 5.0,
           },
+          {
+            type: Events.Events.EventType.MQTTClientConnectionStatusChanged
+          }
         ],
       }),
     );
@@ -77,9 +81,21 @@ export default function Server() {
     provider.receive(api.events.endpoint, (data, error) => {
       console.log(data.data)
       const type = data.data.type
-      if (type == Events.Events.EventType.ServerStatus)
-        setSystemUsage(data.data.event_data);
-    });
+      const eventData = data.data.event_data
+      
+      switch(type)
+      {
+        case Events.Events.EventType.ServerStatus:
+          setSystemUsage(eventData)
+          break
+        case Events.Events.EventType.MQTTClientConnectionStatusChanged:
+          if(eventData.is_connected)
+            toast.success(`MQTT ${eventData.client_id} connected`)
+          else toast.error(`MQTT ${eventData.client_id} disconnected`)
+        break 
+      }
+        
+    })
   }
 
   SetEndpoints();
