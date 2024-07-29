@@ -14,6 +14,7 @@ namespace MQTTPlus
 
         void Start() override;
         void Stop() override;
+        void OnEvent(Event& e) override {}
         bool IsRunning() const override { return m_Thread; };
         
         const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() const override { return m_StartupTime; };

@@ -11,7 +11,7 @@ namespace MQTTPlus
         std::vector<char> buffer(data, data + length);
         
         m_Decoder.DecodeMessage(buffer, [this](Ref<MQTT::Message> message) {
-            std::cout << message->ToString() << std::endl;
+            
             switch(message->GetType())
             {
                 case MQTT::MessageType::Connect:

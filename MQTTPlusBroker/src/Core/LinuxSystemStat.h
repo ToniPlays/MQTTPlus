@@ -15,7 +15,7 @@ namespace MQTTPlus
     // the previous call and the current one.
     static float GetCPULoad()
     {
-        float f_load = 1.f / (1 << SI_LOAD_SHIFT);
+        float f_load = 1.0f / (1 << SI_LOAD_SHIFT);
         float nproc = 1.0f / get_nprocs();
         struct sysinfo info;
         sysinfo(&info);

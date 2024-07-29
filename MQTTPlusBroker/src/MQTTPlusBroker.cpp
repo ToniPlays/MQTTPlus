@@ -26,7 +26,6 @@ int main(int argc, char* argv[])
     ServiceManager::AddService<FrontendService>(8884);
     
     ServiceManager::Start();
-    ServiceManager::WaitUntilStopped();
     ServiceManager::Stop();
     
     

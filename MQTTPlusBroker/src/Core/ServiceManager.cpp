@@ -23,9 +23,18 @@ namespace MQTTPlus
     }
     void ServiceManager::Stop()
     {
+        s_Running.wait(true);
         s_Running = false;
         s_Running.notify_all();
         s_Services.clear();
+    }
+
+    void ServiceManager::OnEvent(Event& e)
+    {
+        MQP_WARN("Event: {} {}", e.GetName(), e.ToString());
+
+        for(auto& service : s_Services)
+            service->OnEvent(e);
     }
 
     const SystemStatus& ServiceManager::GetSystemStatus() {

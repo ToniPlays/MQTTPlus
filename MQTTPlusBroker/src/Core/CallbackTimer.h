@@ -25,9 +25,9 @@ namespace MQTTPlus {
         };
         
         void Start() {
+            m_Thread = Ref<Thread>::Create(std::thread(CallbackTimer::TimerFunc, this));
             m_Running = true;
             m_Running.notify_all();
-            m_Thread = Ref<Thread>::Create(std::thread(CallbackTimer::TimerFunc, this));
         }
         
         void Clear() {
@@ -78,7 +78,6 @@ namespace MQTTPlus {
                 uint64_t sleepMillis = nextMillis - currentMillis;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1500));
             }
-            MQP_WARN("Timer stopped");
         }
         
     private:

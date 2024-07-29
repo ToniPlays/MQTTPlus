@@ -7,6 +7,9 @@ namespace MQTTPlus
     HTTPServer::HTTPServer(uint32_t port, void* userData) : m_Port(port), m_UserData(userData)
     {
         using namespace websocketpp;
+
+        m_ChangeCallback = [](Ref<HTTPClient> client, bool connected) {};
+
         m_Server.set_reuse_addr(true);
         m_Server.set_access_channels(log::alevel::none);
         m_Server.set_error_channels(log::alevel::frame_payload);
@@ -17,15 +20,21 @@ namespace MQTTPlus
             MessageHandlerFunc(hdl, msg);
         };
         open_handler openHandler = [this](connection_hdl hdl) {
-            MQP_INFO("Socket connected");
             Server::connection_ptr con = m_Server.get_con_from_hdl(hdl);
-            m_ConnectedClients[con] = Ref<HTTPClient>::Create(this, con);
+            auto client = Ref<HTTPClient>::Create(this, con);;
+            m_ConnectedClients[con] = client;
+            m_ChangeCallback(client, true);
         };
         
         close_handler closeHandler = [this](connection_hdl hdl) {
-            auto it = m_ConnectedClients.find(m_Server.get_con_from_hdl(hdl));
+            Server::connection_ptr con = m_Server.get_con_from_hdl(hdl);
+            auto it = m_ConnectedClients.find(con);
+            m_ChangeCallback(m_ConnectedClients[con], false);
+
             if(it != m_ConnectedClients.end())
                 m_ConnectedClients.erase(it);
+
+            
             MQP_INFO("Socket closed");
         };
         
@@ -63,12 +72,12 @@ namespace MQTTPlus
             try 
             {
                 auto conn = m_Server.get_con_from_hdl(hdl);
-                func(payload, *m_ConnectedClients[conn]);
+                func(payload, m_ConnectedClients[conn]);
                 
                 return;
             } catch(std::exception& e)
             {
-                MQP_ERROR("Message failed for {}", payload);
+                MQP_ERROR("Message failed for {} {}", e.what(), payload);
             }
         }
         MQP_ERROR("Endpoint not found for message {}", payload);
