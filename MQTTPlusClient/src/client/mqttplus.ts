@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react"
+"use client"
+
+import { useCallback, useEffect, useState } from "react"
 import useWebSocket from "react-use-websocket"
 import MQTTPlusAPI from "./mqttplus-api"
 
 
-export const url = "http://80.95.140.80:8884"
+export const url = `${process.env.NEXT_PUBLIC_HOST}:8884`
 
 /*This API is asynchronous, meaning a post message will not return anything,
 unless provicer.receive(on, callbac) is set
@@ -11,7 +13,6 @@ This will allow for realtime data to be sent via websockets without any request
 */
 
 export const MQTTPlusProvider = () => {
-
     const api = new MQTTPlusAPI()
     const socket = useWebSocket(url, {
         shouldReconnect: (e) => true,

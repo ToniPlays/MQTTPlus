@@ -66,10 +66,11 @@ namespace MQTTPlus
     {
         
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
-        if(client->GetAuth().ClientID.empty())
+        bool isNew = client->GetAuth().ClientID.empty();
+        client->m_Authentication = auth;
+        if(isNew)
             m_OnClientConnected(client);
 
-        client->m_Authentication = auth;
         return MQTT::ConnAckFlags::Accepted;
     }
 

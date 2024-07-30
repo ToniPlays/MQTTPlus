@@ -19,3 +19,4 @@ scripts/setup/__pycache__
 *.sln
 MQTTPlusBroker/config.cfg
 /MQTTPlusBroker/.vscode
+MQTTPlusClient/.env
