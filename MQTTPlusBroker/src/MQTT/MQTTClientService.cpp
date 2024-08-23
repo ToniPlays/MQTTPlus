@@ -30,7 +30,12 @@ namespace MQTTPlus
         });
         
         m_Thread = Ref<Thread>::Create(std::thread([this]() {
-            m_Broker->Listen();
+            try {
+                m_Broker->Listen();
+            } catch(std::exception& e)
+            {
+                m_Thread = nullptr;
+            }
         }));
     }
 

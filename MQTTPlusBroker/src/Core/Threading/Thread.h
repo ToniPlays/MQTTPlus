@@ -12,6 +12,9 @@ namespace MQTTPlus {
 		~Thread() { Join(); };
 		
 		void Join() { m_Thread.join(); }
+		
+		
+
 	private:
 		std::thread m_Thread;
 	};
