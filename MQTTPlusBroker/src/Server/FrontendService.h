@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Core/Service.h"
+#include "Core/Service/Service.h"
 #include "Server/HTTPServer.h"
-#include "Core/EventListener.h"
-#include "Core/Threading/Thread.h"
+#include "Core/Event/EventListener.h"
 
 #include <iostream>
 
@@ -17,7 +16,6 @@ namespace MQTTPlus
         void Start() override;
         void Stop() override;
         void OnEvent(Event& e) override;
-        bool IsRunning() const override { return m_Thread; };
 
         void SetEventListener(Ref<HTTPClient> client, const std::string& type);
         
@@ -30,7 +28,6 @@ namespace MQTTPlus
 
     private:
         HTTPServer* m_Server;
-        Ref<Thread> m_Thread;
         
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;
         std::unordered_map<HTTPClient*, EventListener> m_Listeners;

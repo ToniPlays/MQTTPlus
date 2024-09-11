@@ -1,0 +1,8 @@
+
+#sql CREATE DATABASE IF NOT EXISTS mqtt_plus
+#sql USE mqtt_plus
+#sql CREATE TABLE IF NOT EXISTS `users` (`userID` INT NOT NULL AUTO_INCREMENT, 
+                                        `publicID` INT NOT NULL, 
+                                        `username` TEXT NOT NULL, 
+                                        `password` VARCHAR(32) NOT NULL, 
+                                        `createdAt` DATE NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`userID`))

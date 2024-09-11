@@ -2,7 +2,7 @@
 
 #include "Ref.h"
 #include "Core/CallbackTimer.h"
-#include "Core/Threading/Thread.h"
+#include "Core/Threading/JobSystem.h"
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 

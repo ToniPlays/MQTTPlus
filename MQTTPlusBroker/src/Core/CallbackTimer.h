@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Ref.h"
-#include "Threading/Thread.h"
+#include "Threading/JobSystem.h"
 #include "Core/Logger.h"
 #include <chrono>
 
@@ -25,7 +25,9 @@ namespace MQTTPlus {
         };
         
         void Start() {
-            m_Thread = Ref<Thread>::Create(std::thread(CallbackTimer::TimerFunc, this));
+            m_Thread = Ref<Thread>::Create([instance = this]() {
+                CallbackTimer::TimerFunc(instance); 
+            });
             m_Running = true;
             m_Running.notify_all();
         }
@@ -76,7 +78,7 @@ namespace MQTTPlus {
                 
                 timer->m_Mutex.unlock();
                 uint64_t sleepMillis = nextMillis - currentMillis;
-                std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillis));
             }
         }
         

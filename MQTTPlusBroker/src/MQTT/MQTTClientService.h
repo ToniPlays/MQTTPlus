@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Core/Service.h"
+#include "Core/Service/Service.h"
 #include "MQTT/Broker.h"
-#include "Core/Threading/Thread.h"
+#include "Core/Threading/JobSystem.h"
 #include <iostream>
 
 namespace MQTTPlus
@@ -17,7 +17,6 @@ namespace MQTTPlus
         void Start() override;
         void Stop() override;
         void OnEvent(Event& e) override;
-        bool IsRunning() const override { return m_Thread; };
 
         const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() const override { return m_StartupTime; };
         
@@ -25,7 +24,6 @@ namespace MQTTPlus
         
     private:
         Broker* m_Broker;
-        Ref<Thread> m_Thread;
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;
     };
 }

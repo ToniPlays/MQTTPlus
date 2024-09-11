@@ -1,43 +1,49 @@
 #include "ServiceManager.h"
 #include "Core/Logger.h"
-#include "Timer.h"
+#include "Core/Timer.h"
 #include <spdlog/fmt/fmt.h>
 
-#include "LinuxSystemStat.h"
-#include "MacOSSystemStat.h"
+#include "Core/RaspberryPi/LinuxSystemStat.h"
+#include "Core/MacOS/MacOSSystemStat.h"
 
 namespace MQTTPlus 
 {
     void ServiceManager::Start()
     {
         s_Status.TotalMemory = GetAvailableSystemMemory();
-
         s_StartupTime = std::chrono::system_clock::now();
-        s_Running = true;
-        for(auto& service : s_Services)
-        {
-            MQP_INFO("Starting service: {}", service->GetName());
-            service->Start();
+        s_JobSystem = new JobSystem();
+    
+        for(auto& service : s_Services) {
+            s_JobSystem->Queue([&service]() mutable { 
+                MQP_INFO("Starting service: {}", service->GetName());
+                service->Start();
+            });
         }
+        
         MQP_INFO("All services started");
+        s_Running = true;
     }
+    
     void ServiceManager::Stop()
     {
         s_Running.wait(true);
         s_Running = false;
         s_Running.notify_all();
+
+        MQP_WARN("Closing");
         s_Services.clear();
     }
 
     void ServiceManager::OnEvent(Event& e)
     {
         MQP_WARN("Event: {} {}", e.GetName(), e.ToString());
-
         for(auto& service : s_Services)
             service->OnEvent(e);
     }
 
-    const SystemStatus& ServiceManager::GetSystemStatus() {
+    const SystemStatus& ServiceManager::GetSystemStatus() 
+    {
         static Timer timer;
         if(timer.ElapsedMillis() > 500)
         {

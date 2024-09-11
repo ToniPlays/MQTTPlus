@@ -1,5 +1,5 @@
 #include "MQTTClientService.h"
-#include "Core/ServiceManager.h"
+#include "Core/Service/ServiceManager.h"
 #include "Events.h"
 #include "Core/Logger.h"
 
@@ -28,18 +28,12 @@ namespace MQTTPlus
             MQTTClientEvent e(client, false);
             ServiceManager::OnEvent(e);
         });
-        
-        m_Thread = Ref<Thread>::Create(std::thread([this]() {
-            try {
-                m_Broker->Listen();
-            } catch(std::exception& e)
-            {
-                m_Thread = nullptr;
-            }
-        }));
+
+        m_Broker->Listen();
     }
 
-    void MQTTClientService::Stop() {
+    void MQTTClientService::Stop() 
+    {
         
     }
     void MQTTClientService::OnEvent(Event& e)

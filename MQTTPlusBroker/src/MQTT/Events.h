@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Event.h"
+#include "Core/Event/Event.h"
 #include "MQTTClient.h"
 
 namespace MQTTPlus

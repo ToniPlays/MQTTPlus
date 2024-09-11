@@ -1,13 +1,18 @@
 #pragma once
 
-#include "Core/Service.h"
-#include "Core/Threading/Thread.h"
+#include "Core/Service/Service.h"
 
 #include <iostream>
 #include <mariadb/conncpp.hpp>
 
 namespace MQTTPlus
 {
+    struct DatabaseTransaction
+    {
+        std::string SQL;
+        std::function<void(std::unique_ptr<sql::ResultSet>)> Callback;
+    };
+
     class DatabaseService : public Service {
     public:
         DatabaseService();
@@ -16,15 +21,20 @@ namespace MQTTPlus
         void Start() override;
         void Stop() override;
         void OnEvent(Event& e) override {}
-        bool IsRunning() const override { return m_Connection != nullptr; };
         
         const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() const override { return m_StartupTime; };
             
         std::string GetName() const override { return "DatabaseService"; }
+
     private:
-        Ref<Thread> m_Thread;
+        void ValidateSchema();
+        bool RunTransaction(const DatabaseTransaction& transaction);
+
+    private:
         sql::Driver* m_Driver;
         std::unique_ptr<sql::Connection> m_Connection;
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;
+        std::vector<DatabaseTransaction> m_Transactions;
+        std::atomic_uint32_t m_TransactionCount = 0;
     };
 }

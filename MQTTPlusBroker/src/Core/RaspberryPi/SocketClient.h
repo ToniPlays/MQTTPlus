@@ -2,7 +2,7 @@
 #ifdef MQP_LINUX
 
 #include "Ref.h"
-#include "Core/Threading/Thread.h"
+#include "Core/Threading/JobSystem.h"
 
 
 namespace MQTTPlus {

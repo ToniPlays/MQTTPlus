@@ -53,6 +53,7 @@ namespace MQTTPlus
         });
         
         m_WebSocket->Listen();
+        MQP_WARN("MQTT Server listening on port {}", m_WebSocket->GetPort());
     }
 
     BrokerStatus Broker::GetStatus() const

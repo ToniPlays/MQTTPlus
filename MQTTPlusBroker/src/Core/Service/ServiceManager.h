@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Service.h"
-#include "Event.h"
+#include "Core/Event/Event.h"
+#include "Core/Threading/JobSystem.h"
 #include <vector>
 #include <chrono>
 #include <atomic>
@@ -9,7 +10,8 @@
 
 namespace MQTTPlus {
 
-    struct SystemStatus {
+    struct SystemStatus 
+    {
         std::chrono::time_point<std::chrono::system_clock> UpdatedAt;
         float UsageCPU;
         uint64_t TotalMemory;
@@ -55,14 +57,20 @@ namespace MQTTPlus {
         
         static const SystemStatus& GetSystemStatus();
         
-        static std::vector<Ref<Service>> GetServices() { return s_Services; }
+        static std::vector<Ref<Service>> GetServices() 
+        {
+            return s_Services;
+        }
         static const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() { return s_StartupTime; }
         
     private:
+        static void ThreadFunc(Ref<Thread> thread);
+
+    private:
         inline static std::vector<Ref<Service>> s_Services;
         inline static std::chrono::time_point<std::chrono::system_clock> s_StartupTime;
-        inline static std::atomic_bool s_Running = false;
-        inline static std::queue<Event> s_EventQueue;
         inline static SystemStatus s_Status;
+        inline static JobSystem* s_JobSystem;
+        inline static std::atomic_bool s_Running = false;
     };
 }

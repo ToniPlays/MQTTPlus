@@ -1,7 +1,7 @@
 #include "FrontendService.h"
 #include "Endpoints.h"
 #include "Events.h"
-#include "Core/ServiceManager.h"
+#include "Core/Service/ServiceManager.h"
 #include "MQTT/Events.h"
 #include <nlohmann/json.hpp>
 
@@ -36,7 +36,7 @@ namespace MQTTPlus {
         });
 
         InitializeApiEndpoints(*m_Server);
-        m_Thread = Ref<Thread>::Create(std::thread([this](){ m_Server->Listen(); }));
+        m_Server->Listen(); 
     }
 
     void FrontendService::Stop() 

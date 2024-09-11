@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Event.h"
+#include "Core/Event/Event.h"
 
 #include <iostream>
 #include <unordered_map>

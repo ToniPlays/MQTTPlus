@@ -2,7 +2,7 @@
 
 #include "MQTTPlusApiFields.h"
 #include "MQTT/Broker.h"
-#include "Core/ServiceManager.h"
+#include "Core/Service/ServiceManager.h"
 #include <chrono>
 
 #include <cstddef>

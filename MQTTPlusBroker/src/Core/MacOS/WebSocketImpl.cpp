@@ -57,8 +57,6 @@ namespace MQTTPlus
         if(!listenSocket)
             throw MQTTPlusException(fmt::format("Could not listen to port: {}", socket->m_Port));
         
-        
-        MQP_INFO("Listening on port {}", socket->m_Port);
         WebSocketEXT& s = *(WebSocketEXT*)us_socket_context_ext(socket->m_SSL, socket->m_SocketContext);
         
         s.Socket = socket;

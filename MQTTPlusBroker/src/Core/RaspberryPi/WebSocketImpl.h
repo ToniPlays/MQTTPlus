@@ -5,7 +5,7 @@
 #include <iostream>
 #include <functional>
 #include <sys/socket.h>
-#include "Core/Threading/Thread.h"
+#include "Core/Threading/JobSystem.h"
 #include "SocketClient.h"
 
 #include <unordered_map>

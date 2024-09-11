@@ -50,7 +50,9 @@ namespace MQTTPlus
     void WebSocketImpl::Listen()
     {
         m_Running = true;
-        m_ListenerThread = Ref<Thread>::Create(std::thread(&WebSocketImpl::SocketListenThread, this));
+        m_ListenerThread = Ref<Thread>::Create([instance = this]() {
+             WebSocketImpl::SocketListenThread(instance);
+            });
     }
     
     void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
