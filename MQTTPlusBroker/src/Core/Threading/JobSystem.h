@@ -1,9 +1,12 @@
 #pragma once
+
 #include <Ref.h>
 #include <thread>
 #include <iostream>
 #include <mutex>
+#include <queue>
 #include "ThreadStatus.h"
+#include "Core/Logger.h"
 
 #include "Core/Hooks.h"
 
@@ -16,7 +19,14 @@ namespace MQTTPlus
 
 		Thread(uint32_t id) : m_ThreadID(id) {};
 		Thread(const std::function<void()>& callback) {
-			Execute(callback);
+			m_Thread = new std::thread([this, callback]() {
+				try {
+					Execute(callback);
+				} catch(std::exception e)
+				{
+					MQP_FATAL("Thread crashed {}", e.what());
+				}
+			});
 		}
 		~Thread() = default;
 
@@ -24,15 +34,15 @@ namespace MQTTPlus
 		bool IsWaiting() const { return m_Status.load() == ThreadStatus::Waiting; }
 		ThreadStatus GetStatus() const { return m_Status; }
 
-		void Join() { m_Thread.join(); };
-		void Detach() { m_Thread.detach(); };
+		void Join() { m_Thread->join(); };
+		void Detach() { m_Thread->detach(); };
 		void WaitForIdle() { m_Status.wait(ThreadStatus::Executing); }
 
 	private:
 		void Execute(const std::function<void()>& callback);
 
 	private:
-		std::thread m_Thread;
+		std::thread* m_Thread;
 		uint32_t m_ThreadID = 0;
 		std::atomic<ThreadStatus> m_Status = ThreadStatus::Waiting;
 	};
@@ -64,7 +74,7 @@ namespace MQTTPlus
 		bool Queue(const std::function<void()>& callback) 
 		{
 			m_Mutex.lock();
-			m_QueuedJobs.push_back(callback);
+			m_QueuedJobs.push(callback);
 			m_JobCount = m_QueuedJobs.size();
 			m_Mutex.unlock();
 			m_JobCount.notify_all();
@@ -97,7 +107,7 @@ namespace MQTTPlus
 		void ThreadFunc(Ref<Thread> thread);
 
 	private:
-		std::vector<std::function<void()>> m_QueuedJobs;
+		std::queue<std::function<void()>> m_QueuedJobs;
 
 		std::vector<Ref<Thread>> m_Threads;
 		std::atomic_bool m_Running = false;

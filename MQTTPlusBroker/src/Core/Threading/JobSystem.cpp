@@ -29,7 +29,7 @@ namespace MQTTPlus
         for (uint32_t i = 0; i < threads; i++)
         {
             m_Threads[i] = Ref<Thread>::Create(i);
-            m_Threads[i]->m_Thread = std::thread(&JobSystem::ThreadFunc, this, m_Threads[i]);
+            m_Threads[i]->m_Thread = new std::thread(&JobSystem::ThreadFunc, this, m_Threads[i]);
         }
     }
     JobSystem::~JobSystem()
@@ -48,22 +48,23 @@ namespace MQTTPlus
         while (m_Running)
         {
             m_JobCount.wait(0);
+            
             m_Mutex.lock();
-            auto callback = m_QueuedJobs[0];
-            m_QueuedJobs.erase(m_QueuedJobs.begin());
+            auto callback = m_QueuedJobs.front();
+            m_QueuedJobs.pop();
             m_JobCount = m_QueuedJobs.size();
             m_Mutex.unlock();
 
             m_JobCount.notify_one();
 
             if(!callback) continue;
-
-                thread->Execute(callback);
+            
             try 
             {
+                thread->Execute(callback);
             } catch(std::exception e)
             {
-                MQP_FATAL("Thread crashed with {}", e.what());
+                MQP_FATAL("Thread {} crashed with {}", thread->GetThreadID(), e.what());
             } catch(...)
             {
                 

@@ -28,12 +28,7 @@ namespace MQTTPlus
                 s.Name = service->GetName();
                 
                 if(expandsServiceInfo)
-                {
-                    s.Info = ServiceInfo {
-                        .Running = service->IsRunning(),
-                        .StartupTime = service->GetStartupTime(),
-                    };
-                }
+                    s.Info = ServiceInfo(service);
             }
             
             ServerStatus status = {

@@ -63,12 +63,13 @@ namespace MQTTPlus
         return m_WebSocket->IsListening() ? BrokerStatus::Connected : BrokerStatus::Crashed;
     }
 
-    MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth)
+    MQTTPlus::MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth)
     {
         
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
         bool isNew = client->GetAuth().ClientID.empty();
         client->m_Authentication = auth;
+        
         if(isNew)
             m_OnClientConnected(client);
 
@@ -82,6 +83,6 @@ namespace MQTTPlus
 
     void Broker::OnMQTTPublishReceived(Ref<MQTTClient> client, Ref<MQTT::PublishMessage> message)
     {
-        std::cout << message->ToString() << std::endl;
+        MQP_ERROR("Got publish message: {0} {1}", message->GetTopic(), message->GetMessage());
     }
 }

@@ -31,14 +31,28 @@ namespace MQTTPlus {
         while(true)
         {
             m_TransactionCount.wait(0);
-            auto& transaction = m_Transactions[0];
-            RunTransaction(transaction);     
+            m_TransactionMutex.lock();
+            DatabaseTransaction transaction = m_Transactions.front();
+            m_Transactions.pop();
+            m_TransactionCount = m_Transactions.size();
+            m_TransactionMutex.unlock();
+            
+            RunTransaction(transaction);
         }
     }
 
     void DatabaseService::Stop() 
     {
 
+    }
+
+    void DatabaseService::Transaction(const std::string& sql, const std::function<void(sql::ResultSet*)> callback)
+    {
+        m_TransactionMutex.lock();
+        m_Transactions.push({ sql, callback });
+        m_TransactionCount = m_Transactions.size();
+        m_TransactionMutex.unlock();
+        m_TransactionCount.notify_all();
     }
 
     void DatabaseService::ValidateSchema()
@@ -49,25 +63,30 @@ namespace MQTTPlus {
 
 		while (endPos != std::string::npos)
 		{
-            std::string sql = StringUtility::GetPreprocessor(type, file, endPos, &endPos);
+            std::string f = StringUtility::GetPreprocessor(type, file, endPos, &endPos);
             if (endPos == std::string::npos) continue;
 
-            size_t pos = StringUtility::OffsetOf(file, type, endPos + 1);
-            std::string src = sql + file.substr(endPos, pos != std::string::npos ? pos : file.length() - endPos);
-            RunTransaction({ src, nullptr });
+            uint64_t nextTokenPos = file.find(type, endPos);
+            std::string src = nextTokenPos == std::string::npos ? file.substr(endPos) : file.substr(endPos, nextTokenPos - endPos);
+
+            RunTransaction({ f + src, nullptr });
         }
     }
 
     bool DatabaseService::RunTransaction(const DatabaseTransaction& transaction)
     {
-        MQP_TRACE(transaction.SQL);
         try 
         {
             std::unique_ptr<sql::PreparedStatement> stmt(m_Connection->prepareStatement(transaction.SQL));
-            int32_t result = stmt->executeUpdate();
-
             if(transaction.Callback)
-                transaction.Callback(nullptr);
+            {
+                auto result = std::unique_ptr<sql::ResultSet>(stmt->executeQuery());
+                transaction.Callback(result.get());
+            }
+            else
+                stmt->executeUpdate();
+
+
             return true;
             
         } catch(sql::SQLSyntaxErrorException e)

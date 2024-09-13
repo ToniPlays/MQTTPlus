@@ -19,7 +19,6 @@ namespace MQTTPlus
                     Ref<MQTT::ConnectMessage> msg = message.As<MQTT::ConnectMessage>();
                     auto result = m_Broker->OnMQTTClientConnected(this, msg->GetAuthentication());
                     SendMessage(Ref<MQTT::ConnAckMessage>::Create(result));
-                    
                     break;
                 }
                 case MQTT::MessageType::Publish:
@@ -28,9 +27,15 @@ namespace MQTTPlus
                     m_Broker->OnMQTTPublishReceived(this, msg);
                     break;
                 }
-                    
+                case MQTT::MessageType::Subscribe:
+                {
+                    Ref<MQTT::SubscribeMessage> msg = message.As<MQTT::SubscribeMessage>();
+                    for(auto& topics : msg->GetTopics())
+                        MQP_INFO("Client {} subscribes to {} (QoS: {})", m_Authentication.ClientID, topics.Topic, topics.QOS);
+                    break;
+                }
                 default:
-                    std::cout << fmt::format("Message not implemented\n");
+                    MQP_WARN("Message not implemented\n");
                     break;
             }
         });

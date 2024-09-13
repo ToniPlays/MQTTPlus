@@ -13,6 +13,12 @@ namespace MQTTPlus::API
     {
         Field<bool> Running;
         Field<std::chrono::time_point<std::chrono::system_clock>> StartupTime;
+
+        ServiceInfo(Ref<Service> service)
+        {
+            Running = service->IsRunning();
+            StartupTime = service->GetStartupTime();
+        }
     };
 
     struct Service

@@ -1,8 +1,23 @@
 
 #sql CREATE DATABASE IF NOT EXISTS mqtt_plus
 #sql USE mqtt_plus
-#sql CREATE TABLE IF NOT EXISTS `users` (`userID` INT NOT NULL AUTO_INCREMENT, 
-                                        `publicID` INT NOT NULL, 
+#sql CREATE TABLE IF NOT EXISTS `users` (`userID` INT NOT NULL AUTO_INCREMENT,
+                                        `publicID` TEXT NOT NULL, 
                                         `username` TEXT NOT NULL, 
                                         `password` VARCHAR(32) NOT NULL, 
-                                        `createdAt` DATE NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`userID`))
+                                        `createdAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`userID`))
+
+#sql CREATE TABLE IF NOT EXISTS `devices` (`deviceID` INT NOT NULL AUTO_INCREMENT, 
+                                        `publicID` TEXT NOT NULL, 
+                                        `deviceName` TEXT NOT NULL, 
+                                        `nickname` TEXT, 
+                                        `status` INT(1) NOT NULL, 
+                                        `lastSeen` TIMESTAMP NOT NULL, PRIMARY KEY (`deviceID`))
+
+#sql CREATE TABLE IF NOT EXISTS `networks` (`networkID` INT NOT NULL AUTO_INCREMENT, 
+                                        `publicID` TEXT NOT NULL, 
+                                        `networkName` TEXT NOT NULL, 
+                                        `description` TEXT, 
+                                        `username` TEXT, 
+                                        `password` TEXT, 
+                                        `status` INT(1) , PRIMARY KEY (`networkID`))

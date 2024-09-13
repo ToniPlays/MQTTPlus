@@ -7,17 +7,19 @@
 #include "Core/Buffer/CachedBuffer.h"
 #include "spdlog/fmt/fmt.h"
 
-namespace MQTT {
-    enum class MessageType {
+namespace MQTTPlus::MQTT
+{
+    enum class MessageType 
+    {
         Reserved1 = 0,
         Connect = 1,    //Created
         ConnAck = 2,    //Created
-        Publish = 3,    
+        Publish = 3,    //Created  
         PubAck = 4,
         PubRec = 5,
         PubRel = 6,
         PubComp = 7,
-        Subscribe = 8,
+        Subscribe = 8,  //Created
         SubAck = 9,
         Unsubscribe = 10,
         UnsubAck = 11,
@@ -128,32 +130,67 @@ namespace MQTT {
         uint8_t m_Ack;
         bool m_HasParent = false;
     };
+
     class PublishMessage : public Message
     {
     public:
         PublishMessage(CachedBuffer& buffer);
         
-        MessageType GetType() const override { return MessageType::ConnAck; }
+        MessageType GetType() const override { return MessageType::Publish; }
         virtual std::vector<uint8_t> GetBytes() const override
         {
             return std::vector<uint8_t> { 0 };
         }
         virtual std::string ToString() const override {
-            return fmt::format("PublishMessage: {}", m_Topic);
+            return fmt::format("PublishMessage: Topic: {} Message: {}", m_Topic, m_Message);
         }
+
+        const std::string& GetTopic() const { return m_Topic; };
+        std::string GetMessage() const { return m_Message; };
         
-        private:
-            std::string m_Topic;
-            std::vector<uint8_t> m_Payload;
+    private:
+        std::string m_Topic;
+        std::string m_Message;
     };
 
-    static std::string ReadString(CachedBuffer& buffer)
+    class SubscribeMessage : public Message
     {
-        uint16_t length = (buffer.Read<uint8_t>() << 8) + buffer.Read<uint8_t>();
+    public:
+
+        struct Topics {
+            std::string Topic;
+            uint8_t QOS;
+        };
+
+        SubscribeMessage(CachedBuffer& buffer);
+        
+        MessageType GetType() const override { return MessageType::Subscribe; }
+        virtual std::vector<uint8_t> GetBytes() const override
+        {
+            return std::vector<uint8_t> { 0 };
+        }
+        virtual std::string ToString() const override {
+            return fmt::format("SubscribeMessage: Topics {}", m_Topics.size());
+        }
+
+        const std::vector<Topics>& GetTopics() const { return m_Topics; };
+        
+    private:
+        
+        std::vector<Topics> m_Topics;
+    };
+
+
+    static std::string ReadString(CachedBuffer& buffer, uint32_t length)
+    {
         std::string result;
         
         for(uint32_t i = 0; i < length; i++)
             result += buffer.Read<char>();
         return result;
+    }
+    static uint16_t ReadU16(CachedBuffer& buffer)
+    {
+        return (buffer.Read<uint8_t>() << 8) | buffer.Read<uint8_t>();
     }
 }

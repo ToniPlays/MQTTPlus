@@ -9,8 +9,8 @@ namespace MQTTPlus {
     
     struct CallbackEvent
     {
-        uint64_t NextMillis;
-        uint64_t Interval;
+        uint64_t NextMillis = 0;
+        uint64_t Interval = 1000;
         std::function<void()> Callback;
     };
     
@@ -25,10 +25,11 @@ namespace MQTTPlus {
         };
         
         void Start() {
-            m_Thread = Ref<Thread>::Create([instance = this]() {
-                CallbackTimer::TimerFunc(instance); 
-            });
             m_Running = true;
+            m_Thread = Ref<Thread>::Create([instance = this]() {
+                CallbackTimer::TimerFunc(instance);
+            });
+            
             m_Running.notify_all();
         }
         
@@ -60,24 +61,24 @@ namespace MQTTPlus {
             {
                 timer->m_TimedEventCount.wait(0);
                 
-                uint64_t nextMillis = UINT64_MAX;
                 uint64_t currentMillis = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+                uint64_t nextMillis = UINT64_MAX;
                 timer->m_Mutex.lock();
+                
                 for(auto& cb : timer->m_Events)
                 {
-                    int64_t diff = cb.NextMillis - currentMillis;
-                    if(diff < 0)
+                    if(cb.NextMillis <= currentMillis)
                     {
                         cb.NextMillis += cb.Interval;
                         cb.Callback();
-                    } else if(cb.NextMillis < nextMillis)
-                    {
+                    } 
+
+                    if(cb.NextMillis < nextMillis)
                         nextMillis = cb.NextMillis;
-                    }
                 }
                 
                 timer->m_Mutex.unlock();
-                uint64_t sleepMillis = nextMillis - currentMillis;
+                int64_t sleepMillis = std::max((int64_t)10, (int64_t)nextMillis - (int64_t)currentMillis);
                 std::this_thread::sleep_for(std::chrono::milliseconds(sleepMillis));
             }
         }

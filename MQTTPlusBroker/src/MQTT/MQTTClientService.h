@@ -3,6 +3,7 @@
 #include "Core/Service/Service.h"
 #include "MQTT/Broker.h"
 #include "Core/Threading/JobSystem.h"
+#include "Events.h"
 #include <iostream>
 
 namespace MQTTPlus
@@ -22,6 +23,8 @@ namespace MQTTPlus
         
         std::string GetName() const override { return "MQTTClientService"; };
         
+    private:
+        void OnMQTTClientEvent(MQTTClientEvent& e);
     private:
         Broker* m_Broker;
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;

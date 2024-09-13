@@ -24,6 +24,7 @@ import {
 } from "../../components/Utility";
 import Breadcrumb from "../../components/Breadcrumb";
 import toast from "react-hot-toast";
+import Table from "../../components/Tables/Table";
 
 TimeAgo.addDefaultLocale(en);
 
@@ -58,7 +59,7 @@ export default function Server() {
         listen: [
           {
             type: Events.Events.EventType.ServerStatus,
-            interval: 5.0,
+            interval: 1.0,
           },
           {
             type: Events.Events.EventType.MQTTClientConnectionStatusChanged
@@ -70,7 +71,7 @@ export default function Server() {
 
   function SetEndpoints() {
     provider.receive(api.server.endpoint, (data, error) => {
-      
+      console.log(data.data)
       if (!error) {
         setServerStatus(data.data)
         setSystemUsage(data.data.status)
@@ -79,7 +80,7 @@ export default function Server() {
     });
 
     provider.receive(api.events.endpoint, (data, error) => {
-      console.log(data.data)
+
       const type = data.data.type
       const eventData = data.data.event_data
       
@@ -94,7 +95,6 @@ export default function Server() {
           else toast.error(`MQTT ${eventData.client_id} disconnected`)
         break 
       }
-        
     })
   }
 
@@ -139,7 +139,6 @@ export default function Server() {
         >
           <TrashIcon width={36} height={36} />
         </CardDataStats>
-
         <CardDataStats
           title={"CPU"}
           total={`${FormatPercentage(systemUsage?.cpu_load ?? 0)}%`}
@@ -162,6 +161,28 @@ export default function Server() {
         >
           <ServerIcon width={36} height={36} />
         </CardDataStats>
+      </div>
+      <br />
+        <p className="text-2xl">Currently running services right here</p>
+      <br /> 
+      <div className="gap-4 md:gap-6 2xl:gap-7.5">
+        <Table label="Services" columns={["Name", "Started at", "Status"]} >
+          {serverStatus?.services.map(service => {
+            return (
+              <div className="grid grid-cols-3 border-b border-stroke dark:border-strokedark">
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                    {service.name}
+                </div>
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                  {new Date(service.info.startup_time).toLocaleString()}
+                </div>
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                    <p className={service.info.running ? "text-meta-3" : "text-meta-1"}>{service.info.running ? "Running" : "Stopped"}</p>
+                </div>
+              </div>
+            )
+          })}
+        </Table>
       </div>
     </DefaultLayout>
   );

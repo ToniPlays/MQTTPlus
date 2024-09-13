@@ -37,7 +37,6 @@ namespace MQTTPlus
 
     void ServiceManager::OnEvent(Event& e)
     {
-        MQP_WARN("Event: {} {}", e.GetName(), e.ToString());
         for(auto& service : s_Services)
             service->OnEvent(e);
     }

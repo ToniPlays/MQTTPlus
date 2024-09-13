@@ -19,8 +19,8 @@ namespace MQTTPlus
         auto ReadableData() noexcept { return m_Buffer.data() + std::distance(m_Buffer.begin(), m_Begin); }
         auto ReadableSize() noexcept { return std::distance(m_Buffer.begin(), m_Begin); }
         
-        void DecodeMessage(const std::vector<char> data, OnMessageDecoded&& callback);
-        Ref<MQTT::Message> GetMessage(const std::span<uint8_t>& data);
+        void DecodeMessage(const std::vector<char>& data, OnMessageDecoded&& callback);
+        Ref<MQTT::Message> GetMessage(const std::vector<char>& data);
     private:
         std::vector<uint8_t> m_Buffer;
         decltype(m_Buffer)::iterator m_Begin;
