@@ -2,6 +2,7 @@
 
 #include "SocketClient.h"
 #include "Core/Logger.h"
+#include "Core/MQTTPlusException.h"
 #include <sys/socket.h>
 #include <spdlog/fmt/fmt.h>
 #include <chrono>
@@ -25,18 +26,26 @@ namespace MQTTPlus
 		};
 
 		int result = select(1, &rfds, NULL, NULL, &tv);
-		if(result == - 1)
+		if(result == -1)
 			return true;
 
 		char buffer[8192];
 		int read = recv(GetClientID(), buffer, 8192, 0);
 
-		if(read <= 0)
-		{
+		if(read < 0)
 			return false;
+			
+		try 
+		{
+			m_WebSocket->m_OnSocketDataReceived((void*)this, buffer, read);
+		} catch(MQTTPlusException e)
+		{
+			MQP_WARN("Socket data receive failure: {}", e.what());
 		}
-		
-		m_WebSocket->m_OnSocketDataReceived((void*)this, buffer, read);
+		catch(std::exception e)
+		{
+			MQP_ERROR("Unknown error");
+		}
 		return true;
 	}
 }

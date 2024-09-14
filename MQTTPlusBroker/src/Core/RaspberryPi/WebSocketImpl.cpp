@@ -50,9 +50,7 @@ namespace MQTTPlus
     void WebSocketImpl::Listen()
     {
         m_Running = true;
-        m_ListenerThread = Ref<Thread>::Create([instance = this]() {
-             WebSocketImpl::SocketListenThread(instance);
-            });
+        WebSocketImpl::SocketListenThread(this);
     }
     
     void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
@@ -85,7 +83,6 @@ namespace MQTTPlus
     
     void WebSocketImpl::SocketListenThread(WebSocketImpl* socket)
     {
-        MQP_INFO("Listening on port {}", socket->m_Port);
         listen(socket->m_SocketDesc, 10);
 
         float timeout = 100;
@@ -107,38 +104,30 @@ namespace MQTTPlus
                     socket->m_OnSocketConnected((void*)socketClient.Raw());
                     socket->m_ConnectedClients[client] = socketClient;
                 }
-                else if(pid == -1)
-                {
-                    
-                }
-                else 
-                {
-                    close(client);
-                }
-                
+                else close(client);
             }
+
             socket->m_ClientMutex.lock();
             auto clients = socket->m_ConnectedClients;
             socket->m_ClientMutex.unlock();
 
-            for(auto& [id, client] : clients) {
-                if(!client->Read())
-                {
-                    socket->m_OnSocketDisconnected((void*)client.Raw(), -1);
-                    socket->m_ClientMutex.lock();
-                    auto it = socket->m_ConnectedClients.find(id);
-                    if(it != socket->m_ConnectedClients.end())
-                        socket->m_ConnectedClients.erase(it);
-                    socket->m_ClientMutex.unlock();
-                }
+            for(auto& [id, client] : clients) 
+            {
+                if(client->Read()) continue;
+
+                socket->m_OnSocketDisconnected((void*)client.Raw(), -1);
+                socket->m_ClientMutex.lock();
+                auto it = socket->m_ConnectedClients.find(id);
+                if(it != socket->m_ConnectedClients.end())
+                    socket->m_ConnectedClients.erase(it);
+                socket->m_ClientMutex.unlock();
             }
 
-            
             int sleepFor = timeout - timer.ElapsedMillis();
             if(sleepFor > 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepFor));
-            
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepFor));    
         }
+
         MQP_ERROR("Stopped listening on port {}", socket->m_Port);
     }
 }

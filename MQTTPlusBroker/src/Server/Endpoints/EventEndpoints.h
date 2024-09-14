@@ -44,12 +44,13 @@ namespace MQTTPlus
                 {
                     auto func = timedEvents[type];
                     float interval = obj["interval"];
-                    client->SetTimedFunction(interval, [client, func]() mutable { func(*client.Raw()); });
+                    client->SetTimedFunction(interval, [client, func]() mutable { 
+                        func(*client.Raw()); 
+                    });
                 }
                 else if(eventMap.find(type) != eventMap.end())
                 {
-                    std::string ev = eventMap[type];
-                    service->SetEventListener(client, ev);
+                    service->SetEventListener(client, eventMap[type]);
                 } else MQP_ERROR("Tried to subscribe to invalid event {}", type);
             }
         });

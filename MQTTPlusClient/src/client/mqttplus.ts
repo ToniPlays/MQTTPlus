@@ -25,6 +25,7 @@ export const MQTTPlusProvider = () => {
 
     useEffect(() => {
         if(socket.lastJsonMessage == null) return;
+        
         const message = socket.lastJsonMessage
         const type = message.endpoint
 

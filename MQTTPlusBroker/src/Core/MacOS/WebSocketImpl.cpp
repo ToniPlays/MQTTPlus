@@ -34,7 +34,7 @@ namespace MQTTPlus
 
     void WebSocketImpl::Listen()
     {
-        m_Thread = Ref<Thread>::Create(std::thread(&WebSocketImpl::ThreadFunc, this));
+        m_Thread = Ref<Thread>::Create("Websocket listen", [this]() { WebSocketImpl::ThreadFunc(this); }));
     }
 
     void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
@@ -85,14 +85,12 @@ namespace MQTTPlus
         if(ext.Socket->m_OnSocketConnected)
             ext.Socket->m_OnSocketConnected(socket);
         
-        
         us_socket_timeout(0, socket, 30);
         return socket;
     }
 
     us_socket_t* WebSocketImpl::OnConnectionClosed(us_socket_t* socket, int code, void* reason)
     {
-        
         WebSocketEXT& ext = *(WebSocketEXT*)us_socket_context_ext(false, socket->context);
         if(ext.Socket->m_OnSocketDisconnected)
             ext.Socket->m_OnSocketDisconnected(socket, code);

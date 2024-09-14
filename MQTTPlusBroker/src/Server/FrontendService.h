@@ -23,7 +23,7 @@ namespace MQTTPlus
         
         std::string GetName() const override { return "FrontendService"; }
 
-        private:
+    private:
         static void ProcessMQTTChangeEvent(Ref<HTTPClient> client, Event& e);
 
     private:

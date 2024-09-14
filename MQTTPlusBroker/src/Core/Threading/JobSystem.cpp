@@ -1,24 +1,31 @@
 #include "JobSystem.h"
 #include "Core/Logger.h"
+#include "Core/MQTTPlusException.h"
 
 #include <spdlog/fmt/fmt.h>
 
 namespace MQTTPlus 
 {
-    void Thread::Execute(const std::function<void()>& callback)
+    void Thread::Execute(const std::function<void(Ref<Thread>)>& callback)
     {
         if (callback == nullptr) return;
 
         m_Status = ThreadStatus::Executing;
         try
         {
-            callback();
+            callback(this);
             m_Status = ThreadStatus::Finished;
+            MQP_ERROR("Thread {}: Finished", m_DebugName);
+        }
+        catch (MQTTPlusException e)
+        {
+            MQP_ERROR("Thread {}: MQTT error {}", m_DebugName, e.what());
+            m_Status = ThreadStatus::Failed;
         }
         catch (std::exception e)
         {
+            MQP_ERROR("Thread {}: Unknown error {}", m_DebugName, e.what());
             m_Status = ThreadStatus::Failed;
-            throw e;
         }
     }
 
@@ -41,7 +48,6 @@ namespace MQTTPlus
 
     void JobSystem::ThreadFunc(Ref<Thread> thread)
     {
-        MQP_WARN("Starting thread {}", thread->GetThreadID());
         //Initialize thread state
         thread->m_Status = ThreadStatus::Waiting;
 
@@ -59,16 +65,7 @@ namespace MQTTPlus
 
             if(!callback) continue;
             
-            try 
-            {
-                thread->Execute(callback);
-            } catch(std::exception e)
-            {
-                MQP_FATAL("Thread {} crashed with {}", thread->GetThreadID(), e.what());
-            } catch(...)
-            {
-                
-            }
+            thread->Execute(callback);
         }
 
         thread->m_Status = ThreadStatus::Terminated;

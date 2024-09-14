@@ -25,12 +25,16 @@ namespace MQTTPlus
         
         m_Broker->SetOnClientConnected([this](Ref<MQTTClient> client) {
             MQTTClientEvent e(client, true);
-            ServiceManager::OnEvent(e);
+            OnMQTTClientEvent(e);
+
+            MQP_INFO("Connected MQTT client {}", client->GetAuth().ClientID);
         });
         
         m_Broker->SetOnClientDisconnected([this](Ref<MQTTClient> client, int code) {
             MQTTClientEvent e(client, false);
-            ServiceManager::OnEvent(e);
+            OnMQTTClientEvent(e);
+            
+            MQP_INFO("Disconnected MQTT client");
         });
 
         m_Broker->Listen();
@@ -43,14 +47,13 @@ namespace MQTTPlus
     
     void MQTTClientService::OnEvent(Event& e)
     {
-        if(Event::Is<MQTTClientEvent>(e))
-            OnMQTTClientEvent((MQTTClientEvent&)e);
+
     }
 
     void MQTTClientService::OnMQTTClientEvent(MQTTClientEvent& e)
     {
         Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
-
+        MQP_ASSERT(db, "Database service nullptr");
         std::string sql = fmt::format("SELECT * FROM devices WHERE deviceName = '{0}'", e.GetClient().GetAuth().ClientID);
 
         db->Transaction(sql, [db, e](sql::ResultSet* result) mutable {
@@ -69,6 +72,8 @@ namespace MQTTPlus
                 //Update entry
                 db->Transaction(fmt::format("UPDATE devices SET status = {1}, lastSeen = NOW() WHERE deviceName = '{0}'", deviceName, e.IsConnected() ? 1 : 0));
             }
+
+            ServiceManager::OnEvent(e);
         });
     }
 }

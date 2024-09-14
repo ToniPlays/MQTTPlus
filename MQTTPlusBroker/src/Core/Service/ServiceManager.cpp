@@ -15,9 +15,10 @@ namespace MQTTPlus
         s_JobSystem = new JobSystem();
     
         for(auto& service : s_Services) {
-            s_JobSystem->Queue([&service]() mutable { 
-                MQP_INFO("Starting service: {}", service->GetName());
-                service->Start();
+            s_JobSystem->Queue([&service](Ref<Thread> thread) mutable { 
+                MQP_INFO("Starting service: {} on {}", service->GetName(), thread->GetDebugName());
+                service->RunService(thread);
+                MQP_INFO("Stopped service: {} on {}", service->GetName(), thread->GetDebugName());
             });
         }
         

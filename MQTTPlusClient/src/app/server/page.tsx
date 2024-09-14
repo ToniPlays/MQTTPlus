@@ -71,7 +71,6 @@ export default function Server() {
 
   function SetEndpoints() {
     provider.receive(api.server.endpoint, (data, error) => {
-      console.log(data.data)
       if (!error) {
         setServerStatus(data.data)
         setSystemUsage(data.data.status)

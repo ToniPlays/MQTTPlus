@@ -33,11 +33,12 @@ namespace MQTTPlus {
             m_TransactionCount.wait(0);
             m_TransactionMutex.lock();
             DatabaseTransaction transaction = m_Transactions.front();
+
             m_Transactions.pop();
             m_TransactionCount = m_Transactions.size();
-            m_TransactionMutex.unlock();
-            
+
             RunTransaction(transaction);
+            m_TransactionMutex.unlock();
         }
     }
 
@@ -77,6 +78,7 @@ namespace MQTTPlus {
     {
         try 
         {
+            MQP_TRACE(transaction.SQL);
             std::unique_ptr<sql::PreparedStatement> stmt(m_Connection->prepareStatement(transaction.SQL));
             if(transaction.Callback)
             {
@@ -91,6 +93,12 @@ namespace MQTTPlus {
         } catch(sql::SQLSyntaxErrorException e)
         {
             MQP_ERROR("Failed running transaction: {0}\n{1}", transaction.SQL, e.what());
+            if(transaction.Callback)
+                transaction.Callback(nullptr);
+            return false;
+        } catch(sql::SQLException e)
+        {
+            MQP_ERROR("Database error {}\nQuery {}", e.getMessage().c_str(), transaction.SQL);
             if(transaction.Callback)
                 transaction.Callback(nullptr);
             return false;

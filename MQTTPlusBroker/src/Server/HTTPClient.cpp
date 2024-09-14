@@ -14,6 +14,7 @@ namespace MQTTPlus
     {
         try 
         {
+            //MQP_TRACE("-> {}", message);
             m_Server->m_Server.send(m_ConnPtr->get_handle(), message, websocketpp::frame::opcode::TEXT);
         } catch(std::exception e)
         {

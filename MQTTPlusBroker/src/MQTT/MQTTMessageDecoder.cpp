@@ -7,11 +7,11 @@
 #include "spdlog/fmt/fmt.h"
 
 namespace MQTTPlus {
-    static int RemainingLength(std::span<uint8_t> bytes) noexcept {
+    static int RemainingLength(std::span<char> bytes) noexcept {
         return bytes[1];
     }
 
-    static int TotalLength(std::span<uint8_t> bytes) noexcept {
+    static int TotalLength(std::span<char> bytes) noexcept {
         return bytes.size() >= MQTT::FixedHeader::SIZE
         ? RemainingLength(bytes) + MQTT::FixedHeader::SIZE
         : MQTT::FixedHeader::SIZE;
@@ -25,27 +25,26 @@ namespace MQTTPlus {
 
     void MQTTMessageDecoder::DecodeMessage(const std::vector<char>& data, OnMessageDecoded&& callback)
     {
-        //m_Buffer.insert(m_Buffer.end(), data.begin(), data.begin() + data.size());
-
-        //auto slice = std::span<uint8_t>(m_Buffer.begin(), m_Buffer.begin() + data.size());
-        //auto totalLength = TotalLength(slice);
+        m_Buffer.insert(m_Buffer.end(), data.begin(), data.begin() + data.size());
     
-        while(true)
+        uint32_t remainingLength = TotalLength(m_Buffer);
+        while(m_Buffer.size() >= remainingLength)
         {
-            //const auto message = slice.subspan(0, std::span);
-            Ref<MQTT::Message> msg = GetMessage(data);
-            
+            auto d = std::vector<char>(m_Buffer.begin(), m_Buffer.begin() + remainingLength);
+            Ref<MQTT::Message> msg = GetMessage(d);
+        
             if(msg)
                 callback(msg);
             
-            //slice = slice.subspan(totalLength);
-            
-            //totalLength = TotalLength(slice);
-            break;
+            auto start = m_Buffer.begin() + d.size();
+            int length = m_Buffer.size() - d.size();
+
+            if(length > 0)
+                m_Buffer = std::vector<char>(start, m_Buffer.begin() + length);
+            else m_Buffer.clear();
+
+            remainingLength = TotalLength(m_Buffer);
         }
-        
-        //copy(slice.begin(), slice.end(), m_Buffer.begin());
-        //m_Begin = m_Buffer.begin() + slice.size();
     }
     Ref<MQTT::Message> MQTTMessageDecoder::GetMessage(const std::vector<char>& data)
     {

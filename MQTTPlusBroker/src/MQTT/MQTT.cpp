@@ -41,7 +41,6 @@ namespace MQTTPlus::MQTT
         if(QOSLevel > 0)
         {
             messageId = ReadU16(buffer);
-            MQP_TRACE("Message ID {}", messageId);
         }
         
         m_Message = ReadString(buffer, buffer.GetSize() - buffer.GetCursor()); 
@@ -49,7 +48,8 @@ namespace MQTTPlus::MQTT
 
     SubscribeMessage::SubscribeMessage(CachedBuffer& buffer)
     {
-        buffer.Read<uint8_t>((uint64_t)FixedHeader::SIZE);
+        uint8_t flags = buffer.Read<uint8_t>();
+        uint8_t remainingLength = buffer.Read<uint8_t>();
         uint16_t packetID = ReadU16(buffer);
 
         while(buffer.Available())

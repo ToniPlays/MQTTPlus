@@ -26,7 +26,7 @@ namespace MQTTPlus {
         
         void Start() {
             m_Running = true;
-            m_Thread = Ref<Thread>::Create([instance = this]() {
+            m_Thread = Ref<Thread>::Create("CallbackTimer", [instance = this]() {
                 CallbackTimer::TimerFunc(instance);
             });
             

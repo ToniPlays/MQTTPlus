@@ -78,17 +78,26 @@ namespace MQTTPlus {
         using namespace nlohmann;
 
         MQTTClientEvent& ev = (MQTTClientEvent&)e;
+        std::string sql = fmt::format("SELECT publicID, deviceName, nickname, status, lastSeen FROM devices WHERE deviceName = '{}'", ev.GetClient().GetAuth().ClientID);
+        ServiceManager::GetService<DatabaseService>()->Transaction(sql, [client](sql::ResultSet* result) mutable {
+            if(!result) return;
+            result->next();
 
-        json j;
-        j["endpoint"] = "/events";
-        j["data"] = json({
-            { "type", "mqtt.client_connection_status_changed" },
-            { "event_data", {
-                { "client_id", ev.GetClient().GetAuth().ClientID },
-                { "is_connected", ev.IsConnected() }
-            } }
+            API::APIDevice d = {};
+            d.PublicID = result->getString("publicID").c_str();
+            d.DeviceName = result->getString("deviceName").c_str();
+            d.Nickname = result->getString("nickname").c_str();
+            d.Status = result->getUInt("status");
+            d.LastSeen = result->getString("lastSeen").c_str();
+
+            json j;
+            j["endpoint"] = "/events";
+            j["data"] = json({
+                { "type", "mqtt.client_connection_status_changed" },
+                { "event_data", d },
+            });
+            
+            client->Send(j.dump());
         });
-        
-        client->Send(j.dump());
     }
 }

@@ -22,7 +22,7 @@ namespace MQTTPlus
         void DecodeMessage(const std::vector<char>& data, OnMessageDecoded&& callback);
         Ref<MQTT::Message> GetMessage(const std::vector<char>& data);
     private:
-        std::vector<uint8_t> m_Buffer;
+        std::vector<char> m_Buffer;
         decltype(m_Buffer)::iterator m_Begin;
     };
 }

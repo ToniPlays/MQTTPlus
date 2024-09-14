@@ -49,7 +49,6 @@ namespace MQTTPlus
         m_WebSocket->SetOnSocketDataReceived([this](void* client, char* data, int length) {
             if(m_ConnectedClients[client])
                 m_ConnectedClients[client]->ProcessData(data, length);
-            
         });
         
         m_WebSocket->Listen();
@@ -65,7 +64,6 @@ namespace MQTTPlus
 
     MQTTPlus::MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth)
     {
-        
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
         bool isNew = client->GetAuth().ClientID.empty();
         client->m_Authentication = auth;

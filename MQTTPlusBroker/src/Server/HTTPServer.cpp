@@ -21,7 +21,7 @@ namespace MQTTPlus
         };
         open_handler openHandler = [this](connection_hdl hdl) {
             Server::connection_ptr con = m_Server.get_con_from_hdl(hdl);
-            auto client = Ref<HTTPClient>::Create(this, con);;
+            auto client = Ref<HTTPClient>::Create(this, con);
             m_ConnectedClients[con] = client;
             m_ChangeCallback(client, true);
         };
@@ -34,7 +34,6 @@ namespace MQTTPlus
             if(it != m_ConnectedClients.end())
                 m_ConnectedClients.erase(it);
 
-            
             MQP_INFO("Socket closed");
         };
         
@@ -68,7 +67,7 @@ namespace MQTTPlus
         for(auto& [key, func] : m_PostCallbacks)
         {
             if(!m_ResolverCallback(key.c_str(), payload)) continue;
-            
+            MQP_TRACE("Running endpoint {}", key);
             try 
             {
                 auto conn = m_Server.get_con_from_hdl(hdl);

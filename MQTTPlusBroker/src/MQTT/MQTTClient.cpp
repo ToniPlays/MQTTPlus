@@ -12,6 +12,7 @@ namespace MQTTPlus
         
         m_Decoder.DecodeMessage(buffer, [this](Ref<MQTT::Message> message) {
             
+            MQP_INFO("MQTT message: {}", message->ToString());
             switch(message->GetType())
             {
                 case MQTT::MessageType::Connect:

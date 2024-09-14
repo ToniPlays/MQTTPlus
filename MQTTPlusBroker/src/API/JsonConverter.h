@@ -70,7 +70,7 @@ namespace MQTTPlus::API
     static void to_json(json& j, const APIDevice& device)
 	{
 		j = json {
-                  { "publicID", device.PublicID },
+                  { "id", device.PublicID },
                   { "device_name", device.DeviceName },
                   { "nickname", device.Nickname },
 				  { "status", device.Status },
