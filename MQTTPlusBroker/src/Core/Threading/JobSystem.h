@@ -24,7 +24,7 @@ namespace MQTTPlus
 					Execute(callback);
 				} catch(std::exception e)
 				{
-					MQP_FATAL("Thread crashed {}", e.what());
+					MQP_ERROR("Thread unknown crashed {}", e.what());
 				}
 			});
 		}

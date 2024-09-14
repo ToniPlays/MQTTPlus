@@ -12,16 +12,16 @@ import toast from "react-hot-toast";
 
 interface Device {
   uid: string
-  name: string
+  device_name: string
   status: string
+  last_seen: string
 }
 
-export default function Server() {
+export default function Devices() {
   const provider = MQTTPlusProvider()
   const api = provider.api
 
   const [devices, setDevices] = useState<Device[]>([])
-
 
   useEffect(() => 
   {
@@ -29,7 +29,7 @@ export default function Server() {
     
     provider.post(api.devices.list())
     provider.receive(api.devices.endpoint, (data, error) => {
-      
+      setDevices(data.data)
     })
 
     provider.post(api.events.listen({
@@ -67,32 +67,26 @@ export default function Server() {
   return (
     <DefaultLayout>
       <Breadcrumb pageName="Devices" />
-      <Table label="My devices" columns={["Device", "Network", "Status", "Last seen"]}>
-      {devices.map(device => {
-        return (
-            <div
-            className={`flex justify-between`}
-            key={device.uid}
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">
-                
+      <Table label="Services" columns={["Device", "Network", "Status", "Last seen"]} >
+          {devices?.map(device => {
+            return (
+              <div className="grid grid-cols-4 border-b border-stroke dark:border-strokedark">
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                    {device.device_name}
+                </div>
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                  None
+                </div>
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                    <p className={device.status ? "text-meta-3" : "text-meta-1"}>{device.status ? "Connected" : "Disconnected"}</p>
+                </div>
+                <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                  {new Date(device.last_seen).toLocaleString()}
+                </div>
               </div>
-              <p className="hidden text-black dark:text-white sm:block">
-                {device.name}
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center p-2.5 xl:p-5">
-              <p className={GetStatusColor(device.status)}>{device.status}</p>
-            </div>
-
-            <div className="flex items-center justify-center p-2.5 xl:p-5">
-              <p className="text-meta-0">5 minutes ago</p>
-            </div>
-          </div>)
-      })}
-      </Table>
+            )
+          })}
+        </Table>
     </DefaultLayout>
   );
 }

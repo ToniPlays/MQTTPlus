@@ -15,7 +15,7 @@ namespace MQTTPlus
         using namespace API;
         
         server.Post("/events", [](const std::string& message, Ref<HTTPClient> client) mutable {
-            std::unordered_map<std::string, std::function<void(HTTPClient&)>> timedEvents = { {"server.status", [](HTTPClient& client) {
+            std::unordered_map<std::string, std::function<void(HTTPClient&)>> timedEvents = { { "server.status", [](HTTPClient& client) {
                 const SystemStatus& status = ServiceManager::GetSystemStatus();
                 
                 json j;

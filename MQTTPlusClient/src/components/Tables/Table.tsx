@@ -17,7 +17,7 @@ const Table = (props: TableProps) => {
       </h4>
 
       <div className="flex flex-col">
-        <div className={`grid grid-cols-3 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-${props.columns.length}`}>
+        <div className={`grid rounded-sm bg-gray-2 dark:bg-meta-4`} style={{ gridTemplateColumns: 'auto auto auto auto' }}>
           {props.columns.map((column) => {
             return (
               <div className="p-2.5 xl:p-5" key={column}>

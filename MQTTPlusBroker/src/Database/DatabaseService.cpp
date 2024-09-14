@@ -85,8 +85,7 @@ namespace MQTTPlus {
             }
             else
                 stmt->executeUpdate();
-
-
+                
             return true;
             
         } catch(sql::SQLSyntaxErrorException e)

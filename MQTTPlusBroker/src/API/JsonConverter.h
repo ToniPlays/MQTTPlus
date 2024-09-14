@@ -66,6 +66,17 @@ namespace MQTTPlus::API
                   { "status", status.Status }
 		};
 	}
+
+    static void to_json(json& j, const APIDevice& device)
+	{
+		j = json {
+                  { "publicID", device.PublicID },
+                  { "device_name", device.DeviceName },
+                  { "nickname", device.Nickname },
+				  { "status", device.Status },
+                  { "last_seen", device.LastSeen.Value() }
+		};
+	}
 }
 
 
