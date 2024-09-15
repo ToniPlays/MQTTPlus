@@ -39,7 +39,7 @@ namespace MQTTPlus
             auto it = m_ConnectedClients.find(client);
             if(it != m_ConnectedClients.end())
             {
-                m_OnClientDisconnected(m_ConnectedClients[client], reason);
+                OnMQTTClientDisconnected(m_ConnectedClients[client], reason);
                 m_ConnectedClients.erase(it);
             }
             m_ClientMutex.unlock();
@@ -55,6 +55,11 @@ namespace MQTTPlus
         MQP_WARN("MQTT Server listening on port {}", m_WebSocket->GetPort());
     }
 
+    void Broker::Disconnect(Ref<MQTTClient> client)
+    {
+        m_WebSocket->DisconnectClient(client->m_NativeSocket);
+    }
+
     BrokerStatus Broker::GetStatus() const
     {
         if (!m_WebSocket) return BrokerStatus::Disabled;
@@ -64,23 +69,39 @@ namespace MQTTPlus
 
     MQTTPlus::MQTT::ConnAckFlags Broker::OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth)
     {
+        if(!auth.Valid)
+            return MQTT::ConnAckFlags::IdentifierRejected;
+
         m_WebSocket->SetSocketTimeout(client->m_NativeSocket, client->m_KeepAliveFor);
         bool isNew = client->GetAuth().ClientID.empty();
         client->m_Authentication = auth;
         
         if(isNew)
-            m_OnClientConnected(client);
+            m_OnClientConnectionChange(client, true, 0);
 
         return MQTT::ConnAckFlags::Accepted;
     }
 
-    void Broker::OnMQTTClientDisonnected(Ref<MQTTClient> client, int reason)
+    void Broker::OnMQTTClientDisconnected(Ref<MQTTClient> client, int reason)
     {
-        m_OnClientDisconnected(client, reason);
+        if(client->GetAuth().Valid)
+            m_OnClientConnectionChange(client, false, reason);
     }
 
-    void Broker::OnMQTTPublishReceived(Ref<MQTTClient> client, Ref<MQTT::PublishMessage> message)
+    bool Broker::OnMQTTPublishReceived(Ref<MQTTClient> client, Ref<MQTT::PublishMessage> message)
     {
-        MQP_ERROR("Got publish message: {0} {1}", message->GetTopic(), message->GetMessage());
+        if(!m_OnClientPublished) return false;
+
+        m_OnClientPublished(client, message->GetTopic(), message->GetMessage());
+        return true;
+    }
+    bool Broker::OnMQTTSubscribeReceived(Ref<MQTTClient> client, Ref<MQTT::SubscribeMessage> message)
+    {
+        if(!m_OnClientSubscribed) return false;
+
+        for(auto& topic : message->GetTopics())
+            m_OnClientSubscribed(client, topic);
+
+        return true;
     }
 }

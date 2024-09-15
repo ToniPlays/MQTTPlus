@@ -34,7 +34,7 @@ namespace MQTTPlus
                 return "";
             }
             
-            size_t lineEndOffset = source.find_first_of('\r\n', valueOffset);
+            size_t lineEndOffset = source.find_first_of('\n', valueOffset);
             std::string line = source.substr(valueOffset, lineEndOffset - valueOffset);
             *offset = valueOffset + line.length();
             return line.substr(line.find_first_of(' ') + 1);

@@ -6,7 +6,13 @@ namespace MQTTPlus::MQTT
 {
     ConnectMessage::ConnectMessage(CachedBuffer& buffer)
     {
-        buffer.Read<uint8_t>((uint64_t)FixedHeader::SIZE); //Fixed header
+        buffer.Read<uint8_t>();
+        uint8_t remaining = buffer.Read<uint8_t>();
+        if((buffer.GetSize() - buffer.GetCursor()) < remaining)
+        {
+            m_Authentication.Valid = false;
+            return;
+        }
         
         std::string protocolName = ReadString(buffer, ReadU16(buffer));
         
@@ -27,6 +33,15 @@ namespace MQTTPlus::MQTT
         
         if(m_Flags & (uint8_t)ConnectFlags::Password)
             m_Authentication.Password = ReadString(buffer, ReadU16(buffer));
+    }
+
+    DisconnectMessage::DisconnectMessage(CachedBuffer& buffer)
+    {
+        buffer.Read<uint8_t>();
+        buffer.Read<uint8_t>(); //Remaining length
+        if(!buffer.Available()) return;
+        
+        m_Reason = buffer.Read<uint8_t>();
     }
 
     PublishMessage::PublishMessage(CachedBuffer& buffer)
@@ -50,7 +65,7 @@ namespace MQTTPlus::MQTT
     {
         uint8_t flags = buffer.Read<uint8_t>();
         uint8_t remainingLength = buffer.Read<uint8_t>();
-        uint16_t packetID = ReadU16(buffer);
+        m_MessageID = ReadU16(buffer);
 
         while(buffer.Available())
         {

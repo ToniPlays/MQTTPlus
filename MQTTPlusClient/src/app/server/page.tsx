@@ -168,7 +168,9 @@ export default function Server() {
         <Table label="Services" columns={["Name", "Started at", "Status"]} >
           {serverStatus?.services.map(service => {
             return (
-              <div className="grid grid-cols-3 border-b border-stroke dark:border-strokedark">
+              <div className="grid grid-cols-3 border-b border-stroke dark:border-strokedark"
+                key={service.name}
+              >
                 <div className="flex items-center gap-3 p-2.5 xl:p-5">
                     {service.name}
                 </div>

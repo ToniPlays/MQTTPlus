@@ -20,6 +20,7 @@ namespace MQTTPlus
             m_SendMessageCallback = callback;
         }
         
+        void Disconnect();
         void ProcessData(char* data, int length);
         void SendMessage(Ref<MQTT::Message> message);
 

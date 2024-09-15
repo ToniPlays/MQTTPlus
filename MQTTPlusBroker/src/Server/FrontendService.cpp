@@ -22,7 +22,8 @@ namespace MQTTPlus {
         });
         m_Server->SetUserData((void*)nullptr);
         m_Server->SetMessageResolver([](const char* endpoint, const std::string& message) {
-            try {
+            try 
+            {
                 auto json = nlohmann::json::parse(message);
                 std::string requestEndpoint = json["endpoint"];
                 if(endpoint == requestEndpoint)

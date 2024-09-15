@@ -23,6 +23,10 @@ int main(int argc, char* argv[])
     MQP_INFO("MQTTPlus v0.1a");
     CommandLineArgs::Init(argc, argv);
 
+    auto path = CommandLineArgs::Get<std::string>("wdir");
+    if(!path.empty())
+        std::filesystem::current_path(path);
+
     ServiceManager::AddService<DatabaseService>();
     ServiceManager::AddService<MQTTClientService>(CommandLineArgs::Get<int>("port_mqtt"));
     ServiceManager::AddService<FrontendService>(CommandLineArgs::Get<int>("port_http"));

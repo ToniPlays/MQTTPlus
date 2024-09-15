@@ -12,20 +12,20 @@ namespace MQTTPlus::MQTT
     enum class MessageType 
     {
         Reserved1 = 0,
-        Connect = 1,    //Created
-        ConnAck = 2,    //Created
-        Publish = 3,    //Created  
+        Connect = 1,        //Implemented
+        ConnAck = 2,        //Implemented
+        Publish = 3,        //Implemented  
         PubAck = 4,
         PubRec = 5,
         PubRel = 6,
         PubComp = 7,
-        Subscribe = 8,  //Created
+        Subscribe = 8,      //Implemented
         SubAck = 9,
         Unsubscribe = 10,
         UnsubAck = 11,
         PingReg = 12,
         PingResp = 13,
-        Disconnect = 14,
+        Disconnect = 14,    //Implemented
         Reserved2 = 15,
     };
     enum class ProtocolVersion : uint8_t
@@ -61,6 +61,8 @@ namespace MQTTPlus::MQTT
         
         std::string WillTopic;
         std::string WillMessage;
+
+        bool Valid = true;
     };
     enum class ConnAckFlags : uint8_t {
         Accepted = 0x00,
@@ -131,6 +133,25 @@ namespace MQTTPlus::MQTT
         bool m_HasParent = false;
     };
 
+    class DisconnectMessage : public Message
+    {
+    public:
+        DisconnectMessage(CachedBuffer& buffer);
+        
+        MessageType GetType() const override { return MessageType::Disconnect; }
+        
+        virtual std::vector<uint8_t> GetBytes() const override
+        {
+            return std::vector<uint8_t> { 0 };
+        }
+        virtual std::string ToString() const override {
+            return fmt::format("DisconnectMessage: {}", m_Reason);
+        }
+        
+    private:
+        uint8_t m_Reason;
+    };
+
     class PublishMessage : public Message
     {
     public:
@@ -157,7 +178,7 @@ namespace MQTTPlus::MQTT
     {
     public:
 
-        struct Topics {
+        struct Topic {
             std::string Topic;
             uint8_t QOS;
         };
@@ -170,14 +191,37 @@ namespace MQTTPlus::MQTT
             return std::vector<uint8_t> { 0 };
         }
         virtual std::string ToString() const override {
-            return fmt::format("SubscribeMessage: Topics {}", m_Topics.size());
+            return fmt::format("SubscribeMessage: Topics {}, ID: {}", m_Topics.size(), m_MessageID);
         }
 
-        const std::vector<Topics>& GetTopics() const { return m_Topics; };
+        const std::vector<Topic>& GetTopics() const { return m_Topics; };
+        uint16_t GetMessageID() const { return m_MessageID; };
         
     private:
+        uint16_t m_MessageID = 0;
+        std::vector<Topic> m_Topics;
+    };
+
+    class SubAckMessage : public Message
+    {
+    public:
+        SubAckMessage(std::vector<uint8_t> ack, uint16_t messageID) : m_Ack(ack), m_MessageID(messageID) {}
         
-        std::vector<Topics> m_Topics;
+        MessageType GetType() const override { return MessageType::SubAck; }
+        virtual std::vector<uint8_t> GetBytes() const override
+        {
+            auto result = std::vector<uint8_t> { 0x90, (uint8_t)(0x02 + m_Ack.size()), (uint8_t)(m_MessageID >> 8), (uint8_t)m_MessageID };
+            for(auto& ack : m_Ack)
+                result.push_back(ack);
+            return result;
+        }
+        virtual std::string ToString() const override {
+            return fmt::format("SubAckMessage: {}", m_MessageID);
+        }
+        
+    private:
+        std::vector<uint8_t> m_Ack;
+        uint16_t m_MessageID;
     };
 
 

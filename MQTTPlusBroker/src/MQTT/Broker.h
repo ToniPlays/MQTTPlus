@@ -12,9 +12,9 @@
 
 namespace MQTTPlus 
 {
-    using OnClientConnected = std::function<void(Ref<MQTTClient>)>;
-    using OnClientDisconnected = std::function<void(Ref<MQTTClient>, int)>;
-    using OnPublished = std::function<void(Ref<MQTTClient>&, Buffer)>;
+    using OnClientConnectionChange = std::function<void(Ref<MQTTClient>, bool, int)>;
+    using OnClientSubscribed = std::function<void(Ref<MQTTClient>, const MQTT::SubscribeMessage::Topic&)>;
+    using OnClientPublished = std::function<void(Ref<MQTTClient>&, const std::string&, const std::string&)>;
 
     enum class BrokerStatus
     {
@@ -32,14 +32,17 @@ namespace MQTTPlus
         ~Broker() = default;
         
         void Listen();
+        void Disconnect(Ref<MQTTClient> client);
         void ProcessMessages();
-        void OnPublish(const std::string& topic, OnPublished&& callback) {}
         
-        void SetOnClientConnected(OnClientConnected&& callback) {
-            m_OnClientConnected = callback;
+        void SetOnClientChange(OnClientConnectionChange&& callback) {
+            m_OnClientConnectionChange = callback;
         }
-        void SetOnClientDisconnected(OnClientDisconnected&& callback) {
-            m_OnClientDisconnected = callback;
+        void SetOnSubscribed(OnClientSubscribed&& callback) {
+            m_OnClientSubscribed = callback;
+        }
+        void SetOnPublished(OnClientPublished&& callback) {
+            m_OnClientPublished = callback;
         }
 
         BrokerStatus GetStatus() const;
@@ -51,8 +54,9 @@ namespace MQTTPlus
         
     private:
         MQTT::ConnAckFlags OnMQTTClientConnected(Ref<MQTTClient> client, const MQTT::Authentication& auth);
-        void OnMQTTClientDisonnected(Ref<MQTTClient> client, int reason);
-        void OnMQTTPublishReceived(Ref<MQTTClient> client, Ref<MQTT::PublishMessage> message);
+        void OnMQTTClientDisconnected(Ref<MQTTClient> client, int reason);
+        bool OnMQTTPublishReceived(Ref<MQTTClient> client, Ref<MQTT::PublishMessage> message);
+        bool OnMQTTSubscribeReceived(Ref<MQTTClient> client, Ref<MQTT::SubscribeMessage> message);
         
     private:
         
@@ -61,7 +65,8 @@ namespace MQTTPlus
         std::mutex m_ClientMutex;
 
         std::unordered_map<void*, Ref<MQTTClient>> m_ConnectedClients;        
-        OnClientConnected m_OnClientConnected;
-        OnClientDisconnected m_OnClientDisconnected;
+        OnClientConnectionChange m_OnClientConnectionChange;
+        OnClientSubscribed m_OnClientSubscribed;
+        OnClientPublished m_OnClientPublished;
     };
 }

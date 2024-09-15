@@ -13,19 +13,7 @@ namespace MQTTPlus {
     {
         m_StartupTime = std::chrono::system_clock::now();
 
-        sql::SQLString url("localhost");
-
-        std::string user = CommandLineArgs::Get<std::string>("db_user");
-        std::string password = CommandLineArgs::Get<std::string>("db_pass");
-
-        m_Connection = std::unique_ptr<sql::Connection>(m_Driver->connect(url, user, password));
-        if(!m_Connection)
-        {
-            MQP_FATAL("Could not connect to MariaDB server");
-            return;
-        }
-        
-        MQP_INFO("Connection established to MariaDB {}", m_Connection->isValid() ? "Valid" : "Not valid");
+        Reconnect();
         ValidateSchema();
 
         while(true)
@@ -56,6 +44,27 @@ namespace MQTTPlus {
         m_TransactionCount.notify_all();
     }
 
+    void DatabaseService::Reconnect() 
+    {
+        if(m_Connection)
+            if(!m_Connection->isClosed()) 
+                return;
+
+        sql::SQLString url("localhost");
+
+        std::string user = CommandLineArgs::Get<std::string>("db_user");
+        std::string password = CommandLineArgs::Get<std::string>("db_pass");
+
+        m_Connection = std::unique_ptr<sql::Connection>(m_Driver->connect(url, user, password));
+        if(!m_Connection)
+        {
+            MQP_FATAL("Could not connect to MariaDB server");
+            return;
+        }
+        
+        MQP_INFO("Connection established to MariaDB {}", m_Connection->isValid() ? "Valid" : "Not valid");
+    }
+
     void DatabaseService::ValidateSchema()
     {
         std::string file = File::ReadFile("res/database/schema.txt");
@@ -72,13 +81,16 @@ namespace MQTTPlus {
 
             RunTransaction({ f + src, nullptr });
         }
+        MQP_INFO("Schema validated from res/database/schema.txt");
     }
 
     bool DatabaseService::RunTransaction(const DatabaseTransaction& transaction)
     {
+        
         try 
         {
-            MQP_TRACE(transaction.SQL);
+            Reconnect();
+            //MQP_TRACE(transaction.SQL);
             std::unique_ptr<sql::PreparedStatement> stmt(m_Connection->prepareStatement(transaction.SQL));
             if(transaction.Callback)
             {
@@ -93,15 +105,15 @@ namespace MQTTPlus {
         } catch(sql::SQLSyntaxErrorException e)
         {
             MQP_ERROR("Failed running transaction: {0}\n{1}", transaction.SQL, e.what());
-            if(transaction.Callback)
-                transaction.Callback(nullptr);
-            return false;
         } catch(sql::SQLException e)
         {
             MQP_ERROR("Database error {}\nQuery {}", e.getMessage().c_str(), transaction.SQL);
-            if(transaction.Callback)
+        } catch(std::exception e)
+        {
+            MQP_ERROR("Database error: std::exception\nQuery {}", transaction.SQL);
+        }
+        if(transaction.Callback)
                 transaction.Callback(nullptr);
             return false;
-        }
     }
 }

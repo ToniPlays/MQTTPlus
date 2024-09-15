@@ -71,8 +71,7 @@ namespace MQTTPlus
             try 
             {
                 auto conn = m_Server.get_con_from_hdl(hdl);
-                func(payload, m_ConnectedClients[conn]);
-                
+                func(payload, m_ConnectedClients[conn]);  
                 return;
             } catch(std::exception& e)
             {

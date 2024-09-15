@@ -17,7 +17,6 @@ namespace MQTTPlus
     public:
         static void Init(int argc, char* argv[])
         {
-            MQP_INFO("Working directory {}", std::filesystem::current_path().string());
             std::stringstream ss;
             for(uint32_t i = 0; i < argc; i++)
                 ss << argv[i] << " ";

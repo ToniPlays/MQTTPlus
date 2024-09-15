@@ -20,6 +20,7 @@ namespace MQTTPlus {
         virtual uint32_t GetPort() const = 0;
 
         virtual void Listen() = 0;
+        virtual void DisconnectClient(void* socket) = 0;
         virtual void SetSocketTimeout(void* socket, uint32_t timeout) = 0;
         
         virtual void Write(void* socket, std::vector<uint8_t> bytes) = 0;

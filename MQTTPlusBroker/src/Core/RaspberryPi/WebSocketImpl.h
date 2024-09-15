@@ -24,6 +24,7 @@ namespace MQTTPlus
         uint32_t GetPort() const override { return m_Port; };
         
         void Listen() override;
+        void DisconnectClient(void* socket) override;
         void SetSocketTimeout(void* socket, uint32_t timeout) override;
         
         void Write(void* socket, std::vector<uint8_t> bytes) override;

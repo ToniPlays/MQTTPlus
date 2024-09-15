@@ -30,6 +30,7 @@ namespace MQTTPlus
         void Transaction(const std::string& sql, const std::function<void(sql::ResultSet*)> callback = nullptr);
 
     private:
+        void Reconnect();
         void ValidateSchema();
         bool RunTransaction(const DatabaseTransaction& transaction);
 

@@ -23,18 +23,19 @@ namespace MQTTPlus
         
         m_StartupTime = std::chrono::system_clock::now();
         
-        m_Broker->SetOnClientConnected([this](Ref<MQTTClient> client) {
-            MQTTClientEvent e(client, true);
+        m_Broker->SetOnClientChange([this](Ref<MQTTClient> client, bool connected, int reason) {
+            MQTTClientEvent e(client, connected);
             OnMQTTClientEvent(e);
 
-            MQP_INFO("Connected MQTT client {}", client->GetAuth().ClientID);
+            MQP_INFO("{} MQTT client {}", connected ? "Connected" : "Disconnected", client->GetAuth().ClientID);
+        });
+
+        m_Broker->SetOnPublished([this](Ref<MQTTClient> client, const std::string& topic, const std::string& message) {
+            MQP_WARN("{} published {} to {}", client->GetAuth().ClientID, message, topic);
         });
         
-        m_Broker->SetOnClientDisconnected([this](Ref<MQTTClient> client, int code) {
-            MQTTClientEvent e(client, false);
-            OnMQTTClientEvent(e);
-            
-            MQP_INFO("Disconnected MQTT client");
+        m_Broker->SetOnSubscribed([this](Ref<MQTTClient> client, const MQTT::SubscribeMessage::Topic& topic) {
+            MQP_WARN("{} subscribed to {} (QoS: {})", client->GetAuth().ClientID, topic.Topic, topic.QOS);
         });
 
         m_Broker->Listen();

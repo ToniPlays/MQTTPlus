@@ -55,6 +55,8 @@ namespace MQTTPlus {
             switch (type) {
                 case MQTT::MessageType::Connect:
                     return Ref<MQTT::ConnectMessage>::Create(dataBuffer);
+                case MQTT::MessageType::Disconnect:
+                    return Ref<MQTT::DisconnectMessage>::Create(dataBuffer);
                 case MQTT::MessageType::Publish:
                     return Ref<MQTT::PublishMessage>::Create(dataBuffer);
                 case MQTT::MessageType::Subscribe:

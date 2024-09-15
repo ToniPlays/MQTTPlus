@@ -52,6 +52,11 @@ namespace MQTTPlus
         m_Running = true;
         WebSocketImpl::SocketListenThread(this);
     }
+    void WebSocketImpl::DisconnectClient(void* socket)
+    {
+        SocketClient* client = (SocketClient*)socket;
+        close(client->GetClientID()); 
+    }
     
     void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
     {
