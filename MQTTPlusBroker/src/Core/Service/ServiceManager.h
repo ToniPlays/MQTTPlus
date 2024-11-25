@@ -64,6 +64,8 @@ namespace MQTTPlus {
         static const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() { return s_StartupTime; }
         
     private:
+        static void UpdateSystemStatus();
+
         static void ThreadFunc(Ref<Thread> thread);
 
     private:

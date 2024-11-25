@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import useWebSocket from "react-use-websocket"
 import MQTTPlusAPI from "./mqttplus-api"
+import internal from "stream"
 
 
 export const url = `${process.env.NEXT_PUBLIC_HOST}:8884`
@@ -21,16 +22,18 @@ export const MQTTPlusProvider = () => {
         share: true,
     })
 
-    const [receiveFuncs, setReceiveFuncs] = useState(new Map<string, (data: any, error: any | null) => void>())
+    type rxCallback = (data: any, error: any | null) => void
+
+    const [rxFunc, setRxFunc] = useState<Map<number, rxCallback | null>>(new Map());
 
     useEffect(() => {
         if(socket.lastJsonMessage == null) return;
         
         const message = socket.lastJsonMessage
-        const type = message.endpoint
+        if(rxFunc.size == 0) return;
 
-        if(receiveFuncs.has(type))
-            receiveFuncs.get(type)!(socket.lastJsonMessage, null)
+        console.log("Received: " + message)
+        rxFunc.get(0)!(message, null)
 
     }, [socket.lastJsonMessage])
 
@@ -38,12 +41,10 @@ export const MQTTPlusProvider = () => {
         socket.sendMessage(JSON.stringify(message))
     }, [])
 
-    const receiveFunc = (address: string, callback: (data: any, error: any | null) => void)=> {
-        if(receiveFuncs.has(address)) return
-
-        const map = receiveFuncs
-        map.set(address, callback)
-        setReceiveFuncs(map)
+    const receiveFunc = (callback: rxCallback) => {
+        const map = rxFunc
+        map.set(0, callback)
+        setRxFunc(map)
     }
 
     return {

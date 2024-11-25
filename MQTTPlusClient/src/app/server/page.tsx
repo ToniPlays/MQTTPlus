@@ -15,8 +15,7 @@ import { ReadyState } from "react-use-websocket";
 import { useTimeAgo } from "react-time-ago";
 import en from "javascript-time-ago/locale/en";
 import TimeAgo from "javascript-time-ago";
-import { MQTTPlus as Serv } from "../../client/types/Server";
-import { MQTTPlus as Events } from "../../client/types/Events";
+
 import {
   Capitalize,
   FormatBytes,
@@ -45,71 +44,24 @@ export default function Server() {
       return;
     }
 
-    provider.post(
-      api.server.status({
-        expands: [
-          Serv.Server.ExpandOpts.Services,
-          Serv.Server.ExpandOpts.Status,
-        ],
-      }),
-    );
-
-    provider.post(
-      api.events.listen({
-        listen: [
-          {
-            type: Events.Events.EventType.ServerStatus,
-            interval: 1.0,
-          },
-          {
-            type: Events.Events.EventType.MQTTClientConnectionStatusChanged
-          }
-        ],
-      }),
-    );
-  }, [provider.status]);
-
-  function SetEndpoints() {
-    provider.receive(api.server.endpoint, (data, error) => {
-      if (!error) {
-        setServerStatus(data.data)
-        setSystemUsage(data.data.status)
-        since.date = new Date(serverStatus?.startup_time);
-      }
-    });
-
-    provider.receive(api.events.endpoint, (data, error) => {
-
-      const type = data.data.type
-      const eventData = data.data.event_data
-      
-      switch(type)
-      {
-        case Events.Events.EventType.ServerStatus:
-          setSystemUsage(eventData)
-          break
-        case Events.Events.EventType.MQTTClientConnectionStatusChanged:
-          if(eventData.is_connected)
-            toast.success(`MQTT ${eventData.client_id} connected`)
-          else toast.error(`MQTT ${eventData.client_id} disconnected`)
-        break 
-      }
+    provider.receive((message, error) => {
+      console.log(message)
+      ProcessMessage(message)
     })
-  }
 
-  SetEndpoints();
-
-  function GetStatus() {
-    switch (provider.status) {
-      case ReadyState.CLOSED:
-        return "No connection";
-      case ReadyState.CONNECTING:
-        return "Connecting";
-      case ReadyState.OPEN:
-        return "Connected";
-    }
-    return "Unknown";
-  }
+    provider.post(
+      api.server({
+        expands: [
+          'data.status', 'data.services'
+        ],
+      }),
+    );
+    provider.post(
+      api.event({
+        listen: ['data.status']
+      })
+    )
+  }, [provider.status]);
 
   function GetServiceText() {
     return `${serverStatus?.running_service_count ?? 0} / ${serverStatus?.service_count ?? 0}`;
@@ -162,7 +114,7 @@ export default function Server() {
         </CardDataStats>
       </div>
       <br />
-        <p className="text-2xl">Currently running services right here</p>
+        <br />
       <br /> 
       <div className="gap-4 md:gap-6 2xl:gap-7.5">
         <Table label="Services" columns={["Name", "Started at", "Status"]} >
@@ -175,10 +127,10 @@ export default function Server() {
                     {service.name}
                 </div>
                 <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                  {new Date(service.info.startup_time).toLocaleString()}
+                  {new Date(service.startup_time).toLocaleString()}
                 </div>
                 <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                    <p className={service.info.running ? "text-meta-3" : "text-meta-1"}>{service.info.running ? "Running" : "Stopped"}</p>
+                    <p className={service.running ? "text-meta-3" : "text-meta-1"}>{service.running ? "Running" : "Stopped"}</p>
                 </div>
               </div>
             )
@@ -187,4 +139,34 @@ export default function Server() {
       </div>
     </DefaultLayout>
   );
+  
+  function GetStatus() {
+    switch (provider.status) {
+      case ReadyState.CLOSED:
+        return "No connection";
+      case ReadyState.CONNECTING:
+        return "Connecting";
+      case ReadyState.OPEN:
+        return "Connected";
+    }
+    return "Unknown";
+  }
+
+  function ProcessMessage(message: any)
+  {
+    if(message == null) return;
+
+    if(message.event)
+    {
+      console.log("Event: " + message);
+      return;
+    }
+    console.log(message.type)
+    switch(message.type)
+    {
+      case 'server':
+        setServerStatus(message.data)
+        break;
+    }
+  }
 }

@@ -22,6 +22,8 @@ namespace MQTTPlus
     void MQTTClientService::Start() {
         
         m_StartupTime = std::chrono::system_clock::now();
+
+        throw std::exception();
         
         m_Broker->SetOnClientChange([this](Ref<MQTTClient> client, bool connected, int reason) {
             MQTTClientEvent e(client, connected);

@@ -17,33 +17,31 @@ namespace MQTTPlus
             json msg = json::parse(message);
             
             uint32_t count = ServiceManager::GetServices().size();
-            std::vector<API::Service> services;
-            services.reserve(count);
-            
-            bool expandsServiceInfo = ArrayContains(msg["opts"]["expands"], "services.info");
-            
-            for(auto& service : ServiceManager::GetServices())
-            {
-                auto& s = services.emplace_back();
-                s.Name = service->GetName();
-                
-                if(expandsServiceInfo)
-                    s.Info = ServiceInfo(service);
-            }
             
             ServerStatus status = {
                 .StartupTime = ServiceManager::GetStartupTime(),
-                .ServiceCount = ServiceManager::GetServices().size(),
+                .ServiceCount = count,
                 .RunningServices = ServiceManager::GetRunningServiceCount(),
-                .Services = services,
+                .Services = nullptr,
                 .Status = nullptr,
             };
 
-            if(ArrayContains(msg["opts"]["expands"], "status"))
+            if(ArrayContains(msg["opts"]["expands"], "data.services"))
+            {
+                std::vector<API::Service> s;
+                s.reserve(count);
+                
+                for(auto& service : ServiceManager::GetServices())
+                    s.emplace_back(service);
+                
+                status.Services = s;
+            }
+
+            if(ArrayContains(msg["opts"]["expands"], "data.status"))
                 status.Status = ServiceManager::GetSystemStatus();
             
             json j = {};
-            j["endpoint"] = "/server";
+            j["type"] = "server";
             j["data"] = status;
             
             client->Send(j.dump());

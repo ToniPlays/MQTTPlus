@@ -9,23 +9,19 @@
 
 namespace MQTTPlus::API
 {
-    //Endpoint: Server
-    struct ServiceInfo 
-    {
-        Field<bool> Running;
-        Field<std::chrono::time_point<std::chrono::system_clock>> StartupTime;
-
-        ServiceInfo(Ref<MQTTPlus::Service> service)
-        {
-            Running = service->IsRunning();
-            StartupTime = service->GetStartupTime();
-        }
-    };
 
     struct Service
     {
         Field<std::string> Name;
-        Expandable<std::nullptr_t, ServiceInfo> Info;
+        Field<bool> Running;
+        Field<std::chrono::time_point<std::chrono::system_clock>> StartupTime;
+
+        Service(Ref<MQTTPlus::Service> service)
+        {
+            Name = service->GetName(),
+            Running = service->IsRunning();
+            StartupTime = service->GetStartupTime();
+        }
     };
 
     struct ServerStatus 
@@ -33,7 +29,7 @@ namespace MQTTPlus::API
         Field<std::chrono::time_point<std::chrono::system_clock>> StartupTime;
         Field<uint32_t> ServiceCount;
         Field<uint32_t> RunningServices;
-        Array<Service> Services;
+        Expandable<std::nullptr_t, Array<Service>> Services;
         Expandable<std::nullptr_t, MQTTPlus::SystemStatus> Status;
     };
 

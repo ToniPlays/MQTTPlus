@@ -99,10 +99,10 @@ namespace MQTTPlus::API {
     template<typename T>
     static void to_json(json& j, const Array<T>& field)
     {
-        auto arr = json::array();
+        auto arr = json();
         for(uint32_t i = 0; i < field.Values().size(); i++)
             arr.push_back(field.Values()[i]);
-        j += arr;
+        j = arr;
     }
 
     template<typename T>

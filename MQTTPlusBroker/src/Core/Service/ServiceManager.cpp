@@ -11,14 +11,20 @@ namespace MQTTPlus
     void ServiceManager::Start()
     {
         s_Status.TotalMemory = GetAvailableSystemMemory();
+        UpdateSystemStatus();
         s_StartupTime = std::chrono::system_clock::now();
         s_JobSystem = new JobSystem();
     
         for(auto& service : s_Services) {
             s_JobSystem->Queue([&service](Ref<Thread> thread) mutable { 
-                MQP_INFO("Starting service: {} on {}", service->GetName(), thread->GetDebugName());
-                service->RunService(thread);
-                MQP_INFO("Stopped service: {} on {}", service->GetName(), thread->GetDebugName());
+                try {
+                    MQP_INFO("Starting service: {} on {}", service->GetName(), thread->GetDebugName());
+                    service->RunService(thread);
+                    MQP_WARN("Stopped service: {} on {}", service->GetName(), thread->GetDebugName());
+                } catch(std::exception e)
+                {
+                    MQP_ERROR("Service {} crashed", service->GetName());
+                }
             });
         }
         
@@ -47,16 +53,20 @@ namespace MQTTPlus
         static Timer timer;
         if(timer.ElapsedMillis() > 500)
         {
-            auto diskUsage = GetSystemDiskUsage();
-            s_Status.UpdatedAt = std::chrono::system_clock::now();
-            s_Status.UsageCPU = GetCPULoad();
-            s_Status.AvailableMemory = GetSystemMemoryAvailable();
-            
-            s_Status.DiskTotalSpace = diskUsage[0];
-            s_Status.DiskSpaceUsed = diskUsage[1];
+            UpdateSystemStatus();
             timer.Reset();
         }
         
         return s_Status;
+    }
+    void ServiceManager::UpdateSystemStatus()
+    {
+        auto diskUsage = GetSystemDiskUsage();
+        s_Status.UpdatedAt = std::chrono::system_clock::now();
+        s_Status.UsageCPU = GetCPULoad();
+        s_Status.AvailableMemory = GetSystemMemoryAvailable();
+            
+        s_Status.DiskTotalSpace = diskUsage[0];
+        s_Status.DiskSpaceUsed = diskUsage[1];
     }
 }

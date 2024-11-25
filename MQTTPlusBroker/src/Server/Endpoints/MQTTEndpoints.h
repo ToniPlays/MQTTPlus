@@ -39,13 +39,9 @@ namespace MQTTPlus
                     d.LastSeen = result->getString("lastSeen").c_str();
                 }
 
-                auto data = json::array();
-                for(uint32_t i = 0; i < devices.size(); i++)
-                    data.push_back(devices[i]);
-
                 json j = {};
                 j["endpoint"] = "/devices";
-                j["data"] = data;
+                j["data"] = Array<APIDevice>(devices);
 
                 client->Send(j.dump());
             });

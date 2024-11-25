@@ -92,11 +92,8 @@ namespace MQTTPlus {
             d.LastSeen = result->getString("lastSeen").c_str();
 
             json j;
-            j["endpoint"] = "/events";
-            j["data"] = json({
-                { "type", "mqtt.client_connection_status_changed" },
-                { "event_data", d },
-            });
+            j["event"] = "mqtt.client_status_change";
+            j["data"] = d;
             
             client->Send(j.dump());
         });

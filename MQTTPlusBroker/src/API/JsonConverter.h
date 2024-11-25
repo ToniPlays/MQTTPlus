@@ -43,17 +43,13 @@ namespace MQTTPlus::API
         #endif
     }
 
-
-    static void to_json(json& j, const ServiceInfo& info)
-    {
-        j = json {{ "running", info.Running },
-                  { "startup_time", FormatTime(info.StartupTime.Value()) }
-        };
-    }
-
     static void to_json(json& j, const Service& service)
     {
-        j = json {{ "name", service.Name }, { "info", service.Info }};
+        j = json {
+                { "name", service.Name }, 
+                { "running", service.Running }, 
+                { "startup_time", FormatTime(service.StartupTime.Value()) }
+            };
     }
 
 	static void to_json(json& j, const ServerStatus& status)
@@ -62,7 +58,7 @@ namespace MQTTPlus::API
                   { "startup_time", FormatTime(status.StartupTime.Value()) },
                   { "service_count", status.ServiceCount },
                   { "running_service_count", status.RunningServices },
-				  { "services", status.Services.Values() },
+				  { "services", status.Services },
                   { "status", status.Status }
 		};
 	}

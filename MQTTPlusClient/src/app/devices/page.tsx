@@ -6,7 +6,6 @@ import { MQTTPlusProvider } from "../../client/mqttplus";
 import Table from "../../components/Tables/Table";
 import Breadcrumb from "../../components/Breadcrumb";
 import { ReadyState } from "react-use-websocket";
-import { MQTTPlus as Events } from "../../client/types/Events";
 import toast from "react-hot-toast";
 
 
@@ -22,7 +21,7 @@ export default function Devices() {
   {
     if(provider.status != ReadyState.OPEN) return;
     
-    provider.post(api.devices.list())
+    /*provider.post(api.devices.list())
     provider.receive(api.devices.endpoint, (data, error) => {
       setDevices(data.data)
     })
@@ -36,22 +35,9 @@ export default function Devices() {
     provider.receive(api.events.endpoint, (data, error) => {
       setEvent(data.data)
     })
+    */
 
   }, [provider.status])
-
-  useEffect(() => {
-    if(event == null) return
-
-    const type = event.type
-    const eventData = event.event_data
-    switch(type)
-      {
-        case Events.Events.EventType.MQTTClientConnectionStatusChanged:
-          HandleConnectionStatusChange(eventData)
-          break 
-      }
-    setEvent(null)
-  },[event])
   
   function HandleConnectionStatusChange(data: any)
   {
@@ -66,8 +52,13 @@ export default function Devices() {
     {
       dev[index].status = data.status
       dev[index].last_seen = data.last_seen
-      setDevices(dev)
+      
     }
+    else 
+    {
+      dev.push(data);
+    }
+    setDevices(dev)
   }
 
   return (

@@ -15,16 +15,16 @@ namespace MQTTPlus
         {
             callback(this);
             m_Status = ThreadStatus::Finished;
-            MQP_ERROR("Thread {}: Finished", m_DebugName);
+            MQP_ERROR("{}: Finished", m_DebugName);
         }
         catch (MQTTPlusException e)
         {
-            MQP_ERROR("Thread {}: MQTT error {}", m_DebugName, e.what());
+            MQP_ERROR("{}: MQTT error {}", m_DebugName, e.what());
             m_Status = ThreadStatus::Failed;
         }
         catch (std::exception e)
         {
-            MQP_ERROR("Thread {}: Unknown error {}", m_DebugName, e.what());
+            MQP_ERROR("{}: Unknown error {}", m_DebugName, e.what());
             m_Status = ThreadStatus::Failed;
         }
     }
