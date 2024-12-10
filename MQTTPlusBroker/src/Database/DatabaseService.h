@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Service/Service.h"
+#include "SQLQuery.h"
 
 #include <queue>
 #include <iostream>
@@ -27,6 +28,7 @@ namespace MQTTPlus
             
         std::string GetName() const override { return "DatabaseService"; }
 
+        void Transaction(const SQLQuery& query, const std::function<void(sql::ResultSet*)> callback = nullptr);
         void Transaction(const std::string& sql, const std::function<void(sql::ResultSet*)> callback = nullptr);
 
     private:

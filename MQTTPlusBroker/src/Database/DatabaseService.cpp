@@ -2,6 +2,8 @@
 #include "Core/Logger.h"
 #include "Core/CommandLineArgs.h"
 
+#include "SQLQueryBuilder.h"
+
 namespace MQTTPlus {
 
     DatabaseService::DatabaseService()
@@ -33,6 +35,13 @@ namespace MQTTPlus {
     void DatabaseService::Stop() 
     {
 
+    }
+
+    void DatabaseService::Transaction(const SQLQuery& query, const std::function<void(sql::ResultSet*)> callback)
+    {
+        SQLQueryBuilder builder(query);
+        std::string sql = builder.CreateQuery();
+        Transaction(sql, callback);
     }
 
     void DatabaseService::Transaction(const std::string& sql, const std::function<void(sql::ResultSet*)> callback)
@@ -86,11 +95,10 @@ namespace MQTTPlus {
 
     bool DatabaseService::RunTransaction(const DatabaseTransaction& transaction)
     {
-        
         try 
         {
             Reconnect();
-            //MQP_TRACE(transaction.SQL);
+            MQP_TRACE(transaction.SQL);
             std::unique_ptr<sql::PreparedStatement> stmt(m_Connection->prepareStatement(transaction.SQL));
             if(transaction.Callback)
             {

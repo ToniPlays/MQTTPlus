@@ -18,10 +18,23 @@ namespace MQTTPlus
             json msg = json::parse(message);
             Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
 
-            bool expand = ArrayContains(msg["opts"]["expands"], "data.devices");
-            std::string sql = expand ? "SELECT publicID, deviceName, nickname, status, lastSeen FROM devices" : "SELECT publicID FROM devices";
+            SQLQuery query = {
+                .Type = SQLQueryType::Select,
+                .Fields = { "publicID" },
+                .Table = "devices"
+            };
 
-            db->Transaction(sql, [client, expand](sql::ResultSet* result) mutable {
+            bool expand = ArrayContains(msg["opts"]["expands"], "data.devices");
+
+            if(expand)
+            {
+                query.Fields.emplace_back("deviceName");
+                query.Fields.emplace_back("nickname");
+                query.Fields.emplace_back("status");
+                query.Fields.emplace_back("lastSeen");
+            }
+
+            db->Transaction(query, [client, expand](sql::ResultSet* result) mutable {
                 json j = {};
                 j["type"] = "devices";
 
