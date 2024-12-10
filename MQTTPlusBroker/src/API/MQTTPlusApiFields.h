@@ -117,4 +117,9 @@ namespace MQTTPlus::API {
         return false;
     }
 
+    template<typename T>
+    static bool ArrayContains(std::vector<T> arr, const T& value)
+    {
+        return std::find(arr.begin(), arr.end(), value) != arr.end();
+    }
 }

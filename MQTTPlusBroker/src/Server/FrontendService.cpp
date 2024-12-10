@@ -47,55 +47,9 @@ namespace MQTTPlus {
 
     void FrontendService::OnEvent(Event& e)
     {
-        if(Event::Is<HTTPClientEvent>(e))
+        for(auto& [con, client] : m_Server->GetClients())
         {
-            auto& ev = (HTTPClientEvent&)e;
-            if(!ev.IsConnected())
-            {
-                auto it = m_Listeners.find(ev.GetClient().Raw());
-                if(it != m_Listeners.end())
-                    m_Listeners.erase(it);
-            }
-            return;
+            client->OnEvent(e);
         }
-
-        for(auto& [key, listener] : m_Listeners)
-        {
-            listener.Invoke(e);
-        }
-    }
-    void FrontendService::SetEventListener(Ref<HTTPClient> client, const std::string& type)
-    {
-        std::unordered_map<std::string, ListenCallback> listeners = { 
-            { MQTTClientEvent::GetStaticName(), [client](Event& e) { ProcessMQTTChangeEvent(client, e); } }
-            };
-
-        m_Listeners[client.Raw()].AddListener(type, listeners[type]);
-    }
-
-
-    void FrontendService::ProcessMQTTChangeEvent(Ref<HTTPClient> client, Event& e)
-    {
-        using namespace nlohmann;
-
-        MQTTClientEvent& ev = (MQTTClientEvent&)e;
-        std::string sql = fmt::format("SELECT publicID, deviceName, nickname, status, lastSeen FROM devices WHERE deviceName = '{}'", ev.GetClient().GetAuth().ClientID);
-        ServiceManager::GetService<DatabaseService>()->Transaction(sql, [client](sql::ResultSet* result) mutable {
-            if(!result) return;
-            result->next();
-
-            API::APIDevice d = {};
-            d.PublicID = result->getString("publicID").c_str();
-            d.DeviceName = result->getString("deviceName").c_str();
-            d.Nickname = result->getString("nickname").c_str();
-            d.Status = result->getUInt("status");
-            d.LastSeen = result->getString("lastSeen").c_str();
-
-            json j;
-            j["event"] = "mqtt.client_status_change";
-            j["data"] = d;
-            
-            client->Send(j.dump());
-        });
     }
 }

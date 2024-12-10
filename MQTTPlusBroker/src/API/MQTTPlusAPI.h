@@ -9,7 +9,7 @@
 
 namespace MQTTPlus::API
 {
-
+    //Endpoint: Server
     struct Service
     {
         Field<std::string> Name;

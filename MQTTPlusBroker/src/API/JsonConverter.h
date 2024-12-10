@@ -13,7 +13,8 @@
 #include <nlohmann/json.hpp>
 
 
-namespace MQTTPlus {
+namespace MQTTPlus 
+{
     using namespace nlohmann;
     //Put non API elements here
     static void to_json(json& j, const SystemStatus& status)
@@ -25,11 +26,6 @@ namespace MQTTPlus {
                   { "disk_space_used", status.DiskSpaceUsed }
         };
     }
-}
-
-namespace MQTTPlus::API
-{
-	using json = nlohmann::json;
 
     static std::string FormatTime(const auto& value)
     {
@@ -42,8 +38,13 @@ namespace MQTTPlus::API
         return ss.str();
         #endif
     }
+}
 
-    static void to_json(json& j, const Service& service)
+namespace MQTTPlus::API
+{
+	using json = nlohmann::json;
+
+    static void to_json(json& j, const API::Service& service)
     {
         j = json {
                 { "name", service.Name }, 
@@ -52,7 +53,7 @@ namespace MQTTPlus::API
             };
     }
 
-	static void to_json(json& j, const ServerStatus& status)
+	static void to_json(json& j, const API::ServerStatus& status)
 	{
 		j = json {
                   { "startup_time", FormatTime(status.StartupTime.Value()) },
@@ -63,16 +64,18 @@ namespace MQTTPlus::API
 		};
 	}
 
-    static void to_json(json& j, const APIDevice& device)
+    static void to_json(json& j, const API::APIDevice& device)
 	{
 		j = json {
                   { "id", device.PublicID },
-                  { "device_name", device.DeviceName },
+                  { "client_id", device.DeviceName },
                   { "nickname", device.Nickname },
 				  { "status", device.Status },
                   { "last_seen", device.LastSeen.Value() }
 		};
 	}
+
+   
 }
 
 

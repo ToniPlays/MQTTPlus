@@ -9,7 +9,6 @@ namespace MQTTPlus
     public:
         HTTPClientEvent(Ref<HTTPClient> client, bool connected) : m_Client(client), m_Connected(connected) {}
         ~HTTPClientEvent() = default;
-
         
         virtual std::string ToString() const override {
             return fmt::format("HTTPClient");

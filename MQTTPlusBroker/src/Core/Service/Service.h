@@ -5,7 +5,8 @@
 #include "Core/Threading/JobSystem.h"
 #include <chrono>
 
-namespace MQTTPlus {
+namespace MQTTPlus 
+{
     class ServiceManager;
 
     class Service : public RefCount

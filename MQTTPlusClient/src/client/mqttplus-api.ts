@@ -4,14 +4,23 @@ export interface ExpandOpts {
 }
 
 export default class MQTTPlusAPI {
-    
-    server(opts?: ExpandOpts) {
+   
+    devices(expand?: ExpandOpts)
+    {
+        return {
+            endpoint: '/devices',
+            opts: expand,
+        }
+    }
+
+    server(expand?: ExpandOpts) {
         return {
             endpoint: '/server',
-            opts: opts,
+            opts: expand,
         }
    }
-   event(data: {listen: string[] })
+   
+   event(data: { listen: string[] })
    {
     return {
         endpoint: '/event',

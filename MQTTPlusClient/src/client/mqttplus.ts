@@ -32,7 +32,6 @@ export const MQTTPlusProvider = () => {
         const message = socket.lastJsonMessage
         if(rxFunc.size == 0) return;
 
-        console.log("Received: " + message)
         rxFunc.get(0)!(message, null)
 
     }, [socket.lastJsonMessage])

@@ -34,6 +34,8 @@ namespace MQTTPlus {
             m_ChangeCallback = callback;
         }
         void SetMessageResolver(const MessageResolverCallback&& callback);
+
+        std::unordered_map<Server::connection_ptr, Ref<HTTPClient>>& GetClients() { return m_ConnectedClients; }
         
     private:
         void MessageHandlerFunc(websocketpp::connection_hdl hdl, MessagePtr msg);

@@ -20,7 +20,7 @@ namespace MQTTPlus {
         CallbackTimer() = default;
         ~CallbackTimer() {
             m_Running = false;
-            m_Running.notify_all();
+            m_Running.notify_one();
             
         };
         
@@ -30,7 +30,7 @@ namespace MQTTPlus {
                 CallbackTimer::TimerFunc(instance);
             });
             
-            m_Running.notify_all();
+            m_Running.notify_one();
         }
         
         void Clear() {
@@ -46,11 +46,11 @@ namespace MQTTPlus {
             uint64_t nextMillis = (now + milliseconds((int)(interval * 1000.0f))).count();
             
             m_Mutex.lock();
-            m_Events.push_back({ nextMillis, (uint64_t)interval * 1000, callback });
+            m_Events.push_back({ nextMillis, (uint64_t)(interval * 1000.0f), callback });
             m_TimedEventCount = m_Events.size();
             m_Mutex.unlock();
             
-            m_TimedEventCount.notify_all();
+            m_TimedEventCount.notify_one();
         }
         
     private:

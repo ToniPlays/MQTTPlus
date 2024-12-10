@@ -22,7 +22,6 @@ import {
   FormatPercentage,
 } from "../../components/Utility";
 import Breadcrumb from "../../components/Breadcrumb";
-import toast from "react-hot-toast";
 import Table from "../../components/Tables/Table";
 
 TimeAgo.addDefaultLocale(en);
@@ -40,12 +39,11 @@ export default function Server() {
 
   useEffect(() => {
     if (provider.status != ReadyState.OPEN) {
-      setServerStatus(null);
+      setServerStatus(null)
       return;
     }
 
     provider.receive((message, error) => {
-      console.log(message)
       ProcessMessage(message)
     })
 
@@ -56,9 +54,10 @@ export default function Server() {
         ],
       }),
     );
+
     provider.post(
       api.event({
-        listen: ['data.status']
+        listen: ['server.status', 'mqtt.client_connection_change']
       })
     )
   }, [provider.status]);
@@ -138,7 +137,7 @@ export default function Server() {
         </Table>
       </div>
     </DefaultLayout>
-  );
+  )
   
   function GetStatus() {
     switch (provider.status) {
@@ -152,21 +151,33 @@ export default function Server() {
     return "Unknown";
   }
 
-  function ProcessMessage(message: any)
+  function ProcessMessage(data: any)
   {
-    if(message == null) return;
+    if(data == null) return
 
-    if(message.event)
+    if(data.event)
     {
-      console.log("Event: " + message);
-      return;
+      HandleEvent(data)
+      return
     }
-    console.log(message.type)
-    switch(message.type)
+
+    switch(data.type)
     {
       case 'server':
-        setServerStatus(message.data)
-        break;
+        setServerStatus(data.data)
+        break
+    }
+  }
+
+  function HandleEvent(event: any)
+  {
+    switch(event.event)
+    {
+      case 'server.status':
+      {
+        setSystemUsage(event.data)
+        break
+      }
     }
   }
 }

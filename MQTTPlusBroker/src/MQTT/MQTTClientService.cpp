@@ -22,8 +22,6 @@ namespace MQTTPlus
     void MQTTClientService::Start() {
         
         m_StartupTime = std::chrono::system_clock::now();
-
-        throw std::exception();
         
         m_Broker->SetOnClientChange([this](Ref<MQTTClient> client, bool connected, int reason) {
             MQTTClientEvent e(client, connected);
@@ -75,7 +73,7 @@ namespace MQTTPlus
                 //Update entry
                 db->Transaction(fmt::format("UPDATE devices SET status = {1}, lastSeen = NOW() WHERE deviceName = '{0}'", deviceName, e.IsConnected() ? 1 : 0));
             }
-
+            
             ServiceManager::OnEvent(e);
         });
     }

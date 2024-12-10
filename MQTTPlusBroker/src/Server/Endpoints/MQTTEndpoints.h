@@ -15,35 +15,55 @@ namespace MQTTPlus
         using namespace API;
         
         server.Post("/devices", [](const std::string& message, Ref<HTTPClient> client) mutable {
-            
             json msg = json::parse(message);
 
+            bool expand = ArrayContains(msg["opts"]["expands"], "data.devices");
+            std::string sql = expand ? "SELECT publicID, deviceName, nickname, status, lastSeen FROM devices" : "SELECT publicID FROM devices";
+
             Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
-            db->Transaction("SELECT publicID, deviceName, nickname, status, lastSeen FROM devices", [client](sql::ResultSet* result) mutable {
+            db->Transaction(sql, [client, expand](sql::ResultSet* result) mutable {
                 if(!result)
                 {
-                    client->Send(""); //TODO:
+                    json j = {};
+                    j["type"] = "devices";
+                    j["data"] = Array<std::string>();
                     return;
                 };
 
-                std::vector<APIDevice> devices;
-                devices.reserve(result->rowsCount());
-
-                while(result->next())
+                if(expand)
                 {
-                    auto& d = devices.emplace_back();
-                    d.PublicID = result->getString("publicId").c_str();
-                    d.DeviceName = result->getString("deviceName").c_str();
-                    d.Nickname = result->getString("nickname").c_str();
-                    d.Status = result->getUInt("status");
-                    d.LastSeen = result->getString("lastSeen").c_str();
+                    std::vector<APIDevice> devices;
+                    devices.reserve(result->rowsCount());
+            
+                    while(result->next())
+                    {
+                        auto& d = devices.emplace_back();
+                        d.PublicID = result->getString("publicID").c_str();
+                        d.DeviceName = result->getString("deviceName").c_str();
+                        d.Nickname = result->getString("nickname").c_str();
+                        d.Status = result->getUInt("status");
+                        d.LastSeen = result->getString("lastSeen").c_str();
+                    }
+
+                    json j = {};
+                    j["type"] = "devices";
+                    j["data"] = Array<APIDevice>(devices);
+
+                    client->Send(j.dump());
                 }
+                else
+                {
+                    std::vector<std::string> devices;
+                    devices.reserve(result->rowsCount());
+                    while(result->next())
+                        devices.emplace_back(result->getString("publicID"));
 
-                json j = {};
-                j["endpoint"] = "/devices";
-                j["data"] = Array<APIDevice>(devices);
+                    json j = {};
+                    j["type"] = "devices";
+                    j["data"] = Array<std::string>(devices);
 
-                client->Send(j.dump());
+                    client->Send(j.dump());
+                }
             });
         });
     }

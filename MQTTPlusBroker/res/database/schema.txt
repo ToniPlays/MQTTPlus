@@ -21,3 +21,17 @@
                                         `username` TEXT, 
                                         `password` TEXT, 
                                         `status` INT(1) , PRIMARY KEY (`networkID`))
+
+#sql CREATE TABLE IF NOT EXISTS `topics` (`topicID` INT NOT NULL AUTO_INCREMENT, 
+                                        `publicID` TEXT NOT NULL, 
+                                        `topicName` TEXT NOT NULL, 
+                                        `topicType` INT(1),
+                                        `createdAt` TIMESTAMP NOT NULL, PRIMARY KEY (`topicID`))
+
+#sql CREATE TABLE IF NOT EXISTS `values` (`fieldID` INT NOT NULL AUTO_INCREMENT, 
+                                        `publicID` TEXT NOT NULL, 
+                                        `deviceID` TEXT NOT NULL, 
+                                        `fieldName` TEXT, 
+                                        `rawValue` TEXT, 
+                                        `displayValue` TEXT, 
+                                        `lastUpdated` TIMESTAMP NOT NULL, PRIMARY KEY (`fieldID`))

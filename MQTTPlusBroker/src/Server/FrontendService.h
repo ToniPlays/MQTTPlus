@@ -8,7 +8,8 @@
 
 namespace MQTTPlus
 {
-    class FrontendService : public Service {
+    class FrontendService : public MQTTPlus::Service 
+    {
     public:
         FrontendService(uint32_t port);
         ~FrontendService() = default;
@@ -16,20 +17,15 @@ namespace MQTTPlus
         void Start() override;
         void Stop() override;
         void OnEvent(Event& e) override;
-
-        void SetEventListener(Ref<HTTPClient> client, const std::string& type);
         
         const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() const override { return m_StartupTime; };
         
         std::string GetName() const override { return "FrontendService"; }
 
     private:
-        static void ProcessMQTTChangeEvent(Ref<HTTPClient> client, Event& e);
-
+    
     private:
         HTTPServer* m_Server;
-        
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;
-        std::unordered_map<HTTPClient*, EventListener> m_Listeners;
     };
 }
