@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import SidebarDropdown from "@/components/Sidebar/SidebarDropdown";
+import SidebarDropdown from "./SidebarDropdown";
 import { usePathname } from "next/navigation";
 
 const SidebarItem = ({ item, pageName, setPageName }: any) => {

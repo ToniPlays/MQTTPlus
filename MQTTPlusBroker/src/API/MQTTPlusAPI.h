@@ -42,4 +42,14 @@ namespace MQTTPlus::API
         Field<uint8_t> Status;
         Field<std::string> LastSeen;
     };
+
+    //Endpoint: Device
+    struct APIDeviceInfo
+    {
+        Field<std::string> PublicID;
+        Field<std::string> DeviceName;
+        Field<std::string> Nickname;
+        Field<uint8_t> Status;
+        Field<std::string> LastSeen;
+    };
 }

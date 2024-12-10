@@ -67,7 +67,7 @@ namespace MQTTPlus::API
     static void to_json(json& j, const API::APIDevice& device)
 	{
 		j = json {
-                  { "id", device.PublicID },
+                  { "public_id", device.PublicID },
                   { "client_id", device.DeviceName },
                   { "nickname", device.Nickname },
 				  { "status", device.Status },
@@ -75,6 +75,16 @@ namespace MQTTPlus::API
 		};
 	}
 
+    static void to_json(json& j, const API::APIDeviceInfo& device)
+	{
+		j = json {
+                  { "public_id", device.PublicID },
+                  { "client_id", device.DeviceName },
+                  { "nickname", device.Nickname },
+				  { "status", device.Status },
+                  { "last_seen", device.LastSeen.Value() }
+		};
+	}
    
 }
 

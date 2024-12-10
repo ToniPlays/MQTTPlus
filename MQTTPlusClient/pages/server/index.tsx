@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import DefaultLayout from "../../components/DefaultLayout";
-import CardDataStats from "../../components/CardDataStats";
-import { MQTTPlusProvider } from "../../client/mqttplus";
+import DefaultLayout from "@/DefaultLayout";
+import CardDataStats from "@/CardDataStats";
+import { MQTTPlusProvider } from "../../app/client/mqttplus"
 import {
   CheckCircleIcon,
   CpuChipIcon,
@@ -21,12 +21,19 @@ import {
   FormatBytes,
   FormatPercentage,
 } from "../../components/Utility";
-import Breadcrumb from "../../components/Breadcrumb";
-import Table from "../../components/Tables/Table";
+import Breadcrumb from "@/Breadcrumb";
+import Table from "@/Tables/Table";
+import toast from "react-hot-toast";
+import { NextPage } from "next";
 
 TimeAgo.addDefaultLocale(en);
 
-export default function Server() {
+interface Props
+{
+}
+
+const ServerPage: NextPage<Props> = props => {
+
   const provider = MQTTPlusProvider();
   const api = provider.api;
   const [serverStatus, setServerStatus] = useState<any | null>(null);
@@ -69,7 +76,7 @@ export default function Server() {
   const memoryUsed = systemUsage?.memory_total - systemUsage?.memory_available;
 
   return (
-    <DefaultLayout>
+    <>
       <Breadcrumb pageName="Server" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
         <CardDataStats title={"Status"} total={GetStatus()}>
@@ -136,7 +143,7 @@ export default function Server() {
           })}
         </Table>
       </div>
-    </DefaultLayout>
+      </>
   )
   
   function GetStatus() {
@@ -178,6 +185,15 @@ export default function Server() {
         setSystemUsage(event.data)
         break
       }
+      case 'mqtt.client_connection_change':
+      {
+        if(event.data.status == 1)
+          toast.success(`MQTT ${event.data.client_id} connected`)
+        else toast.error(`MQTT ${event.data.client_id} disconnected`)
+        break
+      }
     }
   }
 }
+
+export default ServerPage

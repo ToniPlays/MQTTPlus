@@ -13,6 +13,15 @@ export default class MQTTPlusAPI {
         }
     }
 
+    device(id: string, expand?: ExpandOpts)
+    {
+        return {
+            endpoint: '/device',
+            public_id: id,
+            opts: expand,
+        }
+    }
+
     server(expand?: ExpandOpts) {
         return {
             endpoint: '/server',

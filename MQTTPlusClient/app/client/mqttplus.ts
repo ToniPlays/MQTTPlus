@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react"
 import useWebSocket from "react-use-websocket"
 import MQTTPlusAPI from "./mqttplus-api"
-import internal from "stream"
 
 
 export const url = `${process.env.NEXT_PUBLIC_HOST}:8884`
@@ -50,6 +49,7 @@ export const MQTTPlusProvider = () => {
         status: socket.readyState,
         post: postFunc,
         receive: receiveFunc,
-        api
+        api,
+        socket: socket
     }
 }

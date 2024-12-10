@@ -60,6 +60,7 @@ namespace MQTTPlus::API {
         Array(std::vector<T> values) : m_Values(values) {}
         
         std::vector<T> Values() const { return m_Values; }
+        void Reserve(uint64_t size) { m_Values.reserve(size); }
         
         Array<T>& operator= (std::vector<T> lh)
         {

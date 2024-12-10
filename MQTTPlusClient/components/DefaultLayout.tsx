@@ -1,7 +1,12 @@
 "use client";
 import React, { useState, ReactNode } from "react";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
+
+import "jsvectormap/dist/jsvectormap.css"
+import "flatpickr/dist/flatpickr.min.css"
+import "../styles/satoshi.css"
+import "../styles/global.css"
 
 export default function DefaultLayout({
   children,
@@ -10,7 +15,7 @@ export default function DefaultLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
-    <>
+    <div className="dark:bg-boxdark-2 dark:text-bodydark" style={{ minHeight: '100vh'}}>
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className="flex">
         {/* <!-- ===== Sidebar Start ===== --> */}
@@ -34,6 +39,6 @@ export default function DefaultLayout({
         {/* <!-- ===== Content Area End ===== --> */}
       </div>
       {/* <!-- ===== Page Wrapper End ===== --> */}
-    </>
+    </div>
   );
 }

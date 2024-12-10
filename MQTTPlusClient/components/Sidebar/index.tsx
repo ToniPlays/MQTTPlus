@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import SidebarItem from "./SidebarItem";
 import ClickOutside from "../ClickOutside";
-import useLocalStorage from "../../hooks/useLocalStorage";
+import useLocalStorage from "../../app/hooks/useLocalStorage";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -45,7 +45,7 @@ const menuGroups = [
           </svg>
         ),
         label: "Home",
-        route: "#",
+        route: "/",
       },
       {
         label: "Devices",
