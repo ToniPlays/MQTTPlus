@@ -16,16 +16,23 @@ namespace MQTTPlus
         s_JobSystem = new JobSystem();
     
         for(auto& service : s_Services) {
-            s_JobSystem->Queue([&service](Ref<Thread> thread) mutable { 
+            auto job = Job::Lambda(service->GetName(), [service](JobInfo& info) mutable -> Coroutine {
                 try {
-                    MQP_INFO("Starting service: {} on {}", service->GetName(), thread->GetDebugName());
-                    service->RunService(thread);
-                    MQP_WARN("Stopped service: {} on {}", service->GetName(), thread->GetDebugName());
+                    MQP_INFO("Starting service: {} on {}", service->GetName(), info.Thread->GetThreadID());
+                    service->RunService(info.Thread);
+                    MQP_WARN("Stopped service: {} on {}", service->GetName(), info.Thread->GetThreadID());
                 } catch(std::exception e)
                 {
                     MQP_ERROR("Service {} crashed", service->GetName());
                 }
+                co_return;
             });
+
+            JobGraphInfo info = {
+                .Name = "Service",
+                .Stages = { { "Run", 1.0f, { job }}}
+            };
+            s_JobSystem->Submit<bool>(Ref<JobGraph>::Create(info));
         }
         
         MQP_INFO("All services started");

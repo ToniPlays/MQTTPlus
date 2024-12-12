@@ -5,6 +5,8 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
+#include "Core/Coroutine.h"
+
 namespace MQTTPlus {
     
     using Server = websocketpp::server<websocketpp::config::asio>;
@@ -13,7 +15,7 @@ namespace MQTTPlus {
     using websocketpp::lib::placeholders::_2;
     using websocketpp::lib::bind;
     using ClientChangeCallback = std::function<void(Ref<HTTPClient>, bool)>;
-    using PostMessageCallback = std::function<void(const std::string&, Ref<HTTPClient>)>;
+    using PostMessageCallback = std::function<Coroutine(const std::string&, Ref<HTTPClient>)>;
     using MessageResolverCallback = std::function<bool(const char*, const std::string&)>;
 
     class HTTPServer

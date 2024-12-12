@@ -2,9 +2,11 @@
 
 #include <vector>
 #include <functional>
+#include <mutex>
 
 
-namespace MQTTPlus {
+namespace MQTTPlus 
+{
     template<typename FuncT>
     class Callback
     {

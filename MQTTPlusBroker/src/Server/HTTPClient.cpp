@@ -11,6 +11,7 @@ namespace MQTTPlus
 {
     void HTTPClient::SetTimedFunction(float timeout, const std::function<void (HTTPClient&)>& callback)
     {
+        callback(*this);
         m_Timer.AddCallback(timeout, [this, callback]() mutable {
             callback(*this);
         });

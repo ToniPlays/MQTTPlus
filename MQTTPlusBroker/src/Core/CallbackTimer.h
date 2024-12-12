@@ -26,14 +26,14 @@ namespace MQTTPlus {
         
         void Start() {
             m_Running = true;
-            m_Thread = Ref<Thread>::Create("CallbackTimer", [instance = this]() {
+            m_Thread = std::thread([instance = this]() {
                 CallbackTimer::TimerFunc(instance);
             });
-            
             m_Running.notify_one();
         }
         
-        void Clear() {
+        void Clear() 
+        {
             m_Mutex.lock();
             m_Events.clear();
             m_Mutex.unlock();
@@ -84,7 +84,7 @@ namespace MQTTPlus {
         }
         
     private:
-        Ref<Thread> m_Thread;
+        std::thread m_Thread;
         std::mutex m_Mutex;
         std::atomic_bool m_Running = false;
         std::vector<CallbackEvent> m_Events;

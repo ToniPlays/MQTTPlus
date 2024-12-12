@@ -23,7 +23,7 @@ namespace MQTTPlus
 
     static void InitEventEndpoints(HTTPServer& server)
     {
-        server.Post("/event", [](const std::string& message, Ref<HTTPClient> client) mutable {
+        server.Post("/event", [](const std::string& message, Ref<HTTPClient> client) mutable -> Coroutine {
             
             json msg = json::parse(message);
             json j;
@@ -38,6 +38,7 @@ namespace MQTTPlus
                 client->SubscribeToEvent(e);
 
             client->Send(j.dump());
+            co_return;
         });
     }
 }

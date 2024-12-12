@@ -103,7 +103,7 @@ namespace MQTTPlus {
         try 
         {
             Reconnect();
-            MQP_TRACE(transaction.SQL);
+            //MQP_TRACE(transaction.SQL);
             std::unique_ptr<sql::PreparedStatement> stmt(m_Connection->prepareStatement(transaction.SQL));
             
             if(transaction.Callback)

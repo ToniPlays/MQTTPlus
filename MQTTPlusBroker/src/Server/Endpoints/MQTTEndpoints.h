@@ -8,6 +8,21 @@
 
 namespace MQTTPlus
 {
+    static SQLQuery DeviceBaseQuery()
+    {
+        return SQLQuery {
+                .Type = SQLQueryType::Select,
+                .Fields = { { "devices.publicID", "devicePublicID" }, "deviceName", "nickname", { "devices.status", "deviceStatus" }, "lastSeen", { "devices.networkID", "networkPublicID" } },
+                .Table = "devices"
+            };
+    }
+
+    static void ExpandDeviceNetwork(SQLQuery& query)
+    {
+        query.Joins.push_back({ "networks", "networks.publicID", "devices.networkID", SQLJoinType::Left });
+        query.Fields.emplace_back("networks.networkName");
+    }
+
     static API::APIDevice RowToDevice(const SQLQueryResult& result)
     {
         return API::APIDevice {
@@ -55,7 +70,7 @@ namespace MQTTPlus
         using namespace nlohmann;
         using namespace API;
 
-        server.Post("/devices", [](const std::string &message, Ref<HTTPClient> client) mutable
+        server.Post("/devices", [](const std::string &message, Ref<HTTPClient> client) mutable -> Coroutine
         {
             json msg = json::parse(message);
             json j = {};
@@ -65,30 +80,20 @@ namespace MQTTPlus
             if(!msg["opts"]["expands"].is_null())
                 expandOpts = msg["opts"]["expands"].get<std::vector<std::string>>();
 
-            
-            SQLQuery query = {
-                .Type = SQLQueryType::Select,
-                .Fields = { { "devices.publicID", "devicePublicID" }, "deviceName", "nickname", { "devices.status", "deviceStatus" }, "lastSeen" },
-                .Table = "devices"
-            };
+            SQLQuery query = DeviceBaseQuery();
 
             if(Contains<std::string>(expandOpts, "data.network"))
-            {
-                query.Joins.push_back({ "networks", "networks.publicID", "devices.networkID", SQLJoinType::Left });
-                query.Fields.emplace_back("networks.publicID", "networkPublicID");
-                query.Fields.emplace_back("networks.networkName");
-            }
-            else query.Fields.push_back({ "devices.networkID", "networkPublicId" });
+                ExpandDeviceNetwork(query);
 
             GetApiDevices(query, expandOpts, [client, j](const auto& devices) mutable {
                 j["data"] = devices;
                 client->Send(j.dump());
             }); 
+            co_return;
         });
 
 
-
-        server.Post("/device", [](const std::string &message, Ref<HTTPClient> client) mutable {
+        server.Post("/device", [](const std::string &message, Ref<HTTPClient> client) mutable -> Coroutine {
             json msg = json::parse(message);
             if(msg["id"].is_null())
             {
@@ -96,31 +101,33 @@ namespace MQTTPlus
                 j["type"] = "device";
                 j["data"] = NULL;
                 client->Send(j.dump());
-                return;
+                co_return;
             }
 
             std::string id = msg["id"];
 
             Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
 
-            std::string sql = fmt::format("SELECT publicID, deviceName, nickname, status, lastSeen FROM devices WHERE publicID = '{0}'", id);
+           std::vector<std::string> expandOpts;
+            if(!msg["opts"]["expands"].is_null())
+                expandOpts = msg["opts"]["expands"].get<std::vector<std::string>>();
+            
+            SQLQuery query = DeviceBaseQuery();
+            query.Filters = { { "devices.publicID", SQLFieldFilterType::Equal, id } };
 
-            db->Transaction(sql, [client](const SQLQueryResult& result) mutable { 
+            if(Contains<std::string>(expandOpts, "data.network"))
+                ExpandDeviceNetwork(query);
+
+            GetApiDevices(query, expandOpts, [client](const auto& devices) mutable {
                 json j = {};
                 j["type"] = "device";
-
-                if(!result.Results)
-                {
-                    j["data"] = nullptr;
-                    client->Send(j.dump());
-                    return;
-                }
-
-                result.Results->next();
-                j["data"] = RowToDevice(result);
+                if(devices.size() > 0)
+                    j["data"] = devices[0];
+                else j["data"] = NULL;
 
                 client->Send(j.dump()); 
             });
+            co_return;
         });
     }
 }

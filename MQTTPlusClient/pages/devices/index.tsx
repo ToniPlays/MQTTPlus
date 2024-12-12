@@ -82,7 +82,6 @@ const DevicePage: NextPage<Props> = props => {
         {devices?.map(device => {
           return <DeviceRow device={device} />
         })}
-        {JSON.stringify(devices)}
       </Table>
     </>
   )

@@ -1,103 +1,188 @@
 #include "JobSystem.h"
-#include "Core/Logger.h"
-#include "Core/MQTTPlusException.h"
+#include "JobGraph.h"
 
 #include <spdlog/fmt/fmt.h>
+#include "Core/Timer.h"
 
-namespace MQTTPlus 
+namespace MQTTPlus
 {
-    void Thread::Execute(const std::function<void(Ref<Thread>)>& callback)
-    {
-        if (callback == nullptr) return;
+	void Thread::Execute(JobSystem* system, Ref<Job> job)
+	{
+		if (job == nullptr) return;
 
-        m_Status = ThreadStatus::Executing;
-        try
-        {
-            callback(this);
-            m_Status = ThreadStatus::Finished;
-            MQP_ERROR("{}: Finished", m_DebugName);
-        }
-        catch (MQTTPlusException e)
-        {
-            MQP_ERROR("{}: MQTT error {}", m_DebugName, e.what());
-            m_Status = ThreadStatus::Failed;
-        }
-        catch (std::exception e)
-        {
-            MQP_ERROR("{}: Unknown error {}", m_DebugName, e.what());
-            m_Status = ThreadStatus::Failed;
-        }
-    }
+		m_CurrentJob = job;
 
-    JobSystem::JobSystem(uint32_t threads) : m_Running(true)
-    {
-        m_Threads.resize(threads);
+		try
+		{
+			m_LastError = "";
+			JobInfo info = {};
+			info.Thread = this;
 
-        for (uint32_t i = 0; i < threads; i++)
-        {
-            m_Threads[i] = Ref<Thread>::Create(i);
-            m_Threads[i]->m_Thread = new std::thread(&JobSystem::ThreadFunc, this, m_Threads[i]);
-        }
-    }
-    JobSystem::~JobSystem()
-    {
-        m_Running = false;
-        for (auto& thread : m_Threads)
-            thread->Join();
-    }
+			m_Status = ThreadStatus::Executing;
+			job->Execute(info);
+			m_Status = ThreadStatus::Finished;
+		}
+		catch (JobException e)
+		{
+			m_Status = ThreadStatus::Failed;
+			m_LastError = e.what();
+			throw e;
+		}
+	}
 
-    void JobSystem::ThreadFunc(Ref<Thread> thread)
-    {
-        //Initialize thread state
-        thread->m_Status = ThreadStatus::Waiting;
+	JobSystem::JobSystem(uint32_t threads) : m_Running(true)
+	{
+		m_Threads.resize(threads);
 
-        while (m_Running)
-        {
-            m_JobCount.wait(0);
-            
-            m_Mutex.lock();
-            auto callback = m_QueuedJobs.front();
-            m_QueuedJobs.pop();
-            m_JobCount = m_QueuedJobs.size();
-            m_Mutex.unlock();
+		for (uint32_t i = 0; i < threads; i++)
+		{
+			m_Threads[i] = Ref<Thread>::Create(i);
+			m_Threads[i]->m_Thread = std::thread(&JobSystem::ThreadFunc, this, m_Threads[i]);
 
-            m_JobCount.notify_one();
+		}
+	}
+	JobSystem::~JobSystem()
+	{
+		m_Running = false;
+		for (auto& thread : m_Threads)
+			thread->Join();
+	}
 
-            if(!callback) continue;
-            
-            thread->Execute(callback);
-        }
+	void JobSystem::ThreadFunc(Ref<Thread> thread)
+	{
+		//Initialize thread state
+		while (m_Running)
+		{
+			thread->m_Status = ThreadStatus::Waiting;
+			thread->m_Status.notify_all();
 
-        thread->m_Status = ThreadStatus::Terminated;
-        thread->m_Status.notify_all();
+			//Wait if no jobs
+			m_JobCount.wait(0);
+			if (!m_Running) break;
 
-        std::string msg = fmt::format("Thread {} terminated", thread->GetThreadID());
-        SendMessage(msg);
-    }
+			Ref<Job> job;
+			{
+				std::scoped_lock lock(m_JobMutex);
+				job = FindAvailableJob();
 
+				if (!job)
+					continue;
 
-    void JobSystem::WaitForJobsToFinish()
-    {
-        while (m_JobCount != 0)
-            m_JobCount.wait(m_JobCount);
+				RemoveJob(job);
+			}
 
-        for (auto& thread : m_Threads)
-            thread->WaitForIdle();
-    }
-    void JobSystem::Terminate()
-    {
-        m_Running = false;
-        m_JobCount = 1;
-        m_JobCount.notify_all();
-    }
+			try
+			{
+				//Execute job
+				thread->m_CurrentJob = job;
+				m_StatusHook.Invoke(thread, ThreadStatus::Executing);
+				thread->Execute(this, job);
 
-    uint64_t JobSystem::WaitForUpdate()
-    {
-        if (m_JobCount != 0)
-            m_JobCount.wait(m_JobCount);
-        if (m_RunningJobCount != 0)
-            m_RunningJobCount.wait(m_RunningJobCount);
+				m_StatusHook.Invoke(thread, ThreadStatus::Finished);
+			}
+			catch (JobException e)
+			{
+				std::string msg = fmt::format("JobException: {0} {1}", job->GetName(), e.what());
+				SendMessage(Severity::Error, msg);
+				m_StatusHook.Invoke(thread, thread->GetStatus());
+			}
 
-        return m_JobCount;
-    }
+			thread->m_CurrentJob = nullptr;
+		}
+
+		thread->m_Status = ThreadStatus::Terminated;
+		thread->m_Status.notify_all();
+
+		std::string msg = fmt::format("Thread {} terminated", thread->GetThreadID());
+		SendMessage(Severity::Info, msg);
+	}
+
+	bool JobSystem::QueueJobs(const std::vector<Ref<Job>>& jobs)
+	{
+		if (jobs.size() == 0) return false;
+
+		std::scoped_lock lock(m_JobMutex);
+		m_Jobs.insert(m_Jobs.end(), jobs.begin(), jobs.end());
+		m_JobCount = m_Jobs.size();
+
+		m_JobCount.notify_all();
+
+		std::string msg = fmt::format("Queued {} jobs", jobs.size());
+		SendMessage(Severity::Info, msg);
+		return true;
+	}
+
+	void JobSystem::RemoveJob(Ref<Job> job)
+	{
+		m_Jobs.erase(std::find(m_Jobs.begin(), m_Jobs.end(), job));
+
+		m_JobCount = m_Jobs.size();
+		m_JobCount.notify_one();
+	}
+
+	void JobSystem::TerminateGraphJobs(Ref<JobGraph> graph)
+	{
+		m_JobMutex.lock();
+		std::vector<Ref<Job>> jobs;
+		jobs.reserve(m_JobCount);
+
+		for (auto& job : m_Jobs)
+		{
+			if (job->m_JobGraph != graph)
+				jobs.emplace_back(job);
+		}
+
+		m_Jobs = jobs;
+		m_JobMutex.unlock();
+	}
+
+	void JobSystem::OnGraphFinished(Ref<JobGraph> graph)
+	{
+		m_GraphMutex.lock();
+
+		auto it = std::find(m_QueuedGraphs.begin(), m_QueuedGraphs.end(), graph);
+		if (it != m_QueuedGraphs.end())
+			m_QueuedGraphs.erase(it);
+
+		m_GraphMutex.unlock();
+		m_HookCallbacks.Add([this, graph]() mutable {
+			if (graph->DidFail())
+				m_Hooks.Invoke(JobSystemHook::Failure, graph);
+			else m_Hooks.Invoke(JobSystemHook::Finished, graph);
+			});
+	}
+
+	void JobSystem::WaitForJobsToFinish()
+	{
+		while (m_JobCount != 0)
+			m_JobCount.wait(m_JobCount);
+
+		for (auto& thread : m_Threads)
+			thread->WaitForIdle();
+	}
+	void JobSystem::Terminate()
+	{
+		m_Running = false;
+		m_JobCount = 1;
+		m_JobCount.notify_all();
+	}
+
+	uint64_t JobSystem::WaitForUpdate()
+	{
+		if (m_JobCount != 0)
+			m_JobCount.wait(m_JobCount);
+
+		return m_JobCount;
+	}
+
+	Ref<Job> JobSystem::FindAvailableJob()
+	{
+		for (auto& job : m_Jobs)
+		{
+			if (job->GetCoroutine().CanContinue())
+				return job;
+		}
+
+		return nullptr;
+	}
 }

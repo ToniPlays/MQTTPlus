@@ -12,7 +12,7 @@ namespace MQTTPlus
         using namespace nlohmann;
         using namespace API;
         
-        server.Post("/server", [](const std::string& message, Ref<HTTPClient> client) mutable {
+        server.Post("/server", [](const std::string& message, Ref<HTTPClient> client) mutable -> Coroutine {
             
             json msg = json::parse(message);
             
@@ -45,6 +45,8 @@ namespace MQTTPlus
             j["data"] = status;
             
             client->Send(j.dump());
+
+            co_return;
         });
     }
 }

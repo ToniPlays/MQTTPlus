@@ -17,7 +17,7 @@ export default class MQTTPlusAPI {
     {
         return {
             endpoint: '/device',
-            public_id: id,
+            id: id,
             opts: expand,
         }
     }

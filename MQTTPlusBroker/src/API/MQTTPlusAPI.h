@@ -46,6 +46,12 @@ namespace MQTTPlus::API
         Expandable<Array<APIDevice>, std::string> Devices;
     };
 
+    struct MQTTTopic
+    {
+        Field<std::string> PublicID;
+        Field<std::string> TopicName;
+    };
+
     //Endpoint: Devices
     struct APIDevice
     {
@@ -55,5 +61,6 @@ namespace MQTTPlus::API
         Field<uint32_t> Status;
         Field<std::string> LastSeen;
         Expandable<std::string, APINetwork> Network;
+        Expandable<std::string, MQTTTopic> Topics;
     };
 }

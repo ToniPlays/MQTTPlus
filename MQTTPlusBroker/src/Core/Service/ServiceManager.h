@@ -56,6 +56,7 @@ namespace MQTTPlus {
         }
         
         static const SystemStatus& GetSystemStatus();
+        static JobSystem* GetJobSystem() { return s_JobSystem; }
         
         static std::vector<Ref<Service>> GetServices() 
         {

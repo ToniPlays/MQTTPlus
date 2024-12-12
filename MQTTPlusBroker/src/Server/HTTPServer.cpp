@@ -2,6 +2,7 @@
 
 #include "Core/Logger.h"
 #include "Core/Timer.h"
+#include "Core/Service/ServiceManager.h"
 
 namespace MQTTPlus
 {
@@ -54,7 +55,6 @@ namespace MQTTPlus
     void HTTPServer::Post(const char* type, const PostMessageCallback&& callback)
     {
         m_PostCallbacks[type] = callback;
-        //MQP_TRACE("Register POST \"{}\"", type);
     }
 
     void HTTPServer::SetMessageResolver(const MessageResolverCallback&& callback)
@@ -73,8 +73,23 @@ namespace MQTTPlus
             try 
             {
                 auto conn = m_Server.get_con_from_hdl(hdl);
-                func(payload, m_ConnectedClients[conn]);  
-                MQP_TRACE("Ran endpoint {} in {}ms", key, timer.ElapsedMillis());
+                auto client = m_ConnectedClients[conn];
+                auto func = m_PostCallbacks[key];
+
+                auto job = Job::Lambda("Endpint", [payload, func, client](JobInfo& info) mutable -> Coroutine {
+                        return func(payload, client);
+                    });
+
+                JobGraphInfo info {
+                    .Name = key,
+                    .Stages = { { "Run", 1.0f, { job } } }
+                };
+
+                auto result = ServiceManager::GetJobSystem()->Submit<bool>(Ref<JobGraph>::Create(info));
+                result.ContinueWith([k = key, timer](const auto&) {
+                    MQP_TRACE("Ran endpoint {} in {}ms", k, timer.ElapsedMillis());
+                });
+                
                 return;
             } catch(std::exception& e)
             {
