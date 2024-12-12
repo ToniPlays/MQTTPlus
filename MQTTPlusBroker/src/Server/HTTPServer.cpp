@@ -1,6 +1,7 @@
 #include "HTTPServer.h"
 
 #include "Core/Logger.h"
+#include "Core/Timer.h"
 
 namespace MQTTPlus
 {
@@ -67,11 +68,13 @@ namespace MQTTPlus
         for(auto& [key, func] : m_PostCallbacks)
         {
             if(!m_ResolverCallback(key.c_str(), payload)) continue;
-            MQP_TRACE("Running endpoint {}", key);
+
+            Timer timer;
             try 
             {
                 auto conn = m_Server.get_con_from_hdl(hdl);
                 func(payload, m_ConnectedClients[conn]);  
+                MQP_TRACE("Ran endpoint {} in {}ms", key, timer.ElapsedMillis());
                 return;
             } catch(std::exception& e)
             {

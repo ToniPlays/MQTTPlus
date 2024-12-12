@@ -37,17 +37,22 @@ namespace MQTTPlus {
 
     }
 
-    void DatabaseService::Transaction(const SQLQuery& query, const std::function<void(sql::ResultSet*)> callback)
+    void DatabaseService::Transaction(const SQLQuery& query, const std::function<void(const SQLQueryResult&)> callback)
     {
         SQLQueryBuilder builder(query);
         std::string sql = builder.CreateQuery();
-        Transaction(sql, callback);
+
+        m_TransactionMutex.lock();
+        m_Transactions.push({ sql, query, callback });
+        m_TransactionCount = m_Transactions.size();
+        m_TransactionMutex.unlock();
+        m_TransactionCount.notify_all();
     }
 
-    void DatabaseService::Transaction(const std::string& sql, const std::function<void(sql::ResultSet*)> callback)
+    void DatabaseService::Transaction(const std::string& sql, const std::function<void(const SQLQueryResult&)> callback)
     {
         m_TransactionMutex.lock();
-        m_Transactions.push({ sql, callback });
+        m_Transactions.push({ sql, {}, callback });
         m_TransactionCount = m_Transactions.size();
         m_TransactionMutex.unlock();
         m_TransactionCount.notify_all();
@@ -88,7 +93,7 @@ namespace MQTTPlus {
             uint64_t nextTokenPos = file.find(type, endPos);
             std::string src = nextTokenPos == std::string::npos ? file.substr(endPos) : file.substr(endPos, nextTokenPos - endPos);
 
-            RunTransaction({ f + src, nullptr });
+            RunTransaction({ f + src, {}, nullptr });
         }
         MQP_INFO("Schema validated from res/database/schema.txt");
     }
@@ -100,10 +105,11 @@ namespace MQTTPlus {
             Reconnect();
             MQP_TRACE(transaction.SQL);
             std::unique_ptr<sql::PreparedStatement> stmt(m_Connection->prepareStatement(transaction.SQL));
+            
             if(transaction.Callback)
             {
                 auto result = std::unique_ptr<sql::ResultSet>(stmt->executeQuery());
-                transaction.Callback(result.get());
+                transaction.Callback({ transaction.Query, result.get()});
             }
             else
                 stmt->executeUpdate();
@@ -121,7 +127,7 @@ namespace MQTTPlus {
             MQP_ERROR("Database error: std::exception\nQuery {}", transaction.SQL);
         }
         if(transaction.Callback)
-                transaction.Callback(nullptr);
-            return false;
+            transaction.Callback({ transaction.Query, nullptr });
+        return false;
     }
 }

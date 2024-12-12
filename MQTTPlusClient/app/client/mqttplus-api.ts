@@ -22,19 +22,26 @@ export default class MQTTPlusAPI {
         }
     }
 
+    networks(expand?: ExpandOpts)
+    {
+        return {
+            endpoint: '/networks',
+            opts: expand,
+        }
+    }
+
     server(expand?: ExpandOpts) {
         return {
             endpoint: '/server',
             opts: expand,
         }
-   }
-   
-   event(data: { listen: string[] })
-   {
-    return {
-        endpoint: '/event',
-        listen: data.listen,
     }
+   
+   event(data: { listen: string[] }) {
+        return {
+            endpoint: '/event',
+            listen: data.listen,
+        }
    }
 }
 

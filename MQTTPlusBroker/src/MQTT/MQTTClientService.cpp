@@ -55,23 +55,40 @@ namespace MQTTPlus
     {
         Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
         MQP_ASSERT(db, "Database service nullptr");
-        std::string sql = fmt::format("SELECT * FROM devices WHERE deviceName = '{0}'", e.GetClient().GetAuth().ClientID);
 
-        db->Transaction(sql, [db, e](sql::ResultSet* result) mutable {
-            if(!result) return;
+        SQLQuery query = {
+            .Type = SQLQueryType::Select,
+            .Fields = { "*" },
+            .Table = "devices",
+            .Filters = { { "deviceName", SQLFieldFilterType::Equal, e.GetClient().GetAuth().ClientID } }
+        };
+
+        db->Transaction(query, [db, e](const SQLQueryResult& result) mutable {
+            if(!result.Results) return;
 
             auto deviceName = e.GetClient().GetAuth().ClientID;
             
-            if(result->rowsCount() == 0)
+            if(result.Results->rowsCount() == 0)
             {
-                //Insert new
-                auto hash = StringUtility::Hex16();
-                db->Transaction(fmt::format("INSERT INTO devices (publicID, deviceName, status, lastSeen) VALUES ('{0}', '{1}', {2}, NOW())", hash, deviceName, e.IsConnected() ? 1 : 0));
+                SQLQuery query = {
+                    .Type = SQLQueryType::Insert,
+                    .Fields = { { "publicID" }, { "deviceName" }, { "status" }, { "lastSeen" } },
+                    .Values = { { "de_" + StringUtility::Hex16() }, { deviceName }, { e.IsConnected() ? 1 : 0 }, { "NOW()", false } },
+                    .Table = "devices",
+                };
+                
+                db->Transaction(query);
             }
             else 
             {
-                //Update entry
-                db->Transaction(fmt::format("UPDATE devices SET status = {1}, lastSeen = NOW() WHERE deviceName = '{0}'", deviceName, e.IsConnected() ? 1 : 0));
+                SQLQuery query = {
+                    .Type = SQLQueryType::Update,
+                    .Fields = { { "status" }, { "lastSeen" } },
+                    .Values = { { e.IsConnected() ? 1 : 0 }, { "NOW()", false } },
+                    .Table = "devices",
+                    .Filters = { { "deviceName", SQLFieldFilterType::Equal, deviceName }}
+                };
+                db->Transaction(query);
             }
             
             ServiceManager::OnEvent(e);

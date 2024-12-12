@@ -64,28 +64,29 @@ namespace MQTTPlus::API
 		};
 	}
 
-    static void to_json(json& j, const API::APIDevice& device)
+    static void to_json(json& j, const API::APINetwork& network)
 	{
 		j = json {
-                  { "public_id", device.PublicID },
-                  { "client_id", device.DeviceName },
-                  { "nickname", device.Nickname },
-				  { "status", device.Status },
-                  { "last_seen", device.LastSeen.Value() }
+                  { "id", network.PublicID },
+                  { "name", network.NetworkName },
+                  { "type", network.NetworkType },
+                  { "active_devices", network.ActiveDevices },
+                  { "total_devices", network.TotalDevices },
+                  { "devices", network.Devices }
 		};
 	}
 
-    static void to_json(json& j, const API::APIDeviceInfo& device)
+    static void to_json(json& j, const API::APIDevice& device)
 	{
 		j = json {
-                  { "public_id", device.PublicID },
+                  { "id", device.PublicID },
                   { "client_id", device.DeviceName },
                   { "nickname", device.Nickname },
 				  { "status", device.Status },
-                  { "last_seen", device.LastSeen.Value() }
+                  { "last_seen", device.LastSeen.Value() },
+                  { "network", device.Network },
 		};
 	}
-   
 }
 
 

@@ -11,8 +11,10 @@
                                         `publicID` TEXT NOT NULL, 
                                         `deviceName` TEXT NOT NULL, 
                                         `nickname` TEXT, 
-                                        `status` INT(1) NOT NULL, 
-                                        `lastSeen` TIMESTAMP NOT NULL, PRIMARY KEY (`deviceID`))
+                                        `status` INT(1) NOT NULL,
+                                        `lastSeen` TIMESTAMP NOT NULL, 
+                                        `networkID` TEXT,
+                                        PRIMARY KEY (`deviceID`))
 
 #sql CREATE TABLE IF NOT EXISTS `networks` (`networkID` INT NOT NULL AUTO_INCREMENT, 
                                         `publicID` TEXT NOT NULL, 
@@ -26,7 +28,9 @@
                                         `publicID` TEXT NOT NULL, 
                                         `topicName` TEXT NOT NULL, 
                                         `topicType` INT(1),
-                                        `createdAt` TIMESTAMP NOT NULL, PRIMARY KEY (`topicID`))
+                                        `createdAt` TIMESTAMP NOT NULL, 
+                                        `networkID` TEXT NOT NULL,
+                                        PRIMARY KEY (`topicID`))
 
 #sql CREATE TABLE IF NOT EXISTS `values` (`fieldID` INT NOT NULL AUTO_INCREMENT, 
                                         `publicID` TEXT NOT NULL, 

@@ -12,7 +12,8 @@ namespace MQTTPlus
     struct DatabaseTransaction
     {
         std::string SQL;
-        std::function<void(sql::ResultSet*)> Callback;
+        SQLQuery Query;
+        std::function<void(const SQLQueryResult&)> Callback;
     };
 
     class DatabaseService : public Service {
@@ -28,8 +29,8 @@ namespace MQTTPlus
             
         std::string GetName() const override { return "DatabaseService"; }
 
-        void Transaction(const SQLQuery& query, const std::function<void(sql::ResultSet*)> callback = nullptr);
-        void Transaction(const std::string& sql, const std::function<void(sql::ResultSet*)> callback = nullptr);
+        void Transaction(const SQLQuery& query, const std::function<void(const SQLQueryResult&)> callback = nullptr);
+        void Transaction(const std::string& sql, const std::function<void(const SQLQueryResult&)> callback = nullptr);
 
     private:
         void Reconnect();

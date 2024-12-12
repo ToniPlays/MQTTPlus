@@ -58,7 +58,7 @@ const menuGroups = [
     menuItems: [
       {
         label: "Networks",
-        route: "#"
+        route: "/networks"
       },
     ]
   },

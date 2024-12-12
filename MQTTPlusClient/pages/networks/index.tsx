@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import DefaultLayout from "@/DefaultLayout";
 import { MQTTPlusProvider } from "../../app/client/mqttplus";
 import Table from "@/Tables/Table";
 import Breadcrumb from "@/Breadcrumb";
@@ -8,19 +9,21 @@ import { ReadyState } from "react-use-websocket";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { NextPage } from "next";
-import { GetDeviceName, GetId } from "@/Utility";
+import { GetDeviceName } from "@/Utility";
 import { ConnectionStatus } from "@/DeviceComponents";
 
-interface Props {}
+interface Props {
 
-const DevicePage: NextPage<Props> = props => {
+}
+
+const NetworkPage: NextPage<Props> = props => {
 
   const provider = MQTTPlusProvider()
   const api = provider.api
 
   const router = useRouter()
 
-  const [devices, setDevices] = useState<any | null>(null)
+  const [networks, setNetworks] = useState<any | null>(null)
   const [event, setEvent] = useState<any | null>()
 
   useEffect(() => {
@@ -30,11 +33,8 @@ const DevicePage: NextPage<Props> = props => {
       ProcessResponse(data)
     })
 
-    provider.post(api.devices({
-      expands: ["data.network"]
-    }))
-    provider.post(api.event({
-      listen: ['mqtt.client_connection_change']
+    provider.post(api.networks({
+      expands: []
     }))
 
   }, [provider.status])
@@ -42,34 +42,9 @@ const DevicePage: NextPage<Props> = props => {
   useEffect(() => {
     if (!event) return
 
-    switch (event.event) {
-      case "mqtt.client_connection_change":
-        HandleConnectionStatusChange(event.data)
-        break
-    }
     setEvent(null)
-    return
   }, [event])
 
-
-  function HandleConnectionStatusChange(data: any) {
-    if (data.status == 1)
-      toast.success(`MQTT ${data.client_id} connected`)
-    else toast.error(`MQTT ${data.client_id} disconnected`)
-
-    const dev = devices
-    const index = devices.findIndex(device => device.client_id == data.client_id)
-
-    if (index != -1) {
-      dev[index].status = data.status
-      dev[index].last_seen = data.last_seen
-    }
-    else {
-      dev.push(data)
-    }
-
-    setDevices(dev)
-  }
 
   function OpenDevicePage(device: any) {
     router?.replace(`/devices/${device.id}`)
@@ -77,17 +52,16 @@ const DevicePage: NextPage<Props> = props => {
 
   return (
     <>
-      <Breadcrumb pageName="Devices" />
-      <Table label="Services" columns={["Device", "Network", "Status", "Last seen"]} >
-        {devices?.map(device => {
-          return <DeviceRow device={device} />
+      <Breadcrumb pageName="Networks" />
+      <Table label="Services" columns={["Network", "Type", "Active devices", "Total devices"]} >
+        {networks?.map(network => {
+          return <NetworkRow network={network} />
         })}
-        {JSON.stringify(devices)}
       </Table>
     </>
   )
 
-  function DeviceRow(props: { device: any })
+  function NetworkRow(props: { device: any })
   {
     const { device } = props
     return (
@@ -99,7 +73,7 @@ const DevicePage: NextPage<Props> = props => {
           {GetDeviceName(device)}
         </div>
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
-          {GetId(device.network)}
+          {device.network}
         </div>
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
           <ConnectionStatus status={device.status} />
@@ -120,11 +94,11 @@ const DevicePage: NextPage<Props> = props => {
     }
 
     switch (data.type) {
-      case 'devices':
-        setDevices(data.data)
+      case 'networks':
+        setNetworks(data.data)
         break
     }
   }
 }
 
-export default DevicePage
+export default NetworkPage

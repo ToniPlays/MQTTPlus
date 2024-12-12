@@ -7,6 +7,7 @@ export function FormatPercentage(value: number | undefined | null, precision: nu
     if (!value) return 0;
     return (value * 100.0).toFixed(precision);
 }
+
 export function FormatBytes(bytes: number | undefined | null) {
     if (!bytes) return "---";
     
@@ -15,10 +16,21 @@ export function FormatBytes(bytes: number | undefined | null) {
     if (bytes > KB) return `${(bytes / MB).toFixed(2)} KB`;
     return `${bytes} Bytes`;
 }
+
 export function Capitalize(value: string)
 {
     const f = value.charAt(0)
     if('0' <= f && f <= '9')
         return value
     return f.toUpperCase() + value.substring(1)
+}
+
+export function GetDeviceName(device: any)
+{
+    return device.nickname?.length > 0 ? device.nickname : device.client_id
+}
+
+export function GetId(object: any)
+{
+    return typeof object == "string" ? object : object.id
 }

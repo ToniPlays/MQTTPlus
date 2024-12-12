@@ -11,9 +11,13 @@ namespace MQTTPlus
         SQLQueryBuilder(const SQLQuery& query) : m_Query(query) {}
 
         std::string CreateQuery();
-
-        std::string GetQueryType() const;
         std::string FormatFields();
+        std::string FormatValues();
+        std::string FormatJoins();
+        std::string FormatSetValues();
+        std::string FormatFilters();
+
+        std::string GetJoinType(SQLJoinType type);
 
     private:
         SQLQuery m_Query;

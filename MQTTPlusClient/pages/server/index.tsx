@@ -79,14 +79,14 @@ const ServerPage: NextPage<Props> = props => {
     <>
       <Breadcrumb pageName="Server" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
-        <CardDataStats title={"Status"} total={GetStatus()}>
+        <CardDataStats title="Status" total={GetStatus()}>
           <CheckCircleIcon
             width={36}
             height={36}
             color={provider.status == ReadyState.OPEN ? "green" : "red"}
           />
         </CardDataStats>
-        <CardDataStats title={"Services"} total={GetServiceText()}>
+        <CardDataStats title="Services" total={GetServiceText()}>
           <EyeIcon width={36} height={36} />
         </CardDataStats>
         <CardDataStats
@@ -97,14 +97,14 @@ const ServerPage: NextPage<Props> = props => {
           <TrashIcon width={36} height={36} />
         </CardDataStats>
         <CardDataStats
-          title={"CPU"}
+          title="CPU"
           total={`${FormatPercentage(systemUsage?.cpu_load ?? 0)}%`}
         >
           <CpuChipIcon width={36} height={36} />
         </CardDataStats>
 
         <CardDataStats
-          title={"Memory"}
+          title="Memory"
           total={`${FormatPercentage(memoryUsed / systemUsage?.memory_total)}%`}
           rate={`${FormatBytes(memoryUsed)} / ${FormatBytes(systemUsage?.memory_total)}`}
         >
@@ -112,7 +112,7 @@ const ServerPage: NextPage<Props> = props => {
         </CardDataStats>
 
         <CardDataStats
-          title={"Disk"}
+          title="Disk"
           total={`${FormatBytes(systemUsage?.disk_space_used)} / ${FormatBytes(systemUsage?.disk_space_total)}`}
           rate={`${((systemUsage?.disk_space_used / systemUsage?.disk_space_total) * 100).toFixed(2)}%`}
         >

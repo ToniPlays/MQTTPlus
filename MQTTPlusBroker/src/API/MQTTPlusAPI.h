@@ -33,23 +33,27 @@ namespace MQTTPlus::API
         Expandable<std::nullptr_t, MQTTPlus::SystemStatus> Status;
     };
 
+
+    //Endpoint: Networks
+    struct APIDevice;
+    struct APINetwork
+    {
+        Field<std::string> PublicID;
+        Field<std::string> NetworkName;
+        Field<uint32_t> NetworkType;
+        Field<uint32_t> ActiveDevices;
+        Field<uint32_t> TotalDevices;
+        Expandable<Array<APIDevice>, std::string> Devices;
+    };
+
     //Endpoint: Devices
     struct APIDevice
     {
         Field<std::string> PublicID;
         Field<std::string> DeviceName;
         Field<std::string> Nickname;
-        Field<uint8_t> Status;
+        Field<uint32_t> Status;
         Field<std::string> LastSeen;
-    };
-
-    //Endpoint: Device
-    struct APIDeviceInfo
-    {
-        Field<std::string> PublicID;
-        Field<std::string> DeviceName;
-        Field<std::string> Nickname;
-        Field<uint8_t> Status;
-        Field<std::string> LastSeen;
+        Expandable<std::string, APINetwork> Network;
     };
 }
