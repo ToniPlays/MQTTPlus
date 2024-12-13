@@ -54,8 +54,8 @@ const DevicePage: NextPage<Props> = props => {
 
   function HandleConnectionStatusChange(data: any) {
     if (data.status == 1)
-      toast.success(`MQTT ${data.client_id} connected`)
-    else toast.error(`MQTT ${data.client_id} disconnected`)
+      toast.success(`MQTT ${GetDeviceName(data)} connected`)
+    else toast.error(`MQTT ${GetDeviceName(data)} disconnected`)
 
     const dev = devices
     const index = devices.findIndex(device => device.client_id == data.client_id)

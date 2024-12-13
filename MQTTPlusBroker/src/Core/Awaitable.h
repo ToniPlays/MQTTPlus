@@ -10,7 +10,6 @@ template<typename T>
 class Awaitable
 {
 public:
-    
     virtual void OnSuspend() {};
     virtual T GetResults() { return T(); }
     

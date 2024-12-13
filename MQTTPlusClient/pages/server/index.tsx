@@ -20,6 +20,7 @@ import {
   Capitalize,
   FormatBytes,
   FormatPercentage,
+  GetDeviceName,
 } from "../../components/Utility";
 import Breadcrumb from "@/Breadcrumb";
 import Table from "@/Tables/Table";
@@ -188,8 +189,8 @@ const ServerPage: NextPage<Props> = props => {
       case 'mqtt.client_connection_change':
       {
         if(event.data.status == 1)
-          toast.success(`MQTT ${event.data.client_id} connected`)
-        else toast.error(`MQTT ${event.data.client_id} disconnected`)
+          toast.success(`MQTT ${GetDeviceName(event.data)} connected`)
+        else toast.error(`MQTT ${GetDeviceName(event.data)} disconnected`)
         break
       }
     }

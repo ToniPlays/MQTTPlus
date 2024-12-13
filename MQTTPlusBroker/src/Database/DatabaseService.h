@@ -2,6 +2,7 @@
 
 #include "Core/Service/Service.h"
 #include "SQLQuery.h"
+#include "Core/Threading/JobGraph.h"
 
 #include <queue>
 #include <iostream>
@@ -13,7 +14,6 @@ namespace MQTTPlus
     {
         std::string SQL;
         SQLQuery Query;
-        std::function<void(const SQLQueryResult&)> Callback;
     };
 
     class DatabaseService : public Service {
@@ -29,20 +29,20 @@ namespace MQTTPlus
             
         std::string GetName() const override { return "DatabaseService"; }
 
-        void Transaction(const SQLQuery& query, const std::function<void(const SQLQueryResult&)> callback = nullptr);
-        void Transaction(const std::string& sql, const std::function<void(const SQLQueryResult&)> callback = nullptr);
+        Promise<Ref<SQLQueryResult>> Run(const SQLQuery& query);
+        Promise<Ref<SQLQueryResult>> Run(const std::string& sql);
 
     private:
         void Reconnect();
         void ValidateSchema();
-        bool RunTransaction(const DatabaseTransaction& transaction);
+        static Coroutine RunTransaction(JobInfo& info, DatabaseService* service, DatabaseTransaction& transaction);
 
     private:
         sql::Driver* m_Driver;
         std::unique_ptr<sql::Connection> m_Connection;
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;
         std::recursive_mutex m_TransactionMutex;
-        std::queue<DatabaseTransaction> m_Transactions;
-        std::atomic_uint32_t m_TransactionCount = 0;
+
+        JobSystem m_System = JobSystem(1);
     };
 }

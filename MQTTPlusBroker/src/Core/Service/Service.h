@@ -26,7 +26,8 @@ namespace MQTTPlus
         virtual const std::chrono::time_point<std::chrono::system_clock>& GetStartupTime() const = 0;
         
         virtual std::string GetName() const = 0;
-    private:
+        
+    protected:
         Ref<Thread> m_Thread;
     };
 }

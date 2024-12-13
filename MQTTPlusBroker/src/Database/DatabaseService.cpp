@@ -14,48 +14,58 @@ namespace MQTTPlus {
     void DatabaseService::Start() 
     {
         m_StartupTime = std::chrono::system_clock::now();
-
+        m_TransactionMutex.lock();
         Reconnect();
         ValidateSchema();
 
-        while(true)
-        {
-            m_TransactionCount.wait(0);
-            m_TransactionMutex.lock();
-            DatabaseTransaction transaction = m_Transactions.front();
+        m_System.WaitForJobsToFinish();
+        m_TransactionMutex.unlock();
 
-            m_Transactions.pop();
-            m_TransactionCount = m_Transactions.size();
-
-            RunTransaction(transaction);
-            m_TransactionMutex.unlock();
-        }
+        while(m_Thread->GetStatus() != ThreadStatus::Terminated)
+            m_Thread->Wait(m_Thread->GetStatus());
     }
 
     void DatabaseService::Stop() 
     {
-
+        m_System.Terminate();
     }
 
-    void DatabaseService::Transaction(const SQLQuery& query, const std::function<void(const SQLQueryResult&)> callback)
+    Promise<Ref<SQLQueryResult>> DatabaseService::Run(const SQLQuery& query)
     {
+        m_TransactionMutex.lock();
         SQLQueryBuilder builder(query);
         std::string sql = builder.CreateQuery();
 
-        m_TransactionMutex.lock();
-        m_Transactions.push({ sql, query, callback });
-        m_TransactionCount = m_Transactions.size();
+        DatabaseTransaction trx = { sql, query };
+        Ref<Job> runJob = Job::Create("Query", RunTransaction, this, trx);
+
+        JobGraphInfo info = {
+            .Name = "Transaction",
+            .Stages = { { "Run", 1.0f, { runJob } } },
+        };
         m_TransactionMutex.unlock();
-        m_TransactionCount.notify_all();
+
+        auto promise = m_System.Submit<Ref<SQLQueryResult>>(Ref<JobGraph>::Create(info));
+        promise.ContinueWith([sql](const auto&) {
+            MQP_TRACE("Finished {}", sql);
+        });
+        return promise;
     }
 
-    void DatabaseService::Transaction(const std::string& sql, const std::function<void(const SQLQueryResult&)> callback)
+    Promise<Ref<SQLQueryResult>> DatabaseService::Run(const std::string& sql)
     {
         m_TransactionMutex.lock();
-        m_Transactions.push({ sql, {}, callback });
-        m_TransactionCount = m_Transactions.size();
+        DatabaseTransaction trx = { sql };
+        Ref<Job> runJob = Job::Create("Query", RunTransaction, this, trx);
+
+        JobGraphInfo info = {
+            .Name = "Transaction",
+            .Stages = { { "RunSQL", 1.0f, { runJob } } },
+        };
+        
         m_TransactionMutex.unlock();
-        m_TransactionCount.notify_all();
+
+        return m_System.Submit<Ref<SQLQueryResult>>(Ref<JobGraph>::Create(info));
     }
 
     void DatabaseService::Reconnect() 
@@ -92,42 +102,35 @@ namespace MQTTPlus {
 
             uint64_t nextTokenPos = file.find(type, endPos);
             std::string src = nextTokenPos == std::string::npos ? file.substr(endPos) : file.substr(endPos, nextTokenPos - endPos);
-
-            RunTransaction({ f + src, {}, nullptr });
+            Run(f + src);
         }
+        
         MQP_INFO("Schema validated from res/database/schema.txt");
     }
 
-    bool DatabaseService::RunTransaction(const DatabaseTransaction& transaction)
+    Coroutine DatabaseService::RunTransaction(JobInfo& info, DatabaseService* service, DatabaseTransaction& transaction)
     {
         try 
         {
-            Reconnect();
+            service->Reconnect();
             //MQP_TRACE(transaction.SQL);
-            std::unique_ptr<sql::PreparedStatement> stmt(m_Connection->prepareStatement(transaction.SQL));
+            sql::PreparedStatement* stmt = service->m_Connection->prepareStatement(transaction.SQL);
             
-            if(transaction.Callback)
-            {
-                auto result = std::unique_ptr<sql::ResultSet>(stmt->executeQuery());
-                transaction.Callback({ transaction.Query, result.get()});
-            }
-            else
-                stmt->executeUpdate();
-                
-            return true;
+            auto result = stmt->executeQuery();
+            Ref<SQLQueryResult> queryResult = Ref<SQLQueryResult>::Create(stmt, transaction.Query, result);
+            info.Result(queryResult);
+            co_return;
             
         } catch(sql::SQLSyntaxErrorException e)
         {
-            MQP_ERROR("Failed running transaction: {0}\n{1}", transaction.SQL, e.what());
+            throw JobException(fmt::format("Failed running transaction: {0}\n{1}", transaction.SQL, e.what()));
         } catch(sql::SQLException e)
         {
-            MQP_ERROR("Database error {}\nQuery {}", e.getMessage().c_str(), transaction.SQL);
+            throw JobException(fmt::format("Database error {}\nQuery {}", e.getMessage().c_str(), transaction.SQL));
         } catch(std::exception e)
         {
-            MQP_ERROR("Database error: std::exception\nQuery {}", transaction.SQL);
+            throw JobException(fmt::format("Database error: std::exception\nQuery {}", transaction.SQL));
         }
-        if(transaction.Callback)
-            transaction.Callback({ transaction.Query, nullptr });
-        return false;
+        throw JobException("Failed running SQL query");
     }
 }

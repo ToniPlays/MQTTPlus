@@ -33,6 +33,7 @@ namespace MQTTPlus
                 return fmt::format("UPDATE {} SET {} {}", m_Query.Table, FormatSetValues(), filters);
             }
         }
+        return "";
     }
 
     std::string SQLQueryBuilder::FormatFields()

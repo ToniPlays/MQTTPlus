@@ -53,8 +53,6 @@ namespace MQTTPlus
 
     void MQTTClientService::OnMQTTClientEvent(MQTTClientEvent& e)
     {
-        Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
-        MQP_ASSERT(db, "Database service nullptr");
 
         SQLQuery query = {
             .Type = SQLQueryType::Select,
@@ -63,35 +61,41 @@ namespace MQTTPlus
             .Filters = { { "deviceName", SQLFieldFilterType::Equal, e.GetClient().GetAuth().ClientID } }
         };
 
-        db->Transaction(query, [db, e](const SQLQueryResult& result) mutable {
-            if(!result.Results) return;
-
+        Ref<Job> job = Job::Lambda("Update", [query, e](JobInfo& info) mutable -> Coroutine {
+            Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
             auto deviceName = e.GetClient().GetAuth().ClientID;
-            
-            if(result.Results->rowsCount() == 0)
+
+            auto result = (co_await db->Run(query))[0];
+            if(result->Rows() == 0)
             {
-                SQLQuery query = {
+                SQLQuery insert = {
                     .Type = SQLQueryType::Insert,
                     .Fields = { { "publicID" }, { "deviceName" }, { "status" }, { "lastSeen" } },
                     .Values = { { "de_" + StringUtility::Hex16() }, { deviceName }, { e.IsConnected() ? 1 : 0 }, { "NOW()", false } },
                     .Table = "devices",
                 };
-                
-                db->Transaction(query);
+                co_await db->Run(insert);
             }
             else 
             {
-                SQLQuery query = {
+                SQLQuery update = {
                     .Type = SQLQueryType::Update,
                     .Fields = { { "status" }, { "lastSeen" } },
                     .Values = { { e.IsConnected() ? 1 : 0 }, { "NOW()", false } },
                     .Table = "devices",
                     .Filters = { { "deviceName", SQLFieldFilterType::Equal, deviceName }}
                 };
-                db->Transaction(query);
+                co_await db->Run(update);
             }
             
             ServiceManager::OnEvent(e);
         });
+
+        JobGraphInfo info = {
+            .Name = "Client change",
+            .Stages = { { "Run", 1.0f, { job } } }
+        };
+
+        ServiceManager::GetJobSystem()->Submit<bool>(Ref<JobGraph>::Create(info));
     }
 }

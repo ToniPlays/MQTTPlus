@@ -30,11 +30,12 @@ namespace MQTTPlus
 		void Join() { m_Thread.join(); };
 		void Detach() { m_Thread.detach(); };
 		void WaitForIdle() { m_Status.wait(ThreadStatus::Executing); }
+		void Wait(ThreadStatus status) { m_Status.wait(status); }
 		
 	private:
 		void Execute(JobSystem* system, Ref<Job> job);
-	private:
 
+	private:
 		std::thread m_Thread;
 		uint32_t m_ThreadID = 0;
 		Ref<Job> m_CurrentJob = nullptr;

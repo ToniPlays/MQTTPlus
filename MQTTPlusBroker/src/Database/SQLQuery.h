@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Ref.h"
+
 #include <string>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 #include <mariadb/conncpp.hpp>
 
@@ -137,10 +140,19 @@ namespace MQTTPlus
         std::vector<SQLTableJoin> Joins;
     };
 
-    struct SQLQueryResult
+    class SQLQueryResult : public RefCount
     {
+        public:
+
         SQLQuery Query;
-        sql::ResultSet* Results;
+        sql::ResultSet* Results = nullptr;
+
+        SQLQueryResult(sql::PreparedStatement* statement, SQLQuery& query, sql::ResultSet* result) : m_Statement(statement), Query(query), Results(result) {}
+
+        ~SQLQueryResult() {
+            delete Results;
+            delete m_Statement;
+        }
 
         uint32_t Rows() const { return Results->rowsCount(); }
 
@@ -160,6 +172,9 @@ namespace MQTTPlus
         {
             return Results->getUInt(name);
         }
+
+        private:
+            sql::PreparedStatement* m_Statement;
     };
 
     static std::string FieldFilterToString(SQLFieldFilterType type)
