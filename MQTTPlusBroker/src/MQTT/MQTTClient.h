@@ -14,6 +14,7 @@ namespace MQTTPlus
         ~MQTTClient() = default;
         
         const MQTT::Authentication& GetAuth() const { return m_Authentication; }
+        void SetPublicID(const std::string& id) { m_Authentication.PublicId = id; }
         
         void SetSendMessageCallback(std::function<void(Ref<MQTT::Message>)> callback)
         {

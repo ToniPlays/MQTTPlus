@@ -21,6 +21,7 @@ namespace MQTTPlus {
         ~CallbackTimer() {
             m_Running = false;
             m_Running.notify_one();
+            m_Thread.join();
             
         };
         

@@ -14,15 +14,21 @@ namespace MQTTPlus {
     void DatabaseService::Start() 
     {
         m_StartupTime = std::chrono::system_clock::now();
-        m_TransactionMutex.lock();
         Reconnect();
         ValidateSchema();
 
-        m_System.WaitForJobsToFinish();
-        m_TransactionMutex.unlock();
+        m_System.Hook([](Ref<Thread> thread, ThreadStatus status) {
+            if(thread->GetStatus() == ThreadStatus::Failed)
+                MQP_ERROR("Database Thread {} failed: {}", thread->GetThreadID(), thread->GetLastError());
+        });
 
-        while(m_Thread->GetStatus() != ThreadStatus::Terminated)
-            m_Thread->Wait(m_Thread->GetStatus());
+        m_System.WaitForJobsToFinish();
+
+        while(true)
+        {
+            m_System.WaitForHooks();
+            m_System.Update();
+        }
     }
 
     void DatabaseService::Stop() 
@@ -32,7 +38,6 @@ namespace MQTTPlus {
 
     Promise<Ref<SQLQueryResult>> DatabaseService::Run(const SQLQuery& query)
     {
-        m_TransactionMutex.lock();
         SQLQueryBuilder builder(query);
         std::string sql = builder.CreateQuery();
 
@@ -43,18 +48,12 @@ namespace MQTTPlus {
             .Name = "Transaction",
             .Stages = { { "Run", 1.0f, { runJob } } },
         };
-        m_TransactionMutex.unlock();
 
-        auto promise = m_System.Submit<Ref<SQLQueryResult>>(Ref<JobGraph>::Create(info));
-        promise.ContinueWith([sql](const auto&) {
-            MQP_TRACE("Finished {}", sql);
-        });
-        return promise;
+        return m_System.Submit<Ref<SQLQueryResult>>(Ref<JobGraph>::Create(info));
     }
 
     Promise<Ref<SQLQueryResult>> DatabaseService::Run(const std::string& sql)
     {
-        m_TransactionMutex.lock();
         DatabaseTransaction trx = { sql };
         Ref<Job> runJob = Job::Create("Query", RunTransaction, this, trx);
 
@@ -62,8 +61,6 @@ namespace MQTTPlus {
             .Name = "Transaction",
             .Stages = { { "RunSQL", 1.0f, { runJob } } },
         };
-        
-        m_TransactionMutex.unlock();
 
         return m_System.Submit<Ref<SQLQueryResult>>(Ref<JobGraph>::Create(info));
     }
@@ -112,9 +109,16 @@ namespace MQTTPlus {
     {
         try 
         {
+            //MQP_INFO(transaction.SQL);
+
             service->Reconnect();
-            //MQP_TRACE(transaction.SQL);
             sql::PreparedStatement* stmt = service->m_Connection->prepareStatement(transaction.SQL);
+            if(transaction.Query.Type == SQLQueryType::Insert)
+            {
+                int32_t result = stmt->execute();
+                info.Result(Ref<SQLQueryResult>::Create(stmt, transaction.Query, nullptr));
+                co_return;
+            }
             
             auto result = stmt->executeQuery();
             Ref<SQLQueryResult> queryResult = Ref<SQLQueryResult>::Create(stmt, transaction.Query, result);
@@ -131,6 +135,7 @@ namespace MQTTPlus {
         {
             throw JobException(fmt::format("Database error: std::exception\nQuery {}", transaction.SQL));
         }
+
         throw JobException("Failed running SQL query");
     }
 }

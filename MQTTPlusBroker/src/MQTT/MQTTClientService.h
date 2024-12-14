@@ -3,6 +3,7 @@
 #include "Core/Service/Service.h"
 #include "MQTT/Broker.h"
 #include "Core/Threading/JobSystem.h"
+#include "Database/SQLQuery.h"
 #include "Events.h"
 #include <iostream>
 
@@ -25,6 +26,14 @@ namespace MQTTPlus
         
     private:
         void OnMQTTClientEvent(MQTTClientEvent& e);
+        void HandleValuePublish(Ref<MQTTClient> client, const std::string& topic, const std::string& message);
+
+        static Promise<Ref<SQLQueryResult>> GetTopicFieldIdForDevice(const std::string& deviceId, const std::string& topicId);
+        static Promise<Ref<SQLQueryResult>> CreateTopicField(const std::string& fieldId, Ref<MQTTClient> client, const std::string& topicId, const std::string& value);
+        static Promise<Ref<SQLQueryResult>> UpdateTopicField(const std::string& fieldId, const std::string& value, const std::string& formatter);
+
+        static Promise<Ref<SQLQueryResult>> GetTopic(const std::string& topic, const std::string& networkId);
+        static Promise<Ref<SQLQueryResult>> CreateTopic(const std::string& id, uint32_t type, const std::string& name, const std::string& networkId);
     private:
         Broker* m_Broker;
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;

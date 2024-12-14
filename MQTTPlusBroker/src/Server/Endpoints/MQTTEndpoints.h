@@ -24,12 +24,16 @@ namespace MQTTPlus
             if(!msg["opts"]["expands"].is_null())
                 expandOpts = msg["opts"]["expands"].get<std::vector<std::string>>();
 
-            const auto results = co_await API::GetDevices();
-            const auto devices = API::RowsToDevices(results[0]);
+            auto results = co_await API::GetDevices();
+            auto devices = API::RowsToDevices(results[0]);
 
             if(Contains<std::string>(expandOpts, "data.network"))
             {
-                
+                for(auto& device : devices)
+                {
+                    auto network = co_await API::GetNetwork(device.Network.GetValueAs<std::string>());
+                    device.Network = API::RowToNetwork(network[0]);
+                }
             }
 
             j["data"] = devices;
@@ -50,20 +54,19 @@ namespace MQTTPlus
 
             std::string id = msg["id"];
 
-            Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
-
             std::vector<std::string> expandOpts;
             if(!msg["opts"]["expands"].is_null())
                 expandOpts = msg["opts"]["expands"].get<std::vector<std::string>>();
-
+        
+            auto results = co_await API::GetDevice(id);
+            
             json j = {};
             j["type"] = "device";
-            /*if(devices.size() > 0)
-                j["data"] = devices[0];*/
-            j["data"] = NULL;
+            if(results[0]->Rows() > 0)
+                j["data"] = API::RowToDevice(results[0]);
+            else j["data"] = NULL;
 
-        client->Send(j.dump()); 
-            co_return;
+            client->Send(j.dump()); 
         });
     }
 }

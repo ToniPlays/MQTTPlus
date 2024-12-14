@@ -28,12 +28,15 @@ namespace MQTTPlus::MQTT
         Disconnect = 14,    //Implemented
         Reserved2 = 15,
     };
+
     enum class ProtocolVersion : uint8_t
     {
         MQTT3 = 4,
         MQTT5 = 5,
     };
-    enum class ConnectFlags: uint8_t {
+
+    enum class ConnectFlags: uint8_t 
+    {
         CleanSession = (1 << 1),
         WillFlag = (1 << 2),
         WillQoS1 = (1 << 3),
@@ -42,7 +45,6 @@ namespace MQTTPlus::MQTT
         Password = (1 << 6),
         UserName = (1 << 7)
     };
-
 
     struct FixedHeader {
         enum { SIZE = 2 };
@@ -54,7 +56,8 @@ namespace MQTTPlus::MQTT
         uint32_t Remaining;
     };
 
-    struct Authentication {
+    struct Authentication 
+    {
         std::string ClientID;
         std::string User;
         std::string Password;
@@ -62,8 +65,12 @@ namespace MQTTPlus::MQTT
         std::string WillTopic;
         std::string WillMessage;
 
+        std::string PublicId;
+        std::string NetworkID;
+
         bool Valid = true;
     };
+    
     enum class ConnAckFlags : uint8_t {
         Accepted = 0x00,
         ProtocolVersionUnavailable = 0x01,

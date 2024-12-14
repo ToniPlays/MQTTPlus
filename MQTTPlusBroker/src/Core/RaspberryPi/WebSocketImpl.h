@@ -55,7 +55,6 @@ namespace MQTTPlus
         bool m_SSL = false;
         
         std::atomic_bool m_Running = false;
-        int m_SocketDesc = 0;
         Ref<Thread> m_ListenerThread;
         std::mutex m_ClientMutex;
         std::unordered_map<uint32_t, Ref<SocketClient>> m_ConnectedClients;

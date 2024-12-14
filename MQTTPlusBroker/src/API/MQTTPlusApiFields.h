@@ -42,6 +42,14 @@ namespace MQTTPlus::API {
         Expandable(T&& value) : m_Value(std::forward<T>(value)) {}
         
         std::variant<Types...> Value() const { return m_Value; }
+
+        template<typename T>
+        T GetValueAs() const { 
+            if (auto ptr = std::get_if<T>(&m_Value)) {
+                return *ptr;
+            }
+            return T();
+        }
         
         template <typename T>
         Expandable& operator=(T&& value) {

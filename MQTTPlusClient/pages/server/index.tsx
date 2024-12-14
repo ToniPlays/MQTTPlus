@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import DefaultLayout from "@/DefaultLayout";
 import CardDataStats from "@/CardDataStats";
 import { MQTTPlusProvider } from "../../app/client/mqttplus"
 import {
@@ -13,8 +12,6 @@ import {
 } from "@heroicons/react/24/solid";
 import { ReadyState } from "react-use-websocket";
 import { useTimeAgo } from "react-time-ago";
-import en from "javascript-time-ago/locale/en";
-import TimeAgo from "javascript-time-ago";
 
 import {
   Capitalize,
@@ -26,8 +23,6 @@ import Breadcrumb from "@/Breadcrumb";
 import Table from "@/Tables/Table";
 import toast from "react-hot-toast";
 import { NextPage } from "next";
-
-TimeAgo.addDefaultLocale(en);
 
 interface Props
 {

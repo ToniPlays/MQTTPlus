@@ -32,10 +32,11 @@
                                         `networkID` TEXT NOT NULL,
                                         PRIMARY KEY (`topicID`))
 
-#sql CREATE TABLE IF NOT EXISTS `values` (`fieldID` INT NOT NULL AUTO_INCREMENT, 
+#sql CREATE TABLE IF NOT EXISTS `topic_values` (`fieldID` INT NOT NULL AUTO_INCREMENT, 
                                         `publicID` TEXT NOT NULL, 
-                                        `deviceID` TEXT NOT NULL, 
-                                        `fieldName` TEXT, 
+                                        `topicID` TEXT NOT NULL, 
+                                        `deviceID` TEXT NOT NULL,
                                         `rawValue` TEXT, 
-                                        `displayValue` TEXT, 
+                                        `displayValue` TEXT,
+                                        `formatter` TEXT, 
                                         `lastUpdated` TIMESTAMP NOT NULL, PRIMARY KEY (`fieldID`))

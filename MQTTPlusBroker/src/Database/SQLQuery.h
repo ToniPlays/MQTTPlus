@@ -142,7 +142,7 @@ namespace MQTTPlus
 
     class SQLQueryResult : public RefCount
     {
-        public:
+    public:
 
         SQLQuery Query;
         sql::ResultSet* Results = nullptr;
@@ -154,7 +154,7 @@ namespace MQTTPlus
             delete m_Statement;
         }
 
-        uint32_t Rows() const { return Results->rowsCount(); }
+        uint32_t Rows() const { return Results != nullptr ? Results->rowsCount() : 0; }
 
         template<typename T>
         T Get(const char* name) const

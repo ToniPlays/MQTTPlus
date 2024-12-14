@@ -53,6 +53,8 @@ namespace MQTTPlus {
 
         try {
             switch (type) {
+                case MQTT::MessageType::Reserved1:
+                    throw std::exception();
                 case MQTT::MessageType::Connect:
                     return Ref<MQTT::ConnectMessage>::Create(dataBuffer);
                 case MQTT::MessageType::Disconnect:
@@ -62,7 +64,7 @@ namespace MQTTPlus {
                 case MQTT::MessageType::Subscribe:
                     return Ref<MQTT::SubscribeMessage>::Create(dataBuffer);
                 default:
-                    std::cout << fmt::format("Not implemented {}\n", (uint32_t)type);
+                    MQP_ERROR("Not implemented {}\n", (uint32_t)type);
                     return nullptr;
             }
         } catch(MQTTPlusException e)

@@ -3,8 +3,6 @@ import { NextPage } from "next"
 import { useRouter } from 'next/router'
 import { MQTTPlusProvider } from "../../../app/client/mqttplus"
 import Breadcrumb from "@/Breadcrumb"
-import Table from "@/Tables/Table"
-import { Grid } from "@mui/material"
 import { ConnectionStatus } from "@/DeviceComponents"
 import { GetDeviceName } from "@/Utility"
 
@@ -23,6 +21,11 @@ const DevicePage: NextPage<Props> = props => {
 
   const [deviceId, setDeviceId] = useState<string | null>(null)
   const [deviceData, setDeviceData] = useState<any | null>(null)
+
+
+  const layout = `{
+    
+  }`
 
   useEffect(() => {
     if(!router.query.slug) return

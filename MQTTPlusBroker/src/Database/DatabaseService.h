@@ -41,7 +41,6 @@ namespace MQTTPlus
         sql::Driver* m_Driver;
         std::unique_ptr<sql::Connection> m_Connection;
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;
-        std::recursive_mutex m_TransactionMutex;
 
         JobSystem m_System = JobSystem(1);
     };

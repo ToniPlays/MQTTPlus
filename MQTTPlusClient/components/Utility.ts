@@ -1,4 +1,3 @@
-
 export const KB = 1000;
 export const MB = KB * KB;
 export const GB = MB * KB;

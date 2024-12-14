@@ -11,7 +11,7 @@ namespace MQTTPlus
             m_WebSocket = WebSocket::Create(settings.Port, settings.UseSSL);
         } catch(MQTTPlusException e)
         {
-            MQP_ERROR("Failed to create WebSocket for Broker");
+            MQP_ERROR("Failed to create WebSocket for Broker: {0}", e.what());
             m_WebSocket = nullptr;
         }
     }
@@ -33,7 +33,6 @@ namespace MQTTPlus
         });
         
         m_WebSocket->SetOnSocketDisconnected([this](void* client, int reason) mutable {
-            
             m_ClientMutex.lock();
             
             auto it = m_ConnectedClients.find(client);

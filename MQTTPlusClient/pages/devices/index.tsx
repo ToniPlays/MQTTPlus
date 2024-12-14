@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { NextPage } from "next";
 import { GetDeviceName, GetId } from "@/Utility";
 import { ConnectionStatus } from "@/DeviceComponents";
+import { TimeSince } from "@/UtilityComponents";
 
 interface Props {}
 
@@ -86,6 +87,12 @@ const DevicePage: NextPage<Props> = props => {
     </>
   )
 
+  function GetNetworkName(network: any)
+  {
+    if(!network) return ""
+    return network.name ?? GetId(network)
+  }
+
   function DeviceRow(props: { device: any })
   {
     const { device } = props
@@ -98,13 +105,13 @@ const DevicePage: NextPage<Props> = props => {
           {GetDeviceName(device)}
         </div>
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
-          {GetId(device.network)}
+          {GetNetworkName(device.network)}
         </div>
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
           <ConnectionStatus status={device.status} />
         </div>
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
-          {new Date(device.last_seen).toLocaleString()}
+          <TimeSince time={device.last_seen} />
         </div>
       </div>
     )

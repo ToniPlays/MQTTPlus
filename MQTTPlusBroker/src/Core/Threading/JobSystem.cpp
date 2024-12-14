@@ -77,7 +77,7 @@ namespace MQTTPlus
 				thread->m_CurrentJob = job;
 				m_StatusHook.Invoke(thread, ThreadStatus::Executing);
 				thread->Execute(this, job);
-
+				
 				m_StatusHook.Invoke(thread, ThreadStatus::Finished);
 			}
 			catch (JobException e)
@@ -182,7 +182,6 @@ namespace MQTTPlus
 			if (job->GetCoroutine().CanContinue())
 				return job;
 		}
-
 		return nullptr;
 	}
 }

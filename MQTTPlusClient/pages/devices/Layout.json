@@ -1,0 +1,14 @@
+{
+    "layout": {
+        "items": [
+            {
+                "title": "Price",
+                "type": "card",
+                "size": "2x1",
+                "props": {
+                    "value": ""
+                }    
+            }
+        ]
+    }
+}

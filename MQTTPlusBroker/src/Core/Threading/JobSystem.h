@@ -97,21 +97,29 @@ namespace MQTTPlus
 		}
 		
 		uint64_t WaitForUpdate();
+
+		void WaitForHooks()
+		{
+			m_RunHooks.wait(false);
+		}
+
 		void Update() 
 		{
 			m_HookCallbacks.Invoke();
 			m_HookCallbacks.Clear();
+			m_RunHooks = false;
+			m_RunHooks.notify_all();
 		}
 
 		void Hook(JobSystemHook hook, const std::function<void(Ref<JobGraph>)>& callback)
 		{
 			m_Hooks.AddHook(hook, callback);
 		}
-		void Hook(JobSystemHook hook, const std::function<void(Ref<Thread>, ThreadStatus)>& callback)
+		void Hook(const std::function<void(Ref<Thread>, ThreadStatus)>& callback)
 		{
 			m_StatusHook.Add(callback);
 		}
-		void Hook(JobSystemHook hook, const std::function<void(Severity, const std::string&)>& callback)
+		void Hook(const std::function<void(Severity, const std::string&)>& callback)
 		{
 			m_MessageHook.Add(callback);
 		}
@@ -128,6 +136,9 @@ namespace MQTTPlus
 			m_HookCallbacks.Add([this, msg = message, severity]() mutable {
 				m_MessageHook.Invoke(severity, msg);
 			});
+
+			m_RunHooks = true;
+			m_RunHooks.notify_all();
 		}
 
 		Ref<Job> FindAvailableJob();
@@ -139,6 +150,7 @@ namespace MQTTPlus
 		std::vector<Ref<Job>> m_Jobs;
 
 		std::atomic_bool m_Running = false;
+		std::atomic_bool m_RunHooks = false;
 
 		std::atomic_uint64_t m_JobCount = 0;
 

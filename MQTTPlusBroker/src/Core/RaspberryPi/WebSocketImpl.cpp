@@ -15,34 +15,17 @@ namespace MQTTPlus
 {
     WebSocketImpl::WebSocketImpl(uint32_t port, bool ssl) : m_Port(port), m_SSL(ssl)
     {
-        m_SocketDesc = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-        
-        if(!m_SocketDesc)
-            throw MQTTPlusException("Failed to create socket");
-
-		const int enable = 1;
-		if(setsockopt(m_SocketDesc, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-			throw MQTTPlusException("Failed to set socketop");
-
-        sockaddr_in addr = {};
-        addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = htonl(INADDR_ANY);
-        addr.sin_port = htons(port);
-        
-        if(bind(m_SocketDesc, (sockaddr*)&addr, sizeof(sockaddr_in)) != 0)
-            throw MQTTPlusException("Failed to bind socket");
-        
         m_OnSocketConnected = [](void* socket) {};
         m_OnSocketDisconnected = [](void* socket, int code) {};
         m_OnSocketDataReceived = [](void* socket, char* data, int length) {};
-        
+
         MQP_WARN("Created WebSocket for port {} (Linux native)", m_Port);
     }
     
     WebSocketImpl::~WebSocketImpl() 
     {
         m_Running = false;
-        close(m_SocketDesc);
+        
         if(m_ListenerThread)
             m_ListenerThread->Join();
     }
@@ -82,58 +65,107 @@ namespace MQTTPlus
     void WebSocketImpl::Write(void* socket, const std::string& message)
     {
         int client = ((SocketClient*)socket)->GetClientID();
-        std::cout << message << std::endl;
         write(client, message.data(), message.length());
     }
     
-    void WebSocketImpl::SocketListenThread(WebSocketImpl* socket)
+    void WebSocketImpl::SocketListenThread(WebSocketImpl* socketImpl)
     {
-        listen(socket->m_SocketDesc, 10);
+        thread_local static fd_set m_MasterSet;
+        thread_local static int m_MaxFD = 0;
+        thread_local static int m_SocketDesc = 0;
 
-        float timeout = 100;
-
-        while(socket->m_Running)
-        {   
-            Timer timer;
-
-            int client = accept(socket->m_SocketDesc, NULL, NULL);
-            if(client != -1)
-            {                
-                int pid = 0;
-                if(pid == 0)
-                {
-                    Ref<SocketClient> socketClient = Ref<SocketClient>::Create(socket, client);
-                    MQP_WARN("New connection on port: {}", socket->m_Port);
-
-                    socket->SetSocketTimeout((void*)socketClient.Raw(), 30);
-                    socket->m_OnSocketConnected((void*)socketClient.Raw());
-                    socket->m_ConnectedClients[client] = socketClient;
-                }
-                else close(client);
-            }
-
-            socket->m_ClientMutex.lock();
-            auto clients = socket->m_ConnectedClients;
-            socket->m_ClientMutex.unlock();
-
-            for(auto& [id, client] : clients) 
-            {
-                if(client->Read()) continue;
-
-                socket->m_OnSocketDisconnected((void*)client.Raw(), -1);
-                socket->m_ClientMutex.lock();
-                auto it = socket->m_ConnectedClients.find(id);
-                if(it != socket->m_ConnectedClients.end())
-                    socket->m_ConnectedClients.erase(it);
-                socket->m_ClientMutex.unlock();
-            }
-
-            int sleepFor = timeout - timer.ElapsedMillis();
-            if(sleepFor > 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepFor));    
+        m_SocketDesc = socket(AF_INET, SOCK_STREAM, 0);
+        if (m_SocketDesc < 0) {
+            throw MQTTPlusException("Failed to create socket");
         }
 
-        MQP_ERROR("Stopped listening on port {}", socket->m_Port);
+        // Set socket to non-blocking
+        fcntl(m_SocketDesc, F_SETFL, O_NONBLOCK);
+
+        sockaddr_in addr = {};
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(socketImpl->m_Port);
+        addr.sin_addr.s_addr = INADDR_ANY;
+
+        if (bind(m_SocketDesc, (sockaddr*)&addr, sizeof(sockaddr_in)) < 0) {
+            close(m_SocketDesc);
+            throw MQTTPlusException("Failed to bind socket");
+        }
+
+        // Start listening on the socket
+        listen(m_SocketDesc, SOMAXCONN);
+        MQP_INFO("Listening on port {}", socketImpl->m_Port);
+
+        FD_ZERO(&m_MasterSet);
+        FD_SET(m_SocketDesc, &m_MasterSet);
+        m_MaxFD = m_SocketDesc;
+
+        MQP_WARN("MaxFD: {}", m_MaxFD);
+
+        while (socketImpl->m_Running) {
+            fd_set readSet = m_MasterSet;
+
+            // Wait for activity on any of the sockets
+            int activity = select(m_MaxFD + 1, &readSet, NULL, NULL, NULL);
+
+            if (activity < 0 && errno != EINTR) {
+                MQP_ERROR("Select error: {}, activity {}", strerror(errno), activity);
+                break;
+            }
+
+            for (int i = 0; i <= m_MaxFD; ++i) {
+                if (FD_ISSET(i, &readSet)) {
+                    if (i == m_SocketDesc) {
+                        // New client connection
+                        int client = accept(m_SocketDesc, NULL, NULL);
+                        if (client < 0) continue;  // skip if accept failed
+
+                        // Set client socket to non-blocking
+                        fcntl(client, F_SETFL, O_NONBLOCK);
+
+                        // Add the client to the master set
+                        FD_SET(client, &m_MasterSet);
+                        if (client > m_MaxFD) {
+                            m_MaxFD = client;
+                        }
+
+                        Ref<SocketClient> socketClient = Ref<SocketClient>::Create(socketImpl, client);
+                        MQP_WARN("New connection on port: {} {}", socketImpl->m_Port, client);
+
+                        socketImpl->SetSocketTimeout((void*)socketClient.Raw(), 30);
+                        socketImpl->m_OnSocketConnected((void*)socketClient.Raw());
+
+                        socketImpl->m_ClientMutex.lock();
+                        socketImpl->m_ConnectedClients[client] = socketClient;
+                        socketImpl->m_ClientMutex.unlock();
+                    }
+                    else 
+                    {
+                        // Handle existing client activity
+                        Ref<SocketClient> socketClient = socketImpl->m_ConnectedClients[i];
+
+                        if (socketClient->Read()) {
+                            continue;  // Continue reading
+                        }
+
+                        socketImpl->m_OnSocketDisconnected((void*)socketClient.Raw(), -1);
+
+                        // Lock and clean up client
+                        socketImpl->m_ClientMutex.lock();
+                        MQP_WARN("Client disconnected {}", i);
+                        FD_CLR(i, &m_MasterSet);  // Remove from select set
+                        close(i);  // Close client socket
+                        socketImpl->m_ConnectedClients.erase(i);
+                        socketImpl->m_ClientMutex.unlock();
+                    }
+                }
+            }
+        }
+
+        // Close the server socket
+        FD_CLR(m_SocketDesc, &m_MasterSet);  // Remove from select set
+        close(m_SocketDesc);
+        MQP_WARN("Stopped listening on port {}", socketImpl->m_Port);
     }
 }
 
