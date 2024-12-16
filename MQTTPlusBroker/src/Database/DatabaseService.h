@@ -35,13 +35,11 @@ namespace MQTTPlus
     private:
         void Reconnect();
         void ValidateSchema();
-        static Coroutine RunTransaction(JobInfo& info, DatabaseService* service, DatabaseTransaction& transaction);
+        static Coroutine RunTransaction(JobInfo info, DatabaseService* service, DatabaseTransaction& transaction);
 
     private:
         sql::Driver* m_Driver;
         std::unique_ptr<sql::Connection> m_Connection;
         std::chrono::time_point<std::chrono::system_clock> m_StartupTime;
-
-        JobSystem m_System = JobSystem(1);
     };
 }

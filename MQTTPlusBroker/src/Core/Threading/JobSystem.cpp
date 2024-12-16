@@ -17,6 +17,7 @@ namespace MQTTPlus
 			m_LastError = "";
 			JobInfo info = {};
 			info.Thread = this;
+			info.Current = job;
 
 			m_Status = ThreadStatus::Executing;
 			job->Execute(info);
@@ -27,6 +28,12 @@ namespace MQTTPlus
 			m_Status = ThreadStatus::Failed;
 			m_LastError = e.what();
 			throw e;
+		}
+		catch(std::exception_ptr e)
+		{
+			m_Status = ThreadStatus::Failed;
+			m_LastError = "Something broke";
+			throw std::exception();
 		}
 	}
 
@@ -76,15 +83,25 @@ namespace MQTTPlus
 				//Execute job
 				thread->m_CurrentJob = job;
 				m_StatusHook.Invoke(thread, ThreadStatus::Executing);
+				m_RunHooks = true;
+				m_RunHooks.notify_all();
 				thread->Execute(this, job);
-				
 				m_StatusHook.Invoke(thread, ThreadStatus::Finished);
+				m_RunHooks = true;
+				m_RunHooks.notify_all();
+
 			}
 			catch (JobException e)
 			{
 				std::string msg = fmt::format("JobException: {0} {1}", job->GetName(), e.what());
 				SendMessage(Severity::Error, msg);
 				m_StatusHook.Invoke(thread, thread->GetStatus());
+			}
+
+			if(!job->GetCoroutine().Done())
+			{
+				std::scoped_lock lock(m_JobMutex);
+				AddJob(job);
 			}
 
 			thread->m_CurrentJob = nullptr;
@@ -115,7 +132,13 @@ namespace MQTTPlus
 	void JobSystem::RemoveJob(Ref<Job> job)
 	{
 		m_Jobs.erase(std::find(m_Jobs.begin(), m_Jobs.end(), job));
+		m_JobCount = m_Jobs.size();
+		m_JobCount.notify_one();
+	}
 
+	void JobSystem::AddJob(Ref<Job> job)
+	{
+		m_Jobs.push_back(job);
 		m_JobCount = m_Jobs.size();
 		m_JobCount.notify_one();
 	}
@@ -148,8 +171,12 @@ namespace MQTTPlus
 		m_HookCallbacks.Add([this, graph]() mutable {
 			if (graph->DidFail())
 				m_Hooks.Invoke(JobSystemHook::Failure, graph);
-			else m_Hooks.Invoke(JobSystemHook::Finished, graph);
-			});
+			else 
+				m_Hooks.Invoke(JobSystemHook::Finished, graph);
+		});
+
+		m_RunHooks = true;
+		m_RunHooks.notify_all();
 	}
 
 	void JobSystem::WaitForJobsToFinish()

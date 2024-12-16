@@ -30,7 +30,6 @@ namespace MQTTPlus
         friend class GraphStage;
         friend class Job;
         friend class JobSystem;
-        friend class JobPromise;
     public:
         JobGraph(const JobGraphInfo& info);
         ~JobGraph() {

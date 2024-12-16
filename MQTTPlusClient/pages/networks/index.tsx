@@ -1,16 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import DefaultLayout from "@/DefaultLayout";
-import { MQTTPlusProvider } from "../../app/client/mqttplus";
-import Table from "@/Tables/Table";
-import Breadcrumb from "@/Breadcrumb";
-import { ReadyState } from "react-use-websocket";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import { NextPage } from "next";
-import { GetDeviceName } from "@/Utility";
-import { ConnectionStatus } from "@/DeviceComponents";
+import React, { useEffect, useState } from "react"
+import { MQTTPlusProvider } from "../../app/client/mqttplus"
+import Table from "@/Tables/Table"
+import Breadcrumb from "@/Breadcrumb"
+import { ReadyState } from "react-use-websocket"
+import { useRouter } from "next/navigation"
+import { NextPage } from "next"
+import { ConnectionStatus } from "@/DeviceComponents"
 
 interface Props {
 
@@ -33,9 +30,7 @@ const NetworkPage: NextPage<Props> = props => {
       ProcessResponse(data)
     })
 
-    provider.post(api.networks({
-      expands: []
-    }))
+    provider.post(api.networks())
 
   }, [provider.status])
 
@@ -46,8 +41,8 @@ const NetworkPage: NextPage<Props> = props => {
   }, [event])
 
 
-  function OpenDevicePage(device: any) {
-    router?.replace(`/devices/${device.id}`)
+  function OpenNetworkPage(network: any) {
+    router?.replace(`/networks/${network.id}`)
   }
 
   return (
@@ -63,23 +58,24 @@ const NetworkPage: NextPage<Props> = props => {
 
   function NetworkRow(props: { device: any })
   {
-    const { device } = props
+    const { network } = props
+
     return (
       <div className="grid grid-cols-4 border-b border-stroke dark:border-strokedark hover:bg-meta-4 hover:bg-opacity-50"
-        key={device.id}
-        onClick={() => { OpenDevicePage(device) }}
+        key={network.id}
+        onClick={() => { OpenNetworkPage(network) }}
       >
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
-          {GetDeviceName(device)}
+          {network.name}
         </div>
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
-          {device.network}
+          {network.type}
         </div>
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
-          <ConnectionStatus status={device.status} />
+         {network.active_devices}
         </div>
         <div className="flex items-center gap-3 p-2.5 xl:p-5">
-          {new Date(device.last_seen).toLocaleString()}
+          {network.total_devices}
         </div>
       </div>
     )

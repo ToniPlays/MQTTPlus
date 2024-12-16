@@ -6,9 +6,8 @@
 
 namespace MQTTPlus 
 {
-	void Job::Execute(JobInfo& info)
+	void Job::Execute(JobInfo info)
 	{
-		info.Current = this;
 		info.Graph = m_JobGraph;
 		info.ExecutionID = m_InvocationId;
 
@@ -25,8 +24,8 @@ namespace MQTTPlus
 			{
 				m_Progress = 1.0f;
 				m_ExecutionTime = timer.ElapsedMillis();
-
 				m_Status = JobStatus::Success;
+
 				if (m_JobGraph)
 					m_JobGraph->OnJobFinished(this);
 			}

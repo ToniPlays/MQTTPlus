@@ -17,6 +17,7 @@ namespace MQTTPlus
             m_Thread = thread;
             Start();
         };
+        
         virtual void Start() = 0;
         virtual void Stop() = 0;
         virtual void OnEvent(Event& e) = 0;

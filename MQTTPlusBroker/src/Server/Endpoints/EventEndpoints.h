@@ -27,6 +27,8 @@ namespace MQTTPlus
             
             json msg = json::parse(message);
             json j;
+            j["type"] = "event";
+            j["data"] = "ok";
 
             client->GetSubscribedEvents().clear();
             client->GetTimer().Clear();

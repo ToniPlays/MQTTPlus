@@ -5,14 +5,13 @@ import { MQTTPlusProvider } from "../../../app/client/mqttplus"
 import Breadcrumb from "@/Breadcrumb"
 import { ConnectionStatus } from "@/DeviceComponents"
 import { GetDeviceName } from "@/Utility"
+import CardDataStats from "@/CardDataStats"
+import { BoltIcon, EyeIcon, PowerIcon } from "@heroicons/react/24/solid"
 
 interface Props
 {
 
 }
-
-// /devices/9dd2852972f9a0e7
-// /device?id=9dd2852972f9a0e7
 
 const DevicePage: NextPage<Props> = props => {
   const router = useRouter()
@@ -23,10 +22,6 @@ const DevicePage: NextPage<Props> = props => {
   const [deviceData, setDeviceData] = useState<any | null>(null)
 
 
-  const layout = `{
-    
-  }`
-
   useEffect(() => {
     if(!router.query.slug) return
 
@@ -35,7 +30,7 @@ const DevicePage: NextPage<Props> = props => {
 
   useEffect(() => {
     provider.post(api.device(deviceId!, {
-      expands: []
+      expands: ["data.network", "data.fields", "data.fields.topic"]
     }))
 
     provider.receive((data, error) => {
@@ -52,6 +47,13 @@ const DevicePage: NextPage<Props> = props => {
       <div className="sticky top-0 z-999 flex w-full bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
         <DeviceHeader device={deviceData} />
       </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5 mt-8">
+        {deviceData.fields?.map(field => {
+          return <TopicValueCard field={field} />
+        })}
+      </div>
+      {false && <p>{JSON.stringify(deviceData)}</p> }
+      <br />
     </>
   )
 
@@ -66,7 +68,17 @@ const DevicePage: NextPage<Props> = props => {
         </div>
       </div>
     )
-  } 
+  }
+
+  function TopicValueCard(props: { field: any})
+  {
+    const { field } = props
+    return (
+        <CardDataStats id={field.id} title={field.topic?.name ?? ""} total={field.display_value}>
+          <BoltIcon />
+        </CardDataStats>
+    )
+  }
 
   function HandleResponse(data: any)
   {

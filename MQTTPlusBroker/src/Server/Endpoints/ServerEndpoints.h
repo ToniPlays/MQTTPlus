@@ -2,6 +2,7 @@
 #include "Server/HTTPServer.h"
 #include "Core/Service/ServiceManager.h"
 #include "API/MQTTPlusAPI.h"
+#include "API/DataGetters.h"
 #include <nlohmann/json.hpp>
 #include "API/JsonConverter.h"
 
@@ -26,7 +27,9 @@ namespace MQTTPlus
                 .Status = nullptr,
             };
 
-            if(ArrayContains(msg["opts"]["expands"], "data.services"))
+            auto expandOpts = ExpandOpts(msg);
+
+            if(Contains<std::string>(expandOpts, "data.services"))
             {
                 std::vector<API::Service> s;
                 s.reserve(count);
@@ -37,7 +40,7 @@ namespace MQTTPlus
                 status.Services = s;
             }
 
-            if(ArrayContains(msg["opts"]["expands"], "data.status"))
+            if(Contains<std::string>(expandOpts, "data.status"))
                 status.Status = ServiceManager::GetSystemStatus();
             
             json j = {};

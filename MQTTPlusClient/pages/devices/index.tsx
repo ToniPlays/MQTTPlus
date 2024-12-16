@@ -32,8 +32,9 @@ const DevicePage: NextPage<Props> = props => {
     })
 
     provider.post(api.devices({
-      expands: ["data.network"]
+      expands: ["data.network", "data.values"]
     }))
+    
     provider.post(api.event({
       listen: ['mqtt.client_connection_change']
     }))
@@ -59,14 +60,14 @@ const DevicePage: NextPage<Props> = props => {
     else toast.error(`MQTT ${GetDeviceName(data)} disconnected`)
 
     const dev = devices
-    const index = devices.findIndex(device => device.client_id == data.client_id)
+    const index = devices?.findIndex(device => device.client_id == data.client_id) ?? -1
 
     if (index != -1) {
       dev[index].status = data.status
       dev[index].last_seen = data.last_seen
     }
     else {
-      dev.push(data)
+      dev?.push(data)
     }
 
     setDevices(dev)
@@ -84,6 +85,7 @@ const DevicePage: NextPage<Props> = props => {
           return <DeviceRow device={device} />
         })}
       </Table>
+      {false && <p>{JSON.stringify(devices)}</p> }
     </>
   )
 

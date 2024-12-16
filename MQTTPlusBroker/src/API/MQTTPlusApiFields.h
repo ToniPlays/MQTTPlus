@@ -22,17 +22,20 @@ namespace MQTTPlus::API {
         Field() = default;
         Field(T value) : m_Value(value) {}
         
-        T Value() const { return m_Value; }
+        const T& Value() const { return m_Value; }
         
-        Field<T>& operator= (T lh)
+        Field<T>& operator=(T lh)
         {
             m_Value = lh;
             return *this;
         }
+
+        operator T() { return m_Value; }
         
     private:
         T m_Value = T();
     };
+    
     template<typename... Types>
     class Expandable : public BaseField
     {
@@ -44,7 +47,7 @@ namespace MQTTPlus::API {
         std::variant<Types...> Value() const { return m_Value; }
 
         template<typename T>
-        T GetValueAs() const { 
+        T As() const { 
             if (auto ptr = std::get_if<T>(&m_Value)) {
                 return *ptr;
             }

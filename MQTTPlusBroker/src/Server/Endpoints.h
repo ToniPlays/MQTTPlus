@@ -5,6 +5,7 @@
 
 #include "Endpoints/ServerEndpoints.h"
 #include "Endpoints/MQTTEndpoints.h"
+#include "Endpoints/NetworkEndpoints.h"
 #include "Endpoints/EventEndpoints.h"
 
 namespace MQTTPlus
@@ -13,6 +14,7 @@ namespace MQTTPlus
     {
         InitServerEndpoints(server);
         InitMQTTEndpoints(server);
+        InitNetworkEndpoints(server);
         InitEventEndpoints(server);
     }
 }

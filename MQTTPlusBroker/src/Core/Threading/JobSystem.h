@@ -66,6 +66,7 @@ namespace MQTTPlus
 		void WaitForJobsToFinish();
 		void Terminate();
 		
+		
 		template<typename T>
 		Promise<T> Submit(Ref<JobGraph> graph)
 		{
@@ -94,6 +95,17 @@ namespace MQTTPlus
 			m_GraphMutex.unlock();
 			
 			return Promise<T>(graph);
+		}
+		
+		template<typename T>
+		Promise<T> Submit(Ref<Job> job)
+		{
+			JobGraphInfo info = {
+				.Name = job->GetName(),
+				.Stages = { { "Run", 1.0f, { job } } }
+			};
+			
+			return Submit<T>(Ref<JobGraph>::Create(info));
 		}
 		
 		uint64_t WaitForUpdate();
@@ -127,6 +139,7 @@ namespace MQTTPlus
 	private:
 		bool QueueJobs(const std::vector<Ref<Job>>& jobs);
 		void RemoveJob(Ref<Job> job);
+		void AddJob(Ref<Job> job);
 		void TerminateGraphJobs(Ref<JobGraph> graph);
 		void OnGraphFinished(Ref<JobGraph> graph);
 

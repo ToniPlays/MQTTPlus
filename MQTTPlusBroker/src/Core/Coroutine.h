@@ -27,7 +27,7 @@ public:
 	bool CanContinue() const 
 	{
 		if (!m_Handle) return true;
-		return m_Handle.promise().m_Dependencies == 0;
+			return m_Handle.promise().m_Dependencies == 0;
 	}
 
 	bool Done() const

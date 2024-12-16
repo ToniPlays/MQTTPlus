@@ -69,16 +69,15 @@ namespace MQTTPlus
         {
             if(!m_ResolverCallback(key.c_str(), payload)) continue;
 
-            Timer timer;
             try 
             {
                 auto conn = m_Server.get_con_from_hdl(hdl);
                 auto client = m_ConnectedClients[conn];
                 auto func = m_PostCallbacks[key];
 
-                auto job = Job::Lambda("Endpint", [payload, func, client](JobInfo& info) mutable -> Coroutine {
-                        return func(payload, client);
-                    });
+                auto job = Job::Lambda(fmt::format("Endpoint {}", key), [payload, func, client](JobInfo info) mutable -> Coroutine {
+                    return func(payload, client);
+                });
 
                 JobGraphInfo info {
                     .Name = key,
@@ -86,10 +85,6 @@ namespace MQTTPlus
                 };
 
                 auto result = ServiceManager::GetJobSystem()->Submit<bool>(Ref<JobGraph>::Create(info));
-                result.ContinueWith([k = key, timer](const auto&) {
-                    MQP_TRACE("Ran endpoint {} in {}ms", k, timer.ElapsedMillis());
-                });
-                
                 return;
             } catch(std::exception& e)
             {

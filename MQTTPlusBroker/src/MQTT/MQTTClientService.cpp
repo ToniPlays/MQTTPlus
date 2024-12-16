@@ -62,11 +62,13 @@ namespace MQTTPlus
             .Filters = { { "deviceName", SQLFieldFilterType::Equal, e.GetClient().GetAuth().ClientID } }
         };
 
-        Ref<Job> job = Job::Lambda("Update", [query, e](JobInfo& info) mutable -> Coroutine {
+        Ref<Job> job = Job::Lambda("Update", [query, e](JobInfo info) mutable -> Coroutine {
             Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
             auto deviceName = e.GetClient().GetAuth().ClientID;
 
-            auto result = (co_await db->Run(query))[0];
+            auto results = co_await db->Run(query);
+            auto result = results[0];
+            
             if(result->Rows() == 0)
             {
                 std::string id = "de_" + StringUtility::Hex16();
@@ -109,8 +111,7 @@ namespace MQTTPlus
 
     void MQTTClientService::HandleValuePublish(Ref<MQTTClient> client, const std::string& topic, const std::string& message)
     {
-        Ref<Job> job = Job::Lambda("PublishUpdate", [client, topic, message](JobInfo& info) mutable -> Coroutine {
-            
+        Ref<Job> job = Job::Lambda("PublishUpdate", [client, topic, message](JobInfo info) mutable -> Coroutine {
             const auto& auth = client->GetAuth();
 
             MQP_TRACE("{} published {} to {}", auth.ClientID, message, topic);
@@ -128,21 +129,16 @@ namespace MQTTPlus
                 topicPublicId = result[0]->Get<std::string>("topicID");
             }
 
-            MQP_INFO("Updating field for topic {}", topicPublicId);
-
             auto field = (co_await GetTopicFieldIdForDevice(auth.PublicId, topicPublicId))[0];
             if(field->Rows() == 0)
             {
                 std::string fieldId = "fi_" + StringUtility::Hex16();
-                MQP_INFO("Creating new field: {}", fieldId);
                 co_await CreateTopicField(fieldId, client, topicPublicId, message);
             }
             else 
             {
                 field->Results->next();
                 std::string fieldId = field->Get<std::string>("publicID");
-                MQP_INFO("Updating existing field: {}", fieldId);
-
                 co_await UpdateTopicField(fieldId, message, field->Get<std::string>("formatter"));
             }
         });

@@ -26,6 +26,8 @@ namespace MQTTPlus {
         };
         
         void Start() {
+            if(m_Running) return;
+            
             m_Running = true;
             m_Thread = std::thread([instance = this]() {
                 CallbackTimer::TimerFunc(instance);

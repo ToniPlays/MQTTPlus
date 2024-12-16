@@ -103,8 +103,8 @@ namespace MQTTPlus
         MQP_WARN("MaxFD: {}", m_MaxFD);
 
         while (socketImpl->m_Running) {
-            fd_set readSet = m_MasterSet;
 
+            fd_set readSet = m_MasterSet;
             // Wait for activity on any of the sockets
             int activity = select(m_MaxFD + 1, &readSet, NULL, NULL, NULL);
 
@@ -112,6 +112,8 @@ namespace MQTTPlus
                 MQP_ERROR("Select error: {}, activity {}", strerror(errno), activity);
                 break;
             }
+
+            if(activity == 0) continue;
 
             for (int i = 0; i <= m_MaxFD; ++i) {
                 if (FD_ISSET(i, &readSet)) {

@@ -21,7 +21,8 @@ public:
             if(--handle.promise().m_Dependencies)
                 handle.resume();
         };
-        
+
+        handle.promise().m_Dependencies++;
         OnSuspend();
     }
     

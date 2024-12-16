@@ -14,23 +14,17 @@ namespace MQTTPlus
         s_Status.TotalMemory = GetAvailableSystemMemory();
         UpdateSystemStatus();
         s_StartupTime = std::chrono::system_clock::now();
-        s_JobSystem = new JobSystem(4);
+        s_JobSystem = new JobSystem();
 
-        s_JobSystem->Hook([](Ref<Thread> thread, ThreadStatus status) {
-            if(status == ThreadStatus::Executing)
-                MQP_TRACE("Thread {} running {}", thread->GetThreadID(), thread->GetCurrentJob()->GetName());
+        s_JobSystem->Hook(JobSystemHook::Finished, [](Ref<JobGraph> graph) {
+            MQP_TRACE("Graph {} finished", graph->GetName());
         });
 
         for(auto& service : s_Services) {
-            auto job = Job::Lambda(service->GetName(), [service](JobInfo& info) mutable -> Coroutine {
-                try {
-                    MQP_INFO("Starting service: {} on {}", service->GetName(), info.Thread->GetThreadID());
-                    service->RunService(info.Thread);
-                    MQP_WARN("Stopped service: {} on {}", service->GetName(), info.Thread->GetThreadID());
-                } catch(MQTTPlusException e)
-                {
-                    MQP_ERROR("Service {} crashed with {}", service->GetName(), e.what());
-                }
+            auto job = Job::Lambda(service->GetName(), [service](JobInfo info) mutable -> Coroutine {
+                MQP_INFO("Starting service: {} on {}", service->GetName(), info.Thread->GetThreadID());
+                service->RunService(info.Thread);
+                MQP_WARN("Stopped service: {} on {}", service->GetName(), info.Thread->GetThreadID());
                 co_return;
             });
 
@@ -43,6 +37,12 @@ namespace MQTTPlus
         
         MQP_INFO("All services started");
         s_Running = true;
+
+        while(s_Running)
+        {
+            s_JobSystem->WaitForHooks();
+            s_JobSystem->Update();
+        }
     }
     
     void ServiceManager::Stop()

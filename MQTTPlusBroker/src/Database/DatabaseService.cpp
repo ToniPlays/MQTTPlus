@@ -1,6 +1,7 @@
 #include "DatabaseService.h"
 #include "Core/Logger.h"
 #include "Core/CommandLineArgs.h"
+#include "Core/Service/ServiceManager.h"
 
 #include "SQLQueryBuilder.h"
 
@@ -17,23 +18,11 @@ namespace MQTTPlus {
         Reconnect();
         ValidateSchema();
 
-        m_System.Hook([](Ref<Thread> thread, ThreadStatus status) {
-            if(thread->GetStatus() == ThreadStatus::Failed)
-                MQP_ERROR("Database Thread {} failed: {}", thread->GetThreadID(), thread->GetLastError());
-        });
-
-        m_System.WaitForJobsToFinish();
-
-        while(true)
-        {
-            m_System.WaitForHooks();
-            m_System.Update();
-        }
+        
     }
 
     void DatabaseService::Stop() 
     {
-        m_System.Terminate();
     }
 
     Promise<Ref<SQLQueryResult>> DatabaseService::Run(const SQLQuery& query)
@@ -44,12 +33,7 @@ namespace MQTTPlus {
         DatabaseTransaction trx = { sql, query };
         Ref<Job> runJob = Job::Create("Query", RunTransaction, this, trx);
 
-        JobGraphInfo info = {
-            .Name = "Transaction",
-            .Stages = { { "Run", 1.0f, { runJob } } },
-        };
-
-        return m_System.Submit<Ref<SQLQueryResult>>(Ref<JobGraph>::Create(info));
+        return ServiceManager::GetJobSystem()->Submit<Ref<SQLQueryResult>>(runJob);
     }
 
     Promise<Ref<SQLQueryResult>> DatabaseService::Run(const std::string& sql)
@@ -57,12 +41,7 @@ namespace MQTTPlus {
         DatabaseTransaction trx = { sql };
         Ref<Job> runJob = Job::Create("Query", RunTransaction, this, trx);
 
-        JobGraphInfo info = {
-            .Name = "Transaction",
-            .Stages = { { "RunSQL", 1.0f, { runJob } } },
-        };
-
-        return m_System.Submit<Ref<SQLQueryResult>>(Ref<JobGraph>::Create(info));
+        return ServiceManager::GetJobSystem()->Submit<Ref<SQLQueryResult>>(runJob);
     }
 
     void DatabaseService::Reconnect() 
@@ -105,7 +84,7 @@ namespace MQTTPlus {
         MQP_INFO("Schema validated from res/database/schema.txt");
     }
 
-    Coroutine DatabaseService::RunTransaction(JobInfo& info, DatabaseService* service, DatabaseTransaction& transaction)
+    Coroutine DatabaseService::RunTransaction(JobInfo info, DatabaseService* service, DatabaseTransaction& transaction)
     {
         try 
         {

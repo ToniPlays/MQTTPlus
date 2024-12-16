@@ -14,12 +14,11 @@ namespace MQTTPlus
     class Thread;
     struct JobInfo;
 
-
     class Job : public RefCount
     {
         friend class JobSystem;
         friend class JobGraph;
-        using JobCallback = std::function<Coroutine(JobInfo&)>;
+        using JobCallback = std::function<Coroutine(JobInfo)>;
 
     public:
         
@@ -33,7 +32,7 @@ namespace MQTTPlus
         JobStatus GetStatus() const { return m_Status; }
         const Coroutine& GetCoroutine() const { return m_JobCoroutine; }
 
-        void Execute(JobInfo& info);
+        void Execute(JobInfo info);
         void Progress(float progress);
 
         float GetExecutionTime() const { return m_ExecutionTime; }
@@ -106,7 +105,7 @@ namespace MQTTPlus
         Ref<JobGraph> Graph;
         uint32_t StageIndex;
         uint32_t ExecutionID;
-        Ref<Thread> Thread;
+        Thread* Thread;
         
         template<typename T>
         void Result(T value)
