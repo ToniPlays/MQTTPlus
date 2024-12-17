@@ -98,6 +98,13 @@ namespace MQTTPlus
 				m_StatusHook.Invoke(thread, thread->GetStatus());
 			}
 
+			catch (std::exception e)
+			{
+				std::string msg = fmt::format("std::exception: {0}", job->GetName());
+				SendMessage(Severity::Error, msg);
+				m_StatusHook.Invoke(thread, thread->GetStatus());
+			}
+
 			if(!job->GetCoroutine().Done())
 			{
 				std::scoped_lock lock(m_JobMutex);

@@ -5,7 +5,7 @@
 #include "API/DataGetters.h"
 #include "API/JsonConverter.h"
 #include "Database/DatabaseService.h"
-#include "API/Expanders/DeviceExpander.h"
+#include "API/QueryTypes/DeviceQueryType.h"
 #include "Core/Coroutine.h"
 #include <nlohmann/json.hpp>
 
@@ -25,9 +25,7 @@ namespace MQTTPlus
 
             auto expandOpts = ExpandOpts(msg);
 
-            auto devices = co_await API::GetDevices();
-            if(devices.size() > 0)
-                j["data"] = co_await API::ExpandDevices(devices[0], expandOpts);
+            j["data"] = (co_await DeviceQueryType::GetAll(expandOpts))[0];
             client->Send(j.dump());
         });
 
@@ -48,10 +46,9 @@ namespace MQTTPlus
             std::string id = msg["id"];
 
             std::vector<std::string> expandOpts = ExpandOpts(msg);
-            auto results = co_await API::GetDevice(id);
 
-            j["data"] = (co_await API::ExpandDevices(results, GetExpandOpts(expandOpts)))[0];
-            client->Send(j.dump()); 
+            j["data"] = (co_await DeviceQueryType::Get(id, expandOpts))[0];
+            client->Send(j.dump());
         });
     }
 }

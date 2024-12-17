@@ -199,7 +199,7 @@ namespace MQTTPlus
     {
         SQLQuery query = {
             .Type = SQLQueryType::Select,
-            .Fields = { { "topics.publicId", "topicId" }, "topicName", "topicType", { "topic_values.publicId", "fieldPublicId" } },
+            .Fields = { { "topics.publicId", "topicId" }, "displayName", "topicType", { "topic_values.publicId", "fieldPublicId" } },
             .Table = "topics",
             .Filters = { { "topics.topicName", SQLFieldFilterType::Equal, topic },
                          { "topics.networkID", SQLFieldFilterType::Equal, networkId },

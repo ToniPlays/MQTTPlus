@@ -70,13 +70,21 @@ const DevicePage: NextPage<Props> = props => {
     )
   }
 
+  function GetTopicName(field: any)
+  {
+    if(!field.topic) return field.topic
+    return field.topic?.name.length > 0 ? field.topic?.name : field.topic.topic
+  }
+
   function TopicValueCard(props: { field: any})
   {
     const { field } = props
     return (
-        <CardDataStats id={field.id} title={field.topic?.name ?? ""} total={field.display_value}>
+      <div id={field.id}>
+        <CardDataStats  title={GetTopicName(field)} total={field.display_value}>
           <BoltIcon />
         </CardDataStats>
+      </div>
     )
   }
 

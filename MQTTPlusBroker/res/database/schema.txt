@@ -27,6 +27,7 @@
 #sql CREATE TABLE IF NOT EXISTS `topics` (`topicID` INT NOT NULL AUTO_INCREMENT, 
                                         `publicID` TEXT NOT NULL, 
                                         `topicName` TEXT NOT NULL, 
+                                        `displayName` TEXT, 
                                         `topicType` INT(1),
                                         `createdAt` TIMESTAMP NOT NULL, 
                                         `networkID` TEXT NOT NULL,

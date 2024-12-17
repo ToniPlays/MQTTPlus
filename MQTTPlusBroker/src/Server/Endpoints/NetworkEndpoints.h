@@ -5,7 +5,7 @@
 #include "API/DataGetters.h"
 #include "API/JsonConverter.h"
 #include "Database/DatabaseService.h"
-#include "API/Expanders/NetworkExpander.h"
+#include "API/QueryTypes/NetworkQueryType.h"
 #include <nlohmann/json.hpp>
 
 namespace MQTTPlus
@@ -24,9 +24,7 @@ namespace MQTTPlus
 
             std::vector<std::string> expandOpts = ExpandOpts(msg);
 
-            auto networks = co_await API::GetNetworks();
-            if(networks.size() > 0)
-                j["data"] = co_await API::ExpandNetworks(networks[0], expandOpts);
+            j["data"] = (co_await NetworkQueryType::GetAll())[0];
             client->Send(j.dump());
         });
 
@@ -45,10 +43,7 @@ namespace MQTTPlus
             }
 
             std::vector<std::string> expandOpts = ExpandOpts(msg);
-
-            auto results = co_await API::GetNetwork(msg["id"]);
-            if(results.size() > 0)
-                j["data"] = results[0];
+            j["data"] = (co_await NetworkQueryType::Get(msg["id"], expandOpts))[0];
                 
             client->Send(j.dump());
         });

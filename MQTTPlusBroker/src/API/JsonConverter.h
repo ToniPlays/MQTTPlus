@@ -76,21 +76,26 @@ namespace MQTTPlus::API
 		};
 	}
 
+    static void to_json(json& j, const API::MQTTTopic& value)
+    {
+        j = json {
+                  { "id", value.PublicID },
+                  { "topic", value.TopicName },
+                  { "name", value.DisplayName },
+		};
+    };
+
     static void to_json(json& j, const API::MQTTFieldValue& value)
     {
         j = json {
                   { "id", value.PublicID },
                   { "device_id", value.DeviceID },
-                  //{ "topic", value.Topic.Value() },
+                  { "topic", value.Topic },
                   { "value", value.RawValue },
                   { "display_value", value.DisplayValue },
                   { "formatter", value.Formatter },
                   { "last_updated", value.LastUpdated.Value() }
 		};
-
-        Field<std::string> Formatter;
-        Field<std::string> DisplayValue;
-        Field<std::string> LastUpdated;
     };
 
     static void to_json(json& j, const API::APIDevice& device)

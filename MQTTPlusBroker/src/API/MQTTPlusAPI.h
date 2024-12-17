@@ -38,6 +38,7 @@ namespace MQTTPlus::API
     {
         Field<std::string> PublicID;
         Field<std::string> TopicName;
+        Field<std::string> DisplayName;
     };
 
     struct APIDevice;
@@ -49,7 +50,7 @@ namespace MQTTPlus::API
         Field<uint32_t> ActiveDevices;
         Field<uint32_t> TotalDevices;
         Expandable<Array<APIDevice>, std::string> Devices;
-        Expandable<std::nullptr_t, std::string, MQTTTopic> Topics;
+        Expandable<std::nullptr_t, MQTTTopic> Topics;
     };
 
 

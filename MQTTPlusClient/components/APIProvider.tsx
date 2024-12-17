@@ -13,10 +13,6 @@ export const APIProvider = ({ children }) => {
     useEffect(() => {
         if(provider.status == ReadyState.OPEN)
             socketRef.current = provider.socket.getWebSocket()
-
-        return () => {
-            socketRef.current?.close()
-        }
     }, [provider.socket])
 
     return (

@@ -5,29 +5,11 @@
 
 namespace MQTTPlus::API
 {
-    static Coroutine ExpandNetworkElement(JobInfo info, APINetwork& network, const std::vector<std::string>& opts)
+    class NetworkExpander
     {
-        info.Result(network);
-        co_return;
-    }
-
-    static Promise<APINetwork> ExpandNetworks(const std::vector<APINetwork>& networks, const std::vector<std::string>& expandOpts)
-    {
-        std::vector<Ref<Job>> jobs;
-        jobs.reserve(networks.size());
-
-        for(auto& network : networks)
-        {
-            std::string name = network.PublicID.Value();
-            jobs.push_back(Job::Create(name, ExpandNetworkElement, network, expandOpts));
-        }
-            
-
-        JobGraphInfo info = {
-            .Name = "ExpandNetworks",
-            .Stages = { { "Expand", 1.0, jobs } },
-        };
-
-        return ServiceManager::GetJobSystem()->Submit<APINetwork>(Ref<JobGraph>::Create(info));
-    }
+    public:
+        static Promise<APINetwork> Expand(const std::vector<APINetwork>& devices, const std::vector<std::string>& expandOpts);
+    private:
+        static Coroutine ExpandElement(JobInfo info, APINetwork device, const std::vector<std::string>& opts);
+    };
 }

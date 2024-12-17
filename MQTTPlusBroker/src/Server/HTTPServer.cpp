@@ -54,6 +54,7 @@ namespace MQTTPlus
 
     void HTTPServer::Post(const char* type, const PostMessageCallback&& callback)
     {
+        MQP_TRACE("Registering endpoint: {}", type);
         m_PostCallbacks[type] = callback;
     }
 
