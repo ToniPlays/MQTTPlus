@@ -50,8 +50,10 @@ namespace MQTTPlus
                 m_ConnectedClients[client]->ProcessData(data, length);
         });
         
-        m_WebSocket->Listen();
-        MQP_WARN("MQTT Server listening on port {}", m_WebSocket->GetPort());
+        do 
+        {   
+            m_WebSocket->Listen();
+        } while(true);
     }
 
     void Broker::Disconnect(Ref<MQTTClient> client)

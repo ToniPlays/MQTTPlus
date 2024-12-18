@@ -24,7 +24,7 @@ namespace MQTTPlus::API
         return ServiceManager::GetJobSystem()->Submit<MQTTFieldValue>(job);
     }
 
-    Promise<std::vector<MQTTFieldValue>> FieldValueQueryType::GetAll(const std::string& deviceId, const std::vector<std::string>& expandOpts)
+    Promise<std::vector<MQTTFieldValue>> FieldValueQueryType::GetAllForDevice(const std::string& deviceId, const std::vector<std::string>& expandOpts)
     {
         Ref<Job> job = Job::Lambda("FieldValueQueryType::GetAll", [deviceId, expandOpts](JobInfo info) mutable -> Coroutine {
             SQLQuery query = {
@@ -45,7 +45,7 @@ namespace MQTTPlus::API
 
     MQTTFieldValue FieldValueQueryType::ConvertRow(Ref<SQLQueryResult> result)
     {
-        if(result->Rows() == 0) return {};
+        if(result->Rows == 0) return {};
         result->Results->next();
 
         return MQTTFieldValue {
@@ -61,10 +61,10 @@ namespace MQTTPlus::API
     std::vector<MQTTFieldValue> FieldValueQueryType::Convert(Ref<SQLQueryResult> result)
     {
         std::vector<MQTTFieldValue> fields;
-        if(result->Rows() > 0)
+        if(result->Rows > 0)
         {
-            fields.reserve(result->Rows());
-            while(result->Results->getRow() != result->Rows())
+            fields.reserve(result->Rows);
+            while(result->Results->getRow() != result->Rows)
                 fields.push_back(ConvertRow(result));
         }
         return fields;

@@ -31,13 +31,44 @@ namespace MQTTPlus
         bool m_Connected;
     };
 
+
     static void to_json(nlohmann::json& j, const MQTTClientEvent& event)
     {
         auto& auth = event.GetClient().GetAuth();
         j = nlohmann::json {
-            { "client_id", auth.ClientID, },
+            { "client_id", auth.PublicId, },
+            { "name", auth.ClientID, },
             { "status", event.IsConnected() ? 1 : 0 },
             { "last_seen", FormatTime(event.LastSeen()) },
         };
     }
+
+    class MQTTPublishEvent : public Event 
+    {
+    public:
+        MQTTPublishEvent(Ref<MQTTClient> client) : m_Client(client) {}
+        ~MQTTPublishEvent() = default;
+
+        virtual std::string ToString() const override {
+            return fmt::format("Client published: {}", m_Client->GetAuth().ClientID);
+        }
+        
+        MQTTClient& GetClient() { return *m_Client.Raw(); }
+        const MQTTClient& GetClient() const { return *m_Client.Raw(); }
+
+        EVENT_CLASS_TYPE(MQTTPublishEvent);
+
+    private:
+        Ref<MQTTClient> m_Client;
+    };
+
+
+    static void to_json(nlohmann::json& j, const MQTTPublishEvent& event)
+    {
+        auto& auth = event.GetClient().GetAuth();
+        j = nlohmann::json {
+            { "client_id", event.GetName(), },
+        };
+    }
+
 }

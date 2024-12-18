@@ -47,7 +47,7 @@ namespace MQTTPlus::API
 
     APINetwork NetworkQueryType::ConvertRow(Ref<SQLQueryResult> result)
     {
-        if(result->Rows() == 0) return {};
+        if(result->Rows == 0) return {};
         result->Results->next();
 
         return APINetwork {
@@ -62,10 +62,10 @@ namespace MQTTPlus::API
     {
         std::vector<APINetwork> devices;
         
-        if(result->Rows() > 0)
+        if(result->Rows > 0)
         {
-            devices.reserve(result->Rows());
-            while(result->Results->getRow() != result->Rows())
+            devices.reserve(result->Rows);
+            while(result->Results->getRow() != result->Rows)
                 devices.push_back(ConvertRow(result));
         }
         return devices;

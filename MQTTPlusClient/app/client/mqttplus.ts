@@ -15,7 +15,7 @@ This will allow for realtime data to be sent via websockets without any request
 export const MQTTPlusProvider = () => {
     const api = new MQTTPlusAPI()
     const socket = useWebSocket(url, {
-        shouldReconnect: (e) => true,
+        shouldReconnect: (e) => { return true; },
         reconnectAttempts: 30,
         reconnectInterval: 5000,
         share: true,
@@ -34,6 +34,13 @@ export const MQTTPlusProvider = () => {
         rxFunc.get(0)!(message, null)
 
     }, [socket.lastJsonMessage])
+
+    useEffect(() => {
+        return () => {
+            if(socket)
+                socket.getWebSocket()?.close()
+        }
+    }, [socket.getWebSocket])
 
     const postFunc = useCallback((message: any) => {
         socket.sendMessage(JSON.stringify(message))

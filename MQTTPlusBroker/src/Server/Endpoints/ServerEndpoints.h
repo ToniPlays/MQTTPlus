@@ -21,8 +21,10 @@ namespace MQTTPlus
             
             ServerStatus status = {
                 .StartupTime = ServiceManager::GetStartupTime(),
+                .Threads = ServiceManager::GetJobSystem()->GetThreads().size(),
                 .ServiceCount = count,
                 .RunningServices = ServiceManager::GetRunningServiceCount(),
+                .JobCount = ServiceManager::GetJobSystem()->GetJobCount(),
                 .Services = nullptr,
                 .Status = nullptr,
             };

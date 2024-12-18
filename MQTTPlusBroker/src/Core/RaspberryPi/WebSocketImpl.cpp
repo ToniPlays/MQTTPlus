@@ -25,9 +25,7 @@ namespace MQTTPlus
     WebSocketImpl::~WebSocketImpl() 
     {
         m_Running = false;
-        
-        if(m_ListenerThread)
-            m_ListenerThread->Join();
+        m_Running.notify_all();
     }
 
     void WebSocketImpl::Listen()
@@ -38,7 +36,8 @@ namespace MQTTPlus
     void WebSocketImpl::DisconnectClient(void* socket)
     {
         SocketClient* client = (SocketClient*)socket;
-        close(client->GetClientID()); 
+        //close(client->GetClientID()); 
+        //FD_CLEAR()
     }
     
     void WebSocketImpl::SetSocketTimeout(void* socket, uint32_t timeout)
@@ -168,6 +167,10 @@ namespace MQTTPlus
         FD_CLR(m_SocketDesc, &m_MasterSet);  // Remove from select set
         close(m_SocketDesc);
         MQP_WARN("Stopped listening on port {}", socketImpl->m_Port);
+
+        
+        socketImpl->m_Running = false;
+        socketImpl->m_Running.notify_all();
     }
 }
 

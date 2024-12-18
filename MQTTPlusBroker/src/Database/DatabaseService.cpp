@@ -106,13 +106,13 @@ namespace MQTTPlus {
             
         } catch(sql::SQLSyntaxErrorException e)
         {
-            throw JobException(fmt::format("Failed running transaction: {0}\n{1}", transaction.SQL, e.what()));
+            throw JobException(fmt::format("DB Transaction failed: {0}\n{1}", transaction.SQL, e.what()));
         } catch(sql::SQLException e)
         {
-            throw JobException(fmt::format("Database error {}\nQuery {}", e.getMessage().c_str(), transaction.SQL));
+            throw JobException(fmt::format("DB error {}\nQuery {}", e.getMessage().c_str(), transaction.SQL));
         } catch(std::exception e)
         {
-            throw JobException(fmt::format("Database error: std::exception\nQuery {}", transaction.SQL));
+            throw JobException(fmt::format("DB error: std::exception\nQuery {}", transaction.SQL));
         }
 
         throw JobException("Failed running SQL query");

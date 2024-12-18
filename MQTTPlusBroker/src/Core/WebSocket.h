@@ -16,7 +16,6 @@ namespace MQTTPlus {
     class WebSocket : public RefCount
     {
     public:
-
         virtual uint32_t GetPort() const = 0;
 
         virtual void Listen() = 0;
@@ -31,6 +30,7 @@ namespace MQTTPlus {
         virtual void SetOnSocketDataReceived(SocketDataReceive&& callback) = 0;
 
         virtual bool IsListening() const = 0;
+        virtual void WaitForClose() const = 0;
         
         static Ref<WebSocket> Create(uint32_t port, bool ssl = false);
     };

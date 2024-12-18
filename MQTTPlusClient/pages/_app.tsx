@@ -7,7 +7,6 @@ import toast, { Toaster } from "react-hot-toast"
 import { MQTTPlusProvider } from "../app/client/mqttplus";
 import { useEffect } from "react";
 import { ReadyState } from "react-use-websocket";
-import useColorMode from "../app/hooks/useColorMode";
 
 TimeAgo.addDefaultLocale(en);
 

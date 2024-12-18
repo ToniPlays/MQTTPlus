@@ -5,6 +5,9 @@
 #include "Core/Logger.h"
 #include "Core/StringUtility.h"
 
+#include "API/QueryTypes/DeviceQueryType.h"
+#include "API/QueryTypes/TopicQueryType.h"
+
 #include <spdlog/fmt/fmt.h>
 
 namespace MQTTPlus
@@ -55,82 +58,56 @@ namespace MQTTPlus
     {
         if(e.GetClient().GetAuth().ClientID.empty()) return;
 
-        SQLQuery query = {
-            .Type = SQLQueryType::Select,
-            .Fields = { "publicId" },
-            .Table = "devices",
-            .Filters = { { "deviceName", SQLFieldFilterType::Equal, e.GetClient().GetAuth().ClientID } }
-        };
 
-        Ref<Job> job = Job::Lambda("Update", [query, e](JobInfo info) mutable -> Coroutine {
+        Ref<Job> job = Job::Lambda("Update", [e](JobInfo info) mutable -> Coroutine {
+            
+            SQLQuery query = {
+                .Type = SQLQueryType::Select,
+                .Fields = { "publicId" },
+                .Table = "devices",
+                .Filters = { { "deviceName", SQLFieldFilterType::Equal, e.GetClient().GetAuth().ClientID } }
+            };
+
             Ref<DatabaseService> db = ServiceManager::GetService<DatabaseService>();
             auto deviceName = e.GetClient().GetAuth().ClientID;
 
-            auto results = co_await db->Run(query);
-            auto result = results[0];
+            auto result = (co_await API::DeviceQueryType::GetFromName(deviceName))[0];
             
-            if(result->Rows() == 0)
-            {
-                std::string id = "de_" + StringUtility::Hex16();
-                SQLQuery insert = {
-                    .Type = SQLQueryType::Insert,
-                    .Fields = { { "publicID" }, { "deviceName" }, { "status" }, { "lastSeen" } },
-                    .Values = { { id }, { deviceName }, { e.IsConnected() ? 1 : 0 }, { "NOW()", false } },
-                    .Table = "devices",
-                };
+            std::string deviceID = result.PublicID;
 
-                e.GetClient().SetPublicID(id);
-                co_await db->Run(insert);
+            if(deviceID.empty())
+            {
+                deviceID = "de_" + StringUtility::Hex16();
+                co_await API::DeviceQueryType::CreateDevice(deviceID, deviceName, e.IsConnected());
             }
             else 
-            {
-                result->Results->next();
-                e.GetClient().SetPublicID(result->Get<std::string>("publicId"));
-                
-                SQLQuery update = {
-                    .Type = SQLQueryType::Update,
-                    .Fields = { { "status" }, { "lastSeen" } },
-                    .Values = { { e.IsConnected() ? 1 : 0 }, { "NOW()", false } },
-                    .Table = "devices",
-                    .Filters = { { "deviceName", SQLFieldFilterType::Equal, deviceName }}
-                };
-                
-                co_await db->Run(update);
-            }
-            
+                co_await API::DeviceQueryType::UpdateDevice(deviceID, { { "status" }, { "lastSeen" } }, { { e.IsConnected() ? 1 : 0 }, { "NOW()", false } } );
+
+            e.GetClient().SetPublicID(deviceID);
             ServiceManager::OnEvent(e);
         });
 
-        JobGraphInfo info = {
-            .Name = "Client change",
-            .Stages = { { "Run", 1.0f, { job } } }
-        };
-
-        ServiceManager::GetJobSystem()->Submit<bool>(Ref<JobGraph>::Create(info));
+        ServiceManager::GetJobSystem()->Submit<bool>(job);
     }
 
     void MQTTClientService::HandleValuePublish(Ref<MQTTClient> client, const std::string& topic, const std::string& message)
     {
-        Ref<Job> job = Job::Lambda("PublishUpdate", [client, topic, message](JobInfo info) mutable -> Coroutine {
+        Ref<Job> job = Job::Lambda("Value publish", [client, topic, message](JobInfo info) mutable -> Coroutine {
             const auto& auth = client->GetAuth();
 
             MQP_TRACE("{} published {} to {}", auth.ClientID, message, topic);
-            auto result = co_await GetTopic(topic, auth.NetworkID);
+            auto result = (co_await API::TopicQueryType::GetFromNameAndNetwork(topic, auth.NetworkID))[0];
 
-            std::string topicPublicId = "to_" + StringUtility::Hex16();
+            std::string topicPublicId = result.PublicID;
 
-            if(result[0]->Rows() == 0) 
+            if(topicPublicId.empty()) 
             {
-                co_await CreateTopic(topicPublicId, 0, topic, auth.NetworkID);
-            }
-            else
-            {
-                result[0]->Results->next();
-                topicPublicId = result[0]->Get<std::string>("topicID");
+                topicPublicId = "to_" + StringUtility::Hex16();
+                co_await API::TopicQueryType::Create(topicPublicId, topic, auth.NetworkID, 0);
             }
 
             auto field = (co_await GetTopicFieldIdForDevice(auth.PublicId, topicPublicId))[0];
-            if(field->Rows() == 0)
+            if(field->Rows == 0)
             {
                 std::string fieldId = "fi_" + StringUtility::Hex16();
                 co_await CreateTopicField(fieldId, client, topicPublicId, message);
@@ -141,16 +118,15 @@ namespace MQTTPlus
                 std::string fieldId = field->Get<std::string>("publicID");
                 co_await UpdateTopicField(fieldId, message, field->Get<std::string>("formatter"));
             }
+
+            MQTTPublishEvent e(client);
         });
 
-        JobGraphInfo info = {
-            .Name = "Value publish",
-            .Stages = { { "Run", 1.0f, { job } } }
-        };
-
-        ServiceManager::GetJobSystem()->Submit<bool>(Ref<JobGraph>::Create(info));
+        ServiceManager::GetJobSystem()->Submit<bool>(job);
     }
 
+
+    //Deprecate these
     Promise<Ref<SQLQueryResult>> MQTTClientService::GetTopicFieldIdForDevice(const std::string& deviceId, const std::string& topicId)
     {
         SQLQuery query = {
@@ -174,15 +150,13 @@ namespace MQTTPlus
 
         return ServiceManager::GetService<DatabaseService>()->Run(query);
     }
+    
 
     Promise<Ref<SQLQueryResult>> MQTTClientService::UpdateTopicField(const std::string& fieldId, const std::string& value, const std::string& formatter)
     {
         std::string formattedValue = value;
         if(!formatter.empty())
-        {
-            MQP_INFO("Run data formatter {} for value: {}", formatter, value);
-            formattedValue = value;
-        }
+            formattedValue = fmt::format(fmt::runtime(formatter), value);
 
         SQLQuery query = {
             .Type = SQLQueryType::Update,
@@ -190,35 +164,6 @@ namespace MQTTPlus
             .Values = { value, formattedValue, { "NOW()", false } },
             .Table = "topic_values",
             .Filters = { { "publicID", SQLFieldFilterType::Equal, fieldId } }
-        };
-
-        return ServiceManager::GetService<DatabaseService>()->Run(query);
-    }
-
-    Promise<Ref<SQLQueryResult>> MQTTClientService::GetTopic(const std::string& topic, const std::string& networkId)
-    {
-        SQLQuery query = {
-            .Type = SQLQueryType::Select,
-            .Fields = { { "topics.publicId", "topicId" }, "displayName", "topicType", { "topic_values.publicId", "fieldPublicId" } },
-            .Table = "topics",
-            .Filters = { { "topics.topicName", SQLFieldFilterType::Equal, topic },
-                         { "topics.networkID", SQLFieldFilterType::Equal, networkId },
-                       },
-            .Joins = { { "topic_values", "topics.publicId", "topic_values.topicId", SQLJoinType::Left } },
-        };
-
-        return ServiceManager::GetService<DatabaseService>()->Run(query);
-    }
-
-    Promise<Ref<SQLQueryResult>> MQTTClientService::CreateTopic(const std::string& id, uint32_t type, const std::string& name, const std::string& networkId)
-    {
-        MQP_INFO("Creating new topic {}", id);
-
-        SQLQuery query = {
-            .Type = SQLQueryType::Insert,
-            .Fields = { "publicID", "topicName", "topicType", "createdAt", "networkID" },
-            .Values = { id, name, type, { "NOW()", false, }, networkId },
-            .Table = "topics"
         };
 
         return ServiceManager::GetService<DatabaseService>()->Run(query);

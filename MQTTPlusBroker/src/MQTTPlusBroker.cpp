@@ -34,6 +34,5 @@ int main(int argc, char* argv[])
     ServiceManager::Start();
     ServiceManager::Stop();
     
-    
     return 0;
 }

@@ -60,6 +60,7 @@ namespace MQTTPlus::API
                   { "service_count", status.ServiceCount },
                   { "running_service_count", status.RunningServices },
 				  { "services", status.Services },
+                  { "job", status.JobCount },
                   { "status", status.Status }
 		};
 	}

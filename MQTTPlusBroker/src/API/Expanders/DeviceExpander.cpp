@@ -28,7 +28,7 @@ namespace MQTTPlus::API
         auto expands = GetObjectExpandOpts(opts);
         auto objectOpts = GetExpandOpts(opts);
 
-        if(Contains<std::string>(expands, "network"))
+        if(Contains<std::string>(objectOpts, "network"))
         {
             auto id = device.Network.As<std::string>();
             if(!id.empty())
@@ -38,10 +38,10 @@ namespace MQTTPlus::API
             }
         }
 
-        if(Contains<std::string>(expands, "fields"))
+        if(Contains<std::string>(objectOpts, "fields"))
         {
             std::string deviceId = device.PublicID.Value();
-            device.Fields = (co_await FieldValueQueryType::GetAll(deviceId, expands))[0];
+            device.Fields = (co_await FieldValueQueryType::GetAllForDevice(deviceId, expands))[0];
         }
 
         info.Result(device);

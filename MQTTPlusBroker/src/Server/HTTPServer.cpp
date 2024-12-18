@@ -21,7 +21,10 @@ namespace MQTTPlus
         auto messageHandlerFunc = [this](Server* s, connection_hdl hdl, Server::message_ptr msg) {
             MessageHandlerFunc(hdl, msg);
         };
+
         open_handler openHandler = [this](connection_hdl hdl) {
+            MQP_INFO("Running OpenHandler");
+            
             Server::connection_ptr con = m_Server.get_con_from_hdl(hdl);
             auto client = Ref<HTTPClient>::Create(this, con);
             m_ConnectedClients[con] = client;

@@ -9,7 +9,7 @@ namespace MQTTPlus::API
     {
     public:
         static Promise<MQTTFieldValue> Get(const std::string& publicID, const std::vector<std::string>& expandOpts = {});
-        static Promise<std::vector<MQTTFieldValue>> GetAll(const std::string& deviceId, const std::vector<std::string>& expandOpts = {});
+        static Promise<std::vector<MQTTFieldValue>> GetAllForDevice(const std::string& deviceId, const std::vector<std::string>& expandOpts = {});
 
      private:
         static MQTTFieldValue ConvertRow(Ref<SQLQueryResult> result);

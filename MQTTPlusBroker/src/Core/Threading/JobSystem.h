@@ -63,9 +63,10 @@ namespace MQTTPlus
 		const std::vector<Ref<Thread>>& GetThreads() const { return m_Threads; }
 		std::vector<Ref<JobGraph>> GetQueuedGraphs() const { return m_QueuedGraphs; }
 
+		const uint64_t GetJobCount() const { return m_JobCount; }
+
 		void WaitForJobsToFinish();
 		void Terminate();
-		
 		
 		template<typename T>
 		Promise<T> Submit(Ref<JobGraph> graph)
@@ -79,10 +80,14 @@ namespace MQTTPlus
 				
 			if (!graph->SubmitJobs(this))
 			{
+				
 				m_HookCallbacks.Add([this, graph]() mutable {
 					std::string message = fmt::format("Failed to submit graph {0}: No starting jobs specified", graph->GetName());
 					m_MessageHook.Invoke(Severity::Error, message);
 				});
+				m_RunHooks = true;
+				m_RunHooks.notify_all();
+
 				return Promise<T>();
 			}
 
@@ -91,6 +96,9 @@ namespace MQTTPlus
 			m_HookCallbacks.Add([this, graph]() mutable {
 				m_Hooks.Invoke(JobSystemHook::Submit, graph);
 			});
+
+			m_RunHooks = true;
+			m_RunHooks.notify_all();
 			
 			m_GraphMutex.unlock();
 			

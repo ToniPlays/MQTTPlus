@@ -146,15 +146,17 @@ namespace MQTTPlus
 
         SQLQuery Query;
         sql::ResultSet* Results = nullptr;
+        uint32_t Rows = 0;
 
-        SQLQueryResult(sql::PreparedStatement* statement, SQLQuery& query, sql::ResultSet* result) : m_Statement(statement), Query(query), Results(result) {}
+        SQLQueryResult(sql::PreparedStatement* statement, SQLQuery& query, sql::ResultSet* result) : m_Statement(statement), Query(query), Results(result) {
+            Rows = result ? result->rowsCount() : 0;
+        }
 
         ~SQLQueryResult() {
             delete Results;
             delete m_Statement;
         }
 
-        uint32_t Rows() const { return Results != nullptr ? Results->rowsCount() : 0; }
 
         template<typename T>
         T Get(const char* name) const
