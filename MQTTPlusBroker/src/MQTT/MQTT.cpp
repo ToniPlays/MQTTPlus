@@ -54,9 +54,7 @@ namespace MQTTPlus::MQTT
         m_Topic = ReadString(buffer, ReadU16(buffer));
 
         if(QOSLevel > 0)
-        {
             messageId = ReadU16(buffer);
-        }
         
         m_Message = ReadString(buffer, buffer.GetSize() - buffer.GetCursor()); 
     }

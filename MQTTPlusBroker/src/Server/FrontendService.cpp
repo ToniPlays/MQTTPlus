@@ -20,13 +20,12 @@ namespace MQTTPlus {
             HTTPClientEvent e(client, connected);
             ServiceManager::OnEvent(e);
         });
+        
         m_Server->SetUserData((void*)nullptr);
         m_Server->SetMessageResolver([](const char* endpoint, const std::string& message) {
                 auto json = nlohmann::json::parse(message);
                 std::string requestEndpoint = json["endpoint"];
-                if(endpoint == requestEndpoint)
-                    return true;
-                return false;
+                return endpoint == requestEndpoint;
         });
 
         InitializeApiEndpoints(*m_Server);

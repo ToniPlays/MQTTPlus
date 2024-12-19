@@ -139,6 +139,7 @@ const ServerPage: NextPage<Props> = props => {
           })}
         </Table>
       </div>
+      {false && <p>{JSON.stringify(systemUsage)}</p>}
       </>
   )
   

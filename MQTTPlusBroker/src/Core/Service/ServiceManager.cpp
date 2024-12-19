@@ -69,7 +69,7 @@ namespace MQTTPlus
             UpdateSystemStatus();
             timer.Reset();
         }
-        
+        s_Status.JobCount = s_JobSystem->GetJobCount();
         return s_Status;
     }
     void ServiceManager::UpdateSystemStatus()

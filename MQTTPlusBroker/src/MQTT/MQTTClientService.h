@@ -28,8 +28,6 @@ namespace MQTTPlus
         void OnMQTTClientEvent(MQTTClientEvent& e);
         void HandleValuePublish(Ref<MQTTClient> client, const std::string& topic, const std::string& message);
 
-        static Promise<Ref<SQLQueryResult>> GetTopicFieldIdForDevice(const std::string& deviceId, const std::string& topicId);
-        static Promise<Ref<SQLQueryResult>> CreateTopicField(const std::string& fieldId, Ref<MQTTClient> client, const std::string& topicId, const std::string& value);
         static Promise<Ref<SQLQueryResult>> UpdateTopicField(const std::string& fieldId, const std::string& value, const std::string& formatter);
     private:
         Broker* m_Broker;

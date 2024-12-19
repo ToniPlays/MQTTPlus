@@ -17,12 +17,11 @@ namespace MQTTPlus {
         m_StartupTime = std::chrono::system_clock::now();
         Reconnect();
         ValidateSchema();
-
-        
     }
 
     void DatabaseService::Stop() 
     {
+        
     }
 
     Promise<Ref<SQLQueryResult>> DatabaseService::Run(const SQLQuery& query)
@@ -38,7 +37,11 @@ namespace MQTTPlus {
 
     Promise<Ref<SQLQueryResult>> DatabaseService::Run(const std::string& sql)
     {
-        DatabaseTransaction trx = { sql };
+        SQLQuery create = {
+            .Type = sql.find("USE DATABASE") != std::string::npos ? SQLQueryType::Select : SQLQueryType::Insert,
+        };
+
+        DatabaseTransaction trx = { sql, create };
         Ref<Job> runJob = Job::Create("Query", RunTransaction, this, trx);
 
         return ServiceManager::GetJobSystem()->Submit<Ref<SQLQueryResult>>(runJob);
@@ -76,6 +79,7 @@ namespace MQTTPlus {
             std::string f = StringUtility::GetPreprocessor(type, file, endPos, &endPos);
             if (endPos == std::string::npos) continue;
 
+
             uint64_t nextTokenPos = file.find(type, endPos);
             std::string src = nextTokenPos == std::string::npos ? file.substr(endPos) : file.substr(endPos, nextTokenPos - endPos);
             Run(f + src);
@@ -88,13 +92,11 @@ namespace MQTTPlus {
     {
         try 
         {
-            //MQP_INFO(transaction.SQL);
-
             service->Reconnect();
             sql::PreparedStatement* stmt = service->m_Connection->prepareStatement(transaction.SQL);
             if(transaction.Query.Type == SQLQueryType::Insert)
             {
-                int32_t result = stmt->execute();
+                int32_t result = stmt->executeUpdate();
                 info.Result(Ref<SQLQueryResult>::Create(stmt, transaction.Query, nullptr));
                 co_return;
             }

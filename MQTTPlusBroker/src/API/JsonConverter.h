@@ -23,7 +23,8 @@ namespace MQTTPlus
                   { "memory_total", status.TotalMemory },
                   { "memory_available", status.AvailableMemory },
                   { "disk_space_total", status.DiskTotalSpace },
-                  { "disk_space_used", status.DiskSpaceUsed }
+                  { "disk_space_used", status.DiskSpaceUsed },
+                  { "jobs", status.JobCount, } 
         };
     }
 
@@ -60,7 +61,7 @@ namespace MQTTPlus::API
                   { "service_count", status.ServiceCount },
                   { "running_service_count", status.RunningServices },
 				  { "services", status.Services },
-                  { "job", status.JobCount },
+                  { "jobs", status.JobCount },
                   { "status", status.Status }
 		};
 	}

@@ -18,6 +18,7 @@ namespace MQTTPlus {
         uint64_t AvailableMemory;
         uint64_t DiskTotalSpace;
         uint64_t DiskSpaceUsed;
+        uint64_t JobCount;
     };
 
     class ServiceManager {

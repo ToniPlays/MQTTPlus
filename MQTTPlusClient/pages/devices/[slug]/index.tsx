@@ -38,6 +38,16 @@ const DevicePage: NextPage<Props> = props => {
     })
   }, [deviceId])
 
+  useEffect(() => {
+    if(deviceData == null) return
+
+    provider.post(api.event({
+      device: {
+        listen: deviceData.fields?.map(field => field.id)
+      }
+    }))
+  }, [deviceData])
+
   if(!deviceData)
     return (<></>)
 

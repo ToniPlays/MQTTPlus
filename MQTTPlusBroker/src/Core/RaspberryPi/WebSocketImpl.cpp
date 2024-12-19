@@ -92,7 +92,7 @@ namespace MQTTPlus
         }
 
         // Start listening on the socket
-        listen(m_SocketDesc, SOMAXCONN);
+        MQP_ASSERT(listen(m_SocketDesc, SOMAXCONN) >= 0, "Listen failure");
         MQP_INFO("Listening on port {}", socketImpl->m_Port);
 
         FD_ZERO(&m_MasterSet);
@@ -119,10 +119,11 @@ namespace MQTTPlus
                     if (i == m_SocketDesc) {
                         // New client connection
                         int client = accept(m_SocketDesc, NULL, NULL);
+                        MQP_ASSERT(client >= 0, "accept failed {}", strerror(client));
                         if (client < 0) continue;  // skip if accept failed
 
                         // Set client socket to non-blocking
-                        fcntl(client, F_SETFL, O_NONBLOCK);
+                        MQP_ASSERT(fcntl(client, F_SETFL, O_NONBLOCK) >= 0, "fcntl failed");
 
                         // Add the client to the master set
                         FD_SET(client, &m_MasterSet);
@@ -148,14 +149,18 @@ namespace MQTTPlus
                         if (socketClient->Read()) {
                             continue;  // Continue reading
                         }
-
-                        socketImpl->m_OnSocketDisconnected((void*)socketClient.Raw(), -1);
+                        try {
+                            socketImpl->m_OnSocketDisconnected((void*)socketClient.Raw(), -1);
+                        } catch(std::exception e)
+                        {
+                            MQP_ERROR("Failed running socked disconnect");
+                        }
 
                         // Lock and clean up client
                         socketImpl->m_ClientMutex.lock();
                         MQP_WARN("Client disconnected {}", i);
                         FD_CLR(i, &m_MasterSet);  // Remove from select set
-                        close(i);  // Close client socket
+                        MQP_ASSERT(close(i) >= 0, "close failed");  // Close client socket
                         socketImpl->m_ConnectedClients.erase(i);
                         socketImpl->m_ClientMutex.unlock();
                     }

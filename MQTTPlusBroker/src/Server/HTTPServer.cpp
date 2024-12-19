@@ -12,7 +12,6 @@ namespace MQTTPlus
 
         m_ChangeCallback = [](Ref<HTTPClient> client, bool connected) {};
 
-        m_Server.set_reuse_addr(true);
         m_Server.set_access_channels(log::alevel::none);
         m_Server.set_error_channels(log::alevel::frame_payload);
         
@@ -33,6 +32,7 @@ namespace MQTTPlus
         
         close_handler closeHandler = [this](connection_hdl hdl) {
             Server::connection_ptr con = m_Server.get_con_from_hdl(hdl);
+
             auto it = m_ConnectedClients.find(con);
             m_ChangeCallback(m_ConnectedClients[con], false);
 
@@ -50,9 +50,13 @@ namespace MQTTPlus
     void HTTPServer::Listen()
     {
         MQP_WARN("HTTP Server on port {}", m_Port);
+        
+        m_Server.set_pong_timeout(5000);
+
         m_Server.listen(m_Port);
         m_Server.start_accept();
         m_Server.run();
+
     }
 
     void HTTPServer::Post(const char* type, const PostMessageCallback&& callback)

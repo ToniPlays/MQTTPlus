@@ -69,13 +69,18 @@ namespace MQTTPlus
 
 			Ref<Job> job;
 			{
-				std::scoped_lock lock(m_JobMutex);
+				m_JobMutex.lock();
 				job = FindAvailableJob();
 
 				if (!job)
+				{
+					m_JobMutex.unlock();
 					continue;
+				}
+					
 
 				RemoveJob(job);
+				m_JobMutex.unlock();
 			}
 
 			try
@@ -107,8 +112,9 @@ namespace MQTTPlus
 
 			if(!job->GetCoroutine().Done())
 			{
-				std::scoped_lock lock(m_JobMutex);
+				m_JobMutex.lock();
 				AddJob(job);
+				m_JobMutex.unlock();
 			}
 
 			thread->m_CurrentJob = nullptr;
@@ -139,6 +145,7 @@ namespace MQTTPlus
 	void JobSystem::RemoveJob(Ref<Job> job)
 	{
 		m_Jobs.erase(std::find(m_Jobs.begin(), m_Jobs.end(), job));
+		
 		m_JobCount = m_Jobs.size();
 		m_JobCount.notify_one();
 	}

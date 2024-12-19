@@ -46,10 +46,11 @@ export default class MQTTPlusAPI {
         }
     }
    
-   event(data: { listen: string[] }) {
+   event(data: { listen?: string[], device?: { listen?: string[] } }) {
         return {
             endpoint: '/event',
             listen: data.listen,
+            device: data.device,
         }
    }
 }

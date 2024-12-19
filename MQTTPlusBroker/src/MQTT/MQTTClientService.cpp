@@ -7,6 +7,7 @@
 
 #include "API/QueryTypes/DeviceQueryType.h"
 #include "API/QueryTypes/TopicQueryType.h"
+#include "API/QueryTypes/FieldValueQueryType.h"
 
 #include <spdlog/fmt/fmt.h>
 
@@ -98,74 +99,33 @@ namespace MQTTPlus
             MQP_TRACE("{} published {} to {}", auth.ClientID, message, topic);
             auto result = (co_await API::TopicQueryType::GetFromNameAndNetwork(topic, auth.NetworkID))[0];
 
-            std::string topicPublicId = result.PublicID;
-
-            if(topicPublicId.empty()) 
+            if(result.PublicID.Value().empty()) 
             {
-                topicPublicId = "to_" + StringUtility::Hex16();
-                co_await API::TopicQueryType::Create(topicPublicId, topic, auth.NetworkID, 0);
+                result.PublicID = "to_" + StringUtility::Hex16();
+                co_await API::TopicQueryType::Create(result.PublicID, topic, auth.NetworkID, 0);
             }
 
-            auto field = (co_await GetTopicFieldIdForDevice(auth.PublicId, topicPublicId))[0];
-            if(field->Rows == 0)
+            auto field = (co_await API::FieldValueQueryType::GetFieldFromDeviceAndTopic(auth.PublicId, result.PublicID))[0];
+            if(field.PublicID.Value().empty())
             {
-                std::string fieldId = "fi_" + StringUtility::Hex16();
-                co_await CreateTopicField(fieldId, client, topicPublicId, message);
+                field.PublicID = "fi_" + StringUtility::Hex16();
+                co_await API::FieldValueQueryType::Create(field.PublicID, client->GetAuth().PublicId, result.PublicID, message);
             }
             else 
             {
-                field->Results->next();
-                std::string fieldId = field->Get<std::string>("publicID");
-                co_await UpdateTopicField(fieldId, message, field->Get<std::string>("formatter"));
+                std::string formattedValue = message;
+                if(!field.Formatter.Value().empty())
+                    formattedValue = fmt::format(fmt::runtime(field.Formatter.Value()), message);
+
+                std::vector<SQLQueryField> fields = { "rawValue", "displayValue", "lastUpdated" };
+                std::vector<SQLQueryFieldValue> values = { message, formattedValue, { "NOW()", false } };
+                co_await API::FieldValueQueryType::Update(field.PublicID, fields, values);
             }
 
             MQTTPublishEvent e(client);
+            ServiceManager::OnEvent(e);
         });
 
         ServiceManager::GetJobSystem()->Submit<bool>(job);
-    }
-
-
-    //Deprecate these
-    Promise<Ref<SQLQueryResult>> MQTTClientService::GetTopicFieldIdForDevice(const std::string& deviceId, const std::string& topicId)
-    {
-        SQLQuery query = {
-            .Type = SQLQueryType::Select,
-            .Fields = { "publicID", "formatter" },
-            .Table = "topic_values",
-            .Filters = { { "deviceId", SQLFieldFilterType::Equal, deviceId }, { "topicId", SQLFieldFilterType::Equal, topicId } }
-        };
-
-        return ServiceManager::GetService<DatabaseService>()->Run(query);
-    }
-
-    Promise<Ref<SQLQueryResult>> MQTTClientService::CreateTopicField(const std::string& fieldId, Ref<MQTTClient> client, const std::string& topicId, const std::string& value)
-    {
-        SQLQuery query = {
-            .Type = SQLQueryType::Insert,
-            .Fields = { "publicID", "topicID", "deviceID", "rawValue", "displayValue", "lastUpdated" },
-            .Values = { fieldId, topicId, client->GetAuth().PublicId, value, value, { "NOW()", false } },
-            .Table = "topic_values",
-        };
-
-        return ServiceManager::GetService<DatabaseService>()->Run(query);
-    }
-    
-
-    Promise<Ref<SQLQueryResult>> MQTTClientService::UpdateTopicField(const std::string& fieldId, const std::string& value, const std::string& formatter)
-    {
-        std::string formattedValue = value;
-        if(!formatter.empty())
-            formattedValue = fmt::format(fmt::runtime(formatter), value);
-
-        SQLQuery query = {
-            .Type = SQLQueryType::Update,
-            .Fields = { "rawValue", "displayValue", "lastUpdated" },
-            .Values = { value, formattedValue, { "NOW()", false } },
-            .Table = "topic_values",
-            .Filters = { { "publicID", SQLFieldFilterType::Equal, fieldId } }
-        };
-
-        return ServiceManager::GetService<DatabaseService>()->Run(query);
     }
 }

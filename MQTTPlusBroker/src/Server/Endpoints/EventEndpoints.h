@@ -30,7 +30,7 @@ namespace MQTTPlus
             j["type"] = "event";
             j["data"] = "ok";
 
-            client->GetSubscribedEvents().clear();
+            client->ClearEvents();
             client->GetTimer().Clear();
 
             if(ArrayContains(msg["listen"], "server.status"))

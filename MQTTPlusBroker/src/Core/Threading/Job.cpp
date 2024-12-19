@@ -39,6 +39,10 @@ namespace MQTTPlus
 				m_JobGraph->OnJobFailed(this);
 			throw e;
 		}
+		catch(std::exception e)
+		{
+			throw JobException("std::exception");
+		}
 	}
 
 	void Job::Progress(float progress)
